@@ -4,7 +4,6 @@ import io.github.profetgit.tidypockets.anim.SlotAnims;
 import io.github.profetgit.tidypockets.inv.Inv;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -23,7 +22,7 @@ public final class LockGuard {
 
     public static boolean lockedWithItem(Slot slot) {
         LocalPlayer p = Minecraft.getInstance().player;
-        return p != null && slot != null && slot.hasItem() && Inv.isPlayerSlot(slot, p) && SlotLocks.isLocked(slot.getContainerSlot());
+        return p != null && slot != null && slot.hasItem() && Inv.isPlayerSlot(slot, p) && SlotLocks.isLocked(Inv.index(slot));
     }
 
     private static boolean hotbarLocked(LocalPlayer p, int button) {
@@ -35,7 +34,7 @@ public final class LockGuard {
     /** True if this vanilla click would take something out of a locked slot; the click is then cancelled. */
     public static boolean blocks(AbstractContainerScreen<?> screen, Slot slot, int button, ContainerInput input) {
         LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null || screen instanceof CreativeModeInventoryScreen) return false;
+        if (p == null) return false;
         ItemStack carried = screen.getMenu().getCarried();
         boolean blocked = switch (input) {
             case PICKUP -> lockedWithItem(slot) && (carried.isEmpty() || !ItemStack.isSameItemSameComponents(carried, slot.getItem()));

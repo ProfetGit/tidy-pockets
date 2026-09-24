@@ -24,6 +24,11 @@ public final class Inv {
         return s.container == p.getInventory();
     }
 
+    /** A player slot's index in {@link Inventory}. Creative's inventory-tab wrappers report their menu index instead. */
+    public static int index(Slot s) {
+        return Creative.unwrap(s).getContainerSlot();
+    }
+
     public static boolean isStorage(AbstractContainerMenu menu) {
         return menu instanceof ChestMenu || menu instanceof ShulkerBoxMenu || menu instanceof HopperMenu
             || menu instanceof DispenserMenu;
@@ -33,10 +38,10 @@ public final class Inv {
     public static List<Slot> playerSlots(AbstractContainerMenu menu, Player p, int from, int to) {
         List<Slot> out = new ArrayList<>();
         for (Slot s : menu.slots) {
-            int i = s.getContainerSlot();
+            int i = index(s);
             if (isPlayerSlot(s, p) && i >= from && i < to) out.add(s);
         }
-        out.sort(Comparator.comparingInt(Slot::getContainerSlot));
+        out.sort(Comparator.comparingInt(Inv::index));
         return out;
     }
 
@@ -50,7 +55,7 @@ public final class Inv {
     /** The region to sort for a middle click on {@code hovered} (may be null: the panel background). */
     public static Region sortRegion(AbstractContainerMenu menu, Slot hovered, Player p, boolean withHotbar) {
         if (hovered != null && isPlayerSlot(hovered, p)) {
-            int i = hovered.getContainerSlot();
+            int i = index(hovered);
             if (i < 0 || i >= Inventory.INVENTORY_SIZE) return null;
             return mainRegion(menu, p, withHotbar);
         }

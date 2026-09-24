@@ -3,10 +3,12 @@ package io.github.profetgit.tidypockets.selftest;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.profetgit.tidypockets.core.ClickPlanner;
 import io.github.profetgit.tidypockets.core.Stack;
+import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.inv.StackKeys;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
 import io.github.profetgit.tidypockets.mixin.AbstractContainerScreenAccessor;
+import io.github.profetgit.tidypockets.mixin.CreativeScreenInvoker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
@@ -41,6 +44,8 @@ import io.github.profetgit.tidypockets.config.TidyConfig;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -525,7 +530,7 @@ final class Scenarios {
 
     private static Slot playerSlot(Minecraft mc, int invIndex) {
         for (Slot sl : mc.player.containerMenu.slots) {
-            if (sl.container == mc.player.getInventory() && sl.getContainerSlot() == invIndex) return sl;
+            if (sl.container == mc.player.getInventory() && Inv.index(sl) == invIndex) return sl;
         }
         throw new IllegalStateException("no slot for inventory index " + invIndex);
     }
@@ -851,7 +856,165 @@ final class Scenarios {
             .check("creative screen scrolls", mc -> mc.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
                 ? null : "screen closed")
             .run(mc -> mc.player.closeContainer())
-            .server(server -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "gamemode survival @a"))
+            .waitTicks(5);
+        creativeInventoryTab(s);
+        creativeItemTabs(s);
+        s.server(server -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "gamemode survival @a"))
+            .waitTicks(5);
+    }
+
+    private static void openCreative(Script s, CreativeModeTab.Type type) {
+        s.run(mc -> mc.gui.setScreen(new CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), false)))
+            .until("creative screen", 100, mc -> mc.gui.screen() instanceof CreativeModeInventoryScreen)
+            .waitTicks(5)
+            .run(mc -> {
+                CreativeModeTab tab = type == CreativeModeTab.Type.CATEGORY ? CreativeModeTabs.getDefaultTab()
+                    : CreativeModeTabs.allTabs().stream().filter(t -> t.getType() == type).findFirst().orElseThrow();
+                ((CreativeScreenInvoker) mc.gui.screen()).tidypockets$selectTab(tab);
+            })
+            .waitTicks(10);
+    }
+
+    private static List<Slot> creativeMenu(Minecraft mc) {
+        return ((AbstractContainerScreen<?>) mc.gui.screen()).getMenu().slots;
+    }
+
+    private static void shiftDrag(Minecraft mc, Slot... path) {
+        AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+        int shift = InputConstants.MOD_SHIFT;
+        scr.mouseClicked(at(mc, path[0], LEFT, shift), false);
+        for (int i = 1; i < path.length; i++) scr.mouseDragged(at(mc, path[i], LEFT, shift), 0, 0);
+        scr.mouseReleased(at(mc, path[path.length - 1], LEFT, shift));
+    }
+
+    /** The "Survival Inventory" tab works like the survival inventory; the trash can spares locked slots. */
+    private static void creativeInventoryTab(Script s) {
+        resetInventory(s, inv -> {
+            inv.setItem(9, new ItemStack(Items.STONE, 20));
+            inv.setItem(10, new ItemStack(Items.OAK_LOG, 5));
+            inv.setItem(11, new ItemStack(Items.TORCH, 7));
+            inv.setItem(12, new ItemStack(Items.BREAD, 3));
+            inv.setItem(20, new ItemStack(Items.DIRT, 32));
+            inv.setItem(25, new ItemStack(Items.COBBLESTONE, 10));
+            inv.setItem(33, new ItemStack(Items.COBBLESTONE, 5));
+        });
+        openCreative(s, CreativeModeTab.Type.INVENTORY);
+        s.check("creative inv: the inventory tab is open", mc -> Creative.tab(mc.gui.screen()) == Creative.Tab.INVENTORY ? null : "tab " + Creative.tab(mc.gui.screen()))
+            .run(mc -> shiftDrag(mc, playerSlot(mc, 10), playerSlot(mc, 11), playerSlot(mc, 12)))
+            .waitTicks(4)
+            .check("creative inv: shift-drag moves every slot passed", mc -> count(hotbar(mc), Items.OAK_LOG) == 5
+                && count(hotbar(mc), Items.TORCH) == 7 && count(hotbar(mc), Items.BREAD) == 3 && mc.player.getInventory().getItem(11).isEmpty()
+                ? null : "hotbar " + hotbar(mc).stream().map(Slot::getItem).toList())
+            .run(mc -> scroll(mc, playerSlot(mc, 9), -1, false))
+            .waitTicks(4)
+            .check("creative inv: wheel moves one item to the hotbar", mc -> count(hotbar(mc), Items.STONE) == 1
+                && mc.player.getInventory().getItem(9).getCount() == 19 ? null : "slot 9 = " + mc.player.getInventory().getItem(9))
+            .run(mc -> click(mc, playerSlot(mc, 35), MIDDLE))
+            .waitTicks(4)
+            .check("creative inv: middle-click sorts", mc -> {
+                List<Slot> main = mainSlots(mc);
+                boolean[] locked = new boolean[main.size()];
+                for (int i = 0; i < locked.length; i++) locked[i] = SlotLocks.isLocked(Inv.index(main.get(i)));
+                return count(main, Items.COBBLESTONE) == 15 && ClickPlanner.plan(StackKeys.read(main), locked).clicks().isEmpty()
+                    ? null : "main not sorted: " + main.stream().map(Slot::getItem).filter(i -> !i.isEmpty()).toList();
+            })
+            .server(server -> player(server).getInventory().setItem(34, new ItemStack(Items.COBBLESTONE, 7)))
+            .waitTicks(5)
+            .run(mc -> {
+                AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) mc.gui.screen();
+                MouseButtonEvent e = new MouseButtonEvent(a.tidypockets$left() + 12, a.tidypockets$top() + 12, new MouseButtonInfo(MIDDLE, 0));
+                mc.gui.screen().mouseClicked(e, false);
+                mc.gui.screen().mouseReleased(e);
+            })
+            .waitTicks(4)
+            .check("creative inv: middle-click on the background sorts", mc -> {
+                List<Slot> cobble = mainSlots(mc).stream().filter(sl -> sl.getItem().is(Items.COBBLESTONE)).toList();
+                return cobble.size() == 1 && cobble.get(0).getItem().getCount() == 22 ? null : "cobblestone stacks " + cobble.stream().map(Slot::getItem).toList();
+            })
+            .server(Scenarios::snapshotPlayer)
+            .check("creative inv: server in sync", Scenarios::serverMatches)
+            .capture("creative-trash", 14)
+            .run(mc -> {
+                int dirt = -1;
+                for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) if (mc.player.getInventory().getItem(i).is(Items.DIRT)) dirt = i;
+                SlotLocks.toggle(dirt, mc.player.getInventory().getItem(dirt));
+                List<Slot> slots = creativeMenu(mc);
+                AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+                MouseButtonEvent e = at(mc, slots.get(slots.size() - 1), LEFT, InputConstants.MOD_SHIFT);
+                scr.mouseClicked(e, false);
+                scr.mouseReleased(e);
+            })
+            .waitTicks(4)
+            .check("creative inv: trash-can clear keeps the locked stack", mc -> {
+                int items = 0, dirt = 0;
+                for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
+                    ItemStack st = mc.player.getInventory().getItem(i);
+                    if (!st.isEmpty()) items++;
+                    if (st.is(Items.DIRT)) dirt += st.getCount();
+                }
+                return items == 1 && dirt == 32 ? null : items + " stacks left, dirt " + dirt;
+            })
+            .server(Scenarios::snapshotPlayer)
+            .check("creative inv: server in sync after the clear", Scenarios::serverMatches)
+            .run(mc -> {
+                for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) if (SlotLocks.isLocked(i)) SlotLocks.toggle(i, ItemStack.EMPTY);
+                mc.player.closeContainer();
+            })
+            .waitTicks(5);
+    }
+
+    /** Item tabs: shift-drag over the grid fills the inventory; the hotbar row below it is never dragged over. */
+    private static void creativeItemTabs(Script s) {
+        ItemStack[] grid = new ItemStack[4];
+        resetInventory(s, inv -> inv.setItem(0, new ItemStack(Items.DIAMOND_SWORD)));
+        s.run(mc -> SlotLocks.toggle(0, mc.player.getInventory().getItem(0)));
+        openCreative(s, CreativeModeTab.Type.CATEGORY);
+        s.capture("creative-grab", 12)
+            .run(mc -> {
+                for (int i = 0; i < grid.length; i++) grid[i] = creativeMenu(mc).get(i).getItem().copy();
+                shiftDrag(mc, creativeMenu(mc).get(0), creativeMenu(mc).get(1), creativeMenu(mc).get(2));
+            })
+            .waitTicks(4)
+            .check("creative items: shift-drag puts a full stack of each item in the hotbar", mc -> {
+                for (int i = 0; i < 3; i++) {
+                    ItemStack st = mc.player.getInventory().getItem(i + 1);
+                    if (!ItemStack.isSameItemSameComponents(st, grid[i]) || st.getCount() != st.getMaxStackSize()) return "hotbar " + (i + 1) + " = " + st + ", want " + grid[i];
+                }
+                return mc.player.containerMenu.getCarried().isEmpty() ? null : "cursor " + mc.player.containerMenu.getCarried();
+            })
+            .server(Scenarios::snapshotPlayer)
+            .check("creative items: server in sync", Scenarios::serverMatches)
+            .run(mc -> shiftDrag(mc, creativeMenu(mc).get(3), playerSlot(mc, 0), playerSlot(mc, 1)))
+            .waitTicks(4)
+            .check("creative items: a grid shift-drag leaves the hotbar row alone", mc ->
+                mc.player.getInventory().getItem(0).is(Items.DIAMOND_SWORD) && ItemStack.isSameItemSameComponents(mc.player.getInventory().getItem(1), grid[0])
+                    ? null : "hotbar 0 = " + mc.player.getInventory().getItem(0) + ", 1 = " + mc.player.getInventory().getItem(1))
+            .run(mc -> mc.player.containerMenu.setCarried(ItemStack.EMPTY))
+            .capture("creative-delete", 12)
+            .run(mc -> shiftDrag(mc, playerSlot(mc, 0), playerSlot(mc, 1), playerSlot(mc, 2), creativeMenu(mc).get(3), playerSlot(mc, 3)))
+            .waitTicks(4)
+            .check("creative items: a hotbar shift-drag deletes every unlocked item passed", mc -> {
+                Inventory inv = mc.player.getInventory();
+                for (int i = 1; i <= 3; i++) if (!inv.getItem(i).isEmpty()) return "hotbar " + i + " = " + inv.getItem(i);
+                for (int i = 4; i < Inventory.INVENTORY_SIZE; i++) if (!inv.getItem(i).isEmpty()) return "grid item grabbed into slot " + i + ": " + inv.getItem(i);
+                return inv.getItem(0).is(Items.DIAMOND_SWORD) && mc.player.containerMenu.getCarried().isEmpty() ? null
+                    : "hotbar 0 = " + inv.getItem(0) + ", cursor " + mc.player.containerMenu.getCarried();
+            })
+            .server(Scenarios::snapshotPlayer)
+            .check("creative items: server in sync after deleting", Scenarios::serverMatches)
+            .run(mc -> {
+                AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+                MouseButtonEvent e = at(mc, playerSlot(mc, 0), LEFT, InputConstants.MOD_SHIFT);
+                scr.mouseClicked(e, false);
+                scr.mouseReleased(e);
+            })
+            .waitTicks(4)
+            .check("creative items: shift-click can't delete a locked hotbar item", mc -> mc.player.getInventory().getItem(0).is(Items.DIAMOND_SWORD)
+                ? null : "hotbar 0 = " + mc.player.getInventory().getItem(0))
+            .run(mc -> {
+                SlotLocks.toggle(0, ItemStack.EMPTY);
+                mc.player.closeContainer();
+            })
             .waitTicks(5);
     }
 }

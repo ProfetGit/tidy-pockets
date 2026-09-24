@@ -7,7 +7,6 @@ import io.github.profetgit.tidypockets.tools.ContainerTools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.Slot;
@@ -20,7 +19,7 @@ public final class SlotOverlay {
 
     public static void afterSlot(AbstractContainerScreen<?> screen, GuiGraphicsExtractor g, Slot slot) {
         var p = Minecraft.getInstance().player;
-        if (p == null || screen instanceof CreativeModeInventoryScreen) return;
+        if (p == null) return;
         String q = ContainerTools.query(screen);
         if (q != null) {
             if (ContainerTools.matches(slot.getItem(), q)) {
@@ -29,9 +28,9 @@ public final class SlotOverlay {
                 g.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0xB0202020);
             }
         }
-        if (Inv.isPlayerSlot(slot, p) && SlotLocks.isLocked(slot.getContainerSlot())) {
+        if (Inv.isPlayerSlot(slot, p) && SlotLocks.isLocked(Inv.index(slot))) {
             if (!slot.hasItem()) {
-                var remembered = SlotLocks.remembered(slot.getContainerSlot());
+                var remembered = SlotLocks.remembered(Inv.index(slot));
                 if (remembered != null) {
                     g.item(new net.minecraft.world.item.ItemStack(remembered), slot.x, slot.y);
                     g.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0xA88B8B8B);

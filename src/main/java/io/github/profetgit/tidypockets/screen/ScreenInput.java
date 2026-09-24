@@ -3,6 +3,7 @@ package io.github.profetgit.tidypockets.screen;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.profetgit.tidypockets.Compat;
 import io.github.profetgit.tidypockets.input.Keys;
+import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
 import io.github.profetgit.tidypockets.sort.SortAction;
@@ -10,7 +11,6 @@ import io.github.profetgit.tidypockets.tools.ContainerTools;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,15 +25,16 @@ public final class ScreenInput {
 
     public static boolean mouseClicked(AbstractContainerScreen<?> screen, Slot slot, MouseButtonEvent e) {
         LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null || screen instanceof CreativeModeInventoryScreen) return false;
+        if (p == null) return false;
         if (Keys.SORT.matchesMouse(e)) {
+            if (Creative.tab(screen) == Creative.Tab.ITEMS) return false;
             if (p.hasInfiniteMaterials() && slot != null && slot.hasItem()) return false;
             if (!screen.getMenu().getCarried().isEmpty()) return false;
             return SortAction.trySort(screen, slot);
         }
         if (e.button() == InputConstants.MOUSE_BUTTON_LEFT && slot != null && Inv.isPlayerSlot(slot, p)
             && Compat.isHeld(Keys.LOCK) && screen.getMenu().getCarried().isEmpty()) {
-            int i = slot.getContainerSlot();
+            int i = Inv.index(slot);
             if (i < Inventory.INVENTORY_SIZE || i == Inventory.SLOT_OFFHAND) {
                 SlotLocks.toggle(i, slot.getItem());
                 boolean on = SlotLocks.isLocked(i);
@@ -46,7 +47,8 @@ public final class ScreenInput {
     }
 
     public static boolean keyPressed(AbstractContainerScreen<?> screen, Slot hovered, KeyEvent e) {
-        if (screen instanceof CreativeModeInventoryScreen) return false;
+        Creative.Tab tab = Creative.tab(screen);
+        if (tab != Creative.Tab.NONE) return tab == Creative.Tab.INVENTORY && Keys.SORT.matches(e) && SortAction.trySort(screen, hovered);
         if (ContainerTools.searchOpen(screen)) {
             if (e.key() == InputConstants.KEY_ESCAPE) {
                 ContainerTools.toggleSearch(screen);

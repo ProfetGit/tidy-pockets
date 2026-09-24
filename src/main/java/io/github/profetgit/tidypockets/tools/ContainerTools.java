@@ -115,7 +115,7 @@ public final class ContainerTools {
             boolean present = false;
             for (Slot c : container) if (ItemStack.isSameItemSameComponents(c.getItem(), s.getItem())) present = true;
             if (!present) continue;
-            ClickSender.send(menu, s.index, 0, ContainerInput.QUICK_MOVE);
+            ClickSender.send(menu, s, 0, ContainerInput.QUICK_MOVE);
         }
         Anims.endMove(menu);
     }
@@ -137,9 +137,9 @@ public final class ContainerTools {
                 ItemStack from = c.getItem();
                 if (!ItemStack.isSameItemSameComponents(from, have)) continue;
                 int n = from.getCount();
-                ClickSender.send(menu, c.index, 0, ContainerInput.PICKUP);
-                ClickSender.send(menu, s.index, 0, ContainerInput.PICKUP);
-                if (n > room) ClickSender.send(menu, c.index, 0, ContainerInput.PICKUP);
+                ClickSender.send(menu, c, 0, ContainerInput.PICKUP);
+                ClickSender.send(menu, s, 0, ContainerInput.PICKUP);
+                if (n > room) ClickSender.send(menu, c, 0, ContainerInput.PICKUP);
                 have = s.getItem();
             }
         }

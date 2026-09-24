@@ -11,6 +11,8 @@
     "AbstractWidgetMixin",
     "ClientPacketListenerMixin",
     "CreativeModeInventoryScreenMixin",
+    "CreativeScreenInvoker",
+    "CreativeSlotWrapperAccessor",
     "DropMixin",
     "GameRendererMixin",
     "GuiGraphicsExtractorAccessor",

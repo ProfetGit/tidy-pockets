@@ -6,6 +6,7 @@ import io.github.profetgit.tidypockets.config.TidyConfig;
 import io.github.profetgit.tidypockets.core.ClickPlanner;
 import io.github.profetgit.tidypockets.core.Stack;
 import io.github.profetgit.tidypockets.inv.ClickSender;
+import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.inv.StackKeys;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -31,7 +31,7 @@ public final class SortAction {
         TidyConfig cfg = TidyConfig.get();
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
-        if (!cfg.sortEnabled || Conflicts.sorting || p == null || screen instanceof CreativeModeInventoryScreen) return false;
+        if (!cfg.sortEnabled || Conflicts.sorting || p == null || Creative.tab(screen) == Creative.Tab.ITEMS) return false;
         AbstractContainerMenu menu = screen.getMenu();
         if (!menu.getCarried().isEmpty() || ClickSender.busy()) return false;
         Inv.Region region = Inv.sortRegion(menu, hovered, p, cfg.sortHotbar);
@@ -42,7 +42,7 @@ public final class SortAction {
         Stack[] before = StackKeys.read(slots);
         boolean[] locked = new boolean[slots.size()];
         if (region.kind() != Inv.Kind.CONTAINER) {
-            for (int i = 0; i < locked.length; i++) locked[i] = SlotLocks.isLocked(slots.get(i).getContainerSlot());
+            for (int i = 0; i < locked.length; i++) locked[i] = SlotLocks.isLocked(Inv.index(slots.get(i)));
         }
         ClickPlanner.Plan plan = ClickPlanner.plan(before, locked);
         ClickSender.clicks(menu, slots, plan.clicks());
@@ -65,17 +65,17 @@ public final class SortAction {
         List<Slot> hotbar = Inv.playerSlots(menu, p, 0, Inventory.SELECTION_SIZE);
         List<Slot> main = Inv.playerSlots(menu, p, Inventory.SELECTION_SIZE, Inventory.INVENTORY_SIZE);
         for (Slot h : hotbar) {
-            if (h.hasItem() || !SlotLocks.isLocked(h.getContainerSlot())) continue;
-            Item want = SlotLocks.remembered(h.getContainerSlot());
+            if (h.hasItem() || !SlotLocks.isLocked(Inv.index(h))) continue;
+            Item want = SlotLocks.remembered(Inv.index(h));
             if (want == null) continue;
             Slot best = null;
             for (Slot m : main) {
-                if (SlotLocks.isLocked(m.getContainerSlot()) || !m.getItem().is(want)) continue;
+                if (SlotLocks.isLocked(Inv.index(m)) || !m.getItem().is(want)) continue;
                 if (best == null || m.getItem().getCount() > best.getItem().getCount()) best = m;
             }
             if (best == null) continue;
-            ClickSender.send(menu, best.index, 0, ContainerInput.PICKUP);
-            ClickSender.send(menu, h.index, 0, ContainerInput.PICKUP);
+            ClickSender.send(menu, best, 0, ContainerInput.PICKUP);
+            ClickSender.send(menu, h, 0, ContainerInput.PICKUP);
         }
     }
 }

@@ -63,6 +63,12 @@ public final class FlyAnims {
         }
     }
 
+    /** A flight that isn't a diff of two menu states: a creative grid item going into the hotbar. */
+    public static void launch(ItemStack stack, Slot from, Slot to) {
+        if (!TidyConfig.get().animFly || Conflicts.fly || !Ease.enabled()) return;
+        FLIGHTS.add(new Flight(stack.copy(), from, to, Ease.now()));
+    }
+
     /** Draws flights above the slots; called by the screen just before the carried item. */
     public static void draw(AbstractContainerScreen<?> screen, GuiGraphicsExtractor g) {
         if (FLIGHTS.isEmpty()) return;
