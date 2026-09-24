@@ -52,6 +52,10 @@ Tidy Pockets is free. If it saves you some inventory shuffling, a coffee helps f
 
 [![Support me on Ko-fi](https://raw.githubusercontent.com/ProfetGit/assets/main/kofi-banner.gif)](https://ko-fi.com/profetgit)
 
+Want your own server to play on with friends? My BisectHosting affiliate link gives you 25% off the first month, and I get a small commission.
+
+[![Get 25% off your first month at BisectHosting](https://raw.githubusercontent.com/ProfetGit/assets/main/bisecthosting-banner.gif)](https://url-shortener.curseforge.com/Pp2BN)
+
 ![License](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-license.png)
 
 All rights reserved, with permissions: you can use it anywhere, include it in modpacks with credit, and show it in videos. Full terms: [LICENSE](https://github.com/ProfetGit/tidy-pockets/blob/main/LICENSE).
