@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.profetgit.tidypockets.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AbstractContainerScreenAccessor",
+    "AbstractContainerScreenMixin",
+    "AbstractRecipeBookScreenMixin",
+    "AbstractScrollAreaMixin",
+    "AbstractWidgetMixin",
+    "ClientPacketListenerMixin",
+    "CreativeModeInventoryScreenMixin",
+    "DropMixin",
+    "GameRendererMixin",
+    "GuiGraphicsExtractorAccessor",
+    "GuiMixin",
+    "GuiRenderStateAccessor",
+    "HudMixin",
+    "InventoryScreenMixin",
+    "KeyMappingAccessor",
+    "MinecraftMixin",
+    "MouseHandlerAccessor",
+    "MultiPlayerGameModeMixin",
+    "ScreenInvoker",
+    "ScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

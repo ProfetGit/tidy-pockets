@@ -1,0 +1,22 @@
+modLoader = "javafml"
+loaderVersion = "[0,)"
+license = "All Rights Reserved"
+clientSideOnly = true
+
+[[mods]]
+modId = "tidypockets"
+version = "${version}"
+displayName = "${name}"
+authors = "${author}"
+displayURL = "${homepage}"
+logoFile = "assets/tidypockets/icon.png"
+logoBlur = false
+description = '''${description}'''
+displayTest = "IGNORE_ALL_VERSION"
+
+[[dependencies.tidypockets]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${mc},${mc_next})"
+ordering = "NONE"
+side = "CLIENT"

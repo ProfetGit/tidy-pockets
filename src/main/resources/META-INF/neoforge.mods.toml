@@ -1,0 +1,24 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "tidypockets"
+version = "${version}"
+displayName = "${name}"
+authors = "${author}"
+displayURL = "${homepage}"
+logoFile = "assets/tidypockets/icon.png"
+logoBlur = false
+description = '''${description}'''
+displayTest = "IGNORE_ALL_VERSION"
+
+[[mixins]]
+config = "tidypockets.mixins.json"
+
+[[dependencies.tidypockets]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${mc},${mc_next})"
+ordering = "NONE"
+side = "CLIENT"

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "tidypockets",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "authors": ["${author}"],
+  "contact": { "homepage": "${homepage}" },
+  "license": "LicenseRef-All-Rights-Reserved",
+  "icon": "assets/tidypockets/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["io.github.profetgit.tidypockets.platform.fabric.FabricEntry"],
+    "modmenu": ["io.github.profetgit.tidypockets.platform.fabric.ModMenuEntry"]
+  },
+  "mixins": ["tidypockets.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${fabric_loader}",
+    "fabric-api": "*",
+    "minecraft": "~${mc}",
+    "java": ">=25"
+  }
+}

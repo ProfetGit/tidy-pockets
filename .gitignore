@@ -1,0 +1,17 @@
+.gradle/
+build/
+versions/*/build/
+versions/*/run/
+dist/
+dev/selftest/.work/
+*.hprof
+.idea/
+*.iml
+dev/showcase/out/
+__pycache__/
+# icon/banner review sheets (regenerate with dev/make_icon.py, dev/make_banner.py)
+dev/icon/contact*.png
+dev/icon/bg_options.png
+dev/icon/banner_stills.png
+# release art: Modrinth icon, banner (docs/banner.gif is the committed copy)
+dev/icon/out/
