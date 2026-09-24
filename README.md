@@ -121,6 +121,12 @@ Put the jar for your loader and Minecraft version in your `mods` folder.
 - A bundle is never clicked onto another stack, because vanilla would put that stack inside the bundle. In a completely full chest, bundles therefore stay where they are.
 - The item flight only animates moves that you make. Items moved by hoppers or other players just appear.
 
+## Support
+
+Tidy Pockets is free. If it saves you some inventory shuffling, a coffee helps fund the next update.
+
+[![Support me on Ko-fi](https://raw.githubusercontent.com/ProfetGit/assets/main/kofi-banner.gif)](https://ko-fi.com/profetgit)
+
 ## License
 
 All rights reserved, with permissions: you can use it anywhere, include it in modpacks with credit, and show it in videos. See [LICENSE](LICENSE).
