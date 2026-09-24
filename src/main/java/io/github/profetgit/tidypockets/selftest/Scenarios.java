@@ -15,7 +15,9 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.core.BlockPos;
@@ -31,6 +33,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import io.github.profetgit.tidypockets.config.TidyConfig;
@@ -44,6 +48,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -75,6 +80,7 @@ final class Scenarios {
         tools(s);
         locks(s);
         anims(s);
+        pictures(s);
         creative(s);
         return s;
     }
@@ -352,7 +358,7 @@ final class Scenarios {
             .run(mc -> {
                 for (int i : lockedMain) SlotLocks.toggle(i, ItemStack.EMPTY);
                 SlotLocks.toggle(0, ItemStack.EMPTY);
-                mc.gui.setScreen(null);
+                mc.player.closeContainer();
             })
             .waitTicks(5);
     }
@@ -373,6 +379,9 @@ final class Scenarios {
         s.server(server -> {
             ServerPlayer p = player(server);
             p.getInventory().clearContent();
+            p.containerMenu.setCarried(ItemStack.EMPTY);
+            Container grid = p.inventoryMenu.getCraftSlots();
+            for (int i = 0; i < grid.getContainerSize(); i++) grid.setItem(i, ItemStack.EMPTY);
             setup.accept(p.getInventory());
             ground = p.blockPosition().below();
             ServerLevel level = server.overworld();
@@ -383,6 +392,8 @@ final class Scenarios {
                     level.setBlock(ground.offset(dx, 2, dz), Blocks.AIR.defaultBlockState(), 3);
                 }
             }
+            // clearing the area breaks chests left by earlier scenarios; their contents land by the player's feet
+            for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(ground).inflate(16))) item.discard();
         }).waitTicks(10);
     }
 
@@ -709,7 +720,10 @@ final class Scenarios {
             .waitTicks(20)
             .check("equipping with the inventory open keeps working", mc -> mc.player.getItemBySlot(
                 net.minecraft.world.entity.EquipmentSlot.HEAD).is(Items.DIAMOND_HELMET) ? null : "helmet not equipped")
-            .run(mc -> mc.gui.setScreen(new io.github.profetgit.tidypockets.config.TidyConfigScreen(null)))
+            .run(mc -> {
+                mc.player.closeContainer();
+                mc.gui.setScreen(new io.github.profetgit.tidypockets.config.TidyConfigScreen(null));
+            })
             .waitTicks(10)
             .capture("config", 2)
             .waitTicks(3)
@@ -727,6 +741,35 @@ final class Scenarios {
             .check("list scrolls smoothly", mc -> amounts[1] > 0 && amounts[0] < amounts[1] ? null
                 : "scroll amounts " + amounts[0] + " then " + amounts[1])
             .run(mc -> mc.gui.setScreen(null))
+            .waitTicks(5);
+    }
+
+    /** 3D pictures (enchanting book, smithing armour stand) are drawn outside the GUI pose but must pop with the panel. */
+    private static void pictures(Script s) {
+        picturePop(s, "pop-enchanting", Blocks.ENCHANTING_TABLE, EnchantmentScreen.class, new BlockPos(2, 0, -2));
+        picturePop(s, "pop-smithing", Blocks.SMITHING_TABLE, SmithingScreen.class, new BlockPos(-2, 0, -2));
+    }
+
+    private static void picturePop(Script s, String name, Block block, Class<?> screen, BlockPos offset) {
+        int[] posed = new int[2];
+        s.run(mc -> io.github.profetgit.tidypockets.anim.ScreenPop.posedPictures = 0)
+            .capture(name, 30)
+            .server(server -> {
+                ServerPlayer p = player(server);
+                ServerLevel level = server.overworld();
+                BlockPos at = p.blockPosition().offset(offset);
+                level.setBlock(at, block.defaultBlockState(), 3);
+                p.openMenu(level.getBlockState(at).getMenuProvider(level, at));
+            })
+            .until(name + " screen", 200, mc -> screen.isInstance(mc.gui.screen()))
+            .waitTicks(8)
+            .run(mc -> posed[0] = io.github.profetgit.tidypockets.anim.ScreenPop.posedPictures)
+            .waitTicks(10)
+            .run(mc -> posed[1] = io.github.profetgit.tidypockets.anim.ScreenPop.posedPictures)
+            .check(name + ": the 3D picture pops with the panel", mc -> posed[0] > 0 ? null : "no picture took the pop pose")
+            .check(name + ": after the pop the picture keeps vanilla's pose", mc -> posed[1] == posed[0] ? null
+                : (posed[1] - posed[0]) + " pictures posed after the pop ended")
+            .run(mc -> mc.player.closeContainer())
             .waitTicks(5);
     }
 
@@ -774,7 +817,7 @@ final class Scenarios {
             .waitTicks(3)
             .check("lock: matching items can still be added", mc -> mc.player.getInventory().getItem(12).getCount() == 37
                 && mc.player.containerMenu.getCarried().isEmpty() ? null : "slot 12 = " + mc.player.getInventory().getItem(12))
-            .run(mc -> mc.gui.setScreen(null))
+            .run(mc -> mc.player.closeContainer())
             .waitTicks(3);
         select(s, 0);
         s.run(mc -> io.github.profetgit.tidypockets.Compat.dropHeld())
@@ -807,7 +850,7 @@ final class Scenarios {
             .waitTicks(10)
             .check("creative screen scrolls", mc -> mc.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
                 ? null : "screen closed")
-            .run(mc -> mc.gui.setScreen(null))
+            .run(mc -> mc.player.closeContainer())
             .server(server -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "gamemode survival @a"))
             .waitTicks(5);
     }

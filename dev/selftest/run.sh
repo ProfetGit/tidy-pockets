@@ -160,9 +160,9 @@ else
     echo "FAIL no results.json (session exit $STATUS); see $LOG"
     FAIL=1
 fi
-if grep -E 'MixinApplyError|InvalidInjectionException|InjectionError|Mixin apply .* failed|MixinTransformerError|Exception in thread' "$LOG" | head -5 | grep -q .; then
+if grep -E 'MixinApplyError|InvalidInjectionException|InjectionError|Mixin apply .* failed|MixinTransformerError|Exception in thread|ERROR\]: tidypockets\.mixins\.json' "$LOG" | head -5 | grep -q .; then
     echo "FAIL errors in log:"
-    grep -E 'MixinApplyError|InvalidInjectionException|InjectionError|Mixin apply .* failed|MixinTransformerError|Exception in thread' "$LOG" | cut -c1-240 | head -5
+    grep -E 'MixinApplyError|InvalidInjectionException|InjectionError|Mixin apply .* failed|MixinTransformerError|Exception in thread|ERROR\]: tidypockets\.mixins\.json' "$LOG" | cut -c1-240 | head -5
     FAIL=1
 fi
 WARN=$(grep -ciE '\[[^]]*/(WARN|ERROR)\] \[(Tidy Pockets|mixin)' "$LOG" || true)

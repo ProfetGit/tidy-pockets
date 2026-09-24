@@ -2,7 +2,6 @@ package io.github.profetgit.tidypockets.mixin;
 
 import io.github.profetgit.tidypockets.anim.PlayerHop;
 import io.github.profetgit.tidypockets.anim.ScreenPop;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -13,7 +12,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** The player figure is drawn as a picture-in-picture that ignores the pose, so the pop and hop move its box instead. */
+/**
+ * The player figure is drawn as a picture-in-picture, so the hop moves its box. (The pop scales it through the
+ * picture's pose, see GuiGraphicsExtractorMixin.)
+ */
 @Mixin(InventoryScreen.class)
 public abstract class InventoryScreenMixin {
     @Unique
@@ -33,19 +35,14 @@ public abstract class InventoryScreenMixin {
     }
 
     @Inject(method = "extractEntityInInventoryFollowsMouse", at = @At("HEAD"), cancellable = true)
-    private static void tidypockets$transformFigure(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int size,
+    private static void tidypockets$hopFigure(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int size,
             float yOffset, float mouseX, float mouseY, LivingEntity entity, CallbackInfo ci) {
         if (tidypockets$inner) return;
-        Screen s = Minecraft.getInstance().gui.screen();
-        double k = s == null ? 1 : ScreenPop.scale(s);
         float hop = PlayerHop.offset(entity);
-        if (k == 1 && hop == 0) return;
-        float px = s == null ? 0 : ScreenPop.pivotX(s), py = s == null ? 0 : ScreenPop.pivotY(s);
-        int nx0 = Math.round(px + (x0 - px) * (float) k), ny0 = Math.round(py + (y0 - hop - py) * (float) k);
-        int nx1 = Math.round(px + (x1 - px) * (float) k), ny1 = Math.round(py + (y1 - hop - py) * (float) k);
+        if (hop == 0) return;
         tidypockets$inner = true;
         try {
-            InventoryScreen.extractEntityInInventoryFollowsMouse(g, nx0, ny0, nx1, ny1, Math.max(1, (int) Math.round(size * k)),
+            InventoryScreen.extractEntityInInventoryFollowsMouse(g, x0, Math.round(y0 - hop), x1, Math.round(y1 - hop), size,
                 yOffset, mouseX, mouseY, entity);
         } finally {
             tidypockets$inner = false;

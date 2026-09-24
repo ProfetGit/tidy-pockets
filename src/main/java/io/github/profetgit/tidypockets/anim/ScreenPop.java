@@ -23,6 +23,8 @@ public final class ScreenPop {
     private static Screen current;
     private static double start;
     private static final Deque<Boolean> PUSHED = new ArrayDeque<>();
+    /** 3D pictures given the pop pose so far (read by the self-test). */
+    public static int posedPictures;
 
     private ScreenPop() {}
 
@@ -43,6 +45,12 @@ public final class ScreenPop {
 
     public static double progress(Screen s) {
         return applies(s) ? Ease.progress(start, POP_MS) : 1;
+    }
+
+    /** Whether the open screen is mid-pop. */
+    public static boolean popping() {
+        Screen s = Minecraft.getInstance().gui.screen();
+        return s != null && scale(s) != 1;
     }
 
     /** Current scale of a screen, 1 when not popping. */
