@@ -1,134 +1,61 @@
 ![Tidy Pockets](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/banner.gif)
 
-Instant inventory sorting, hotbar refill, tool-break protection and mouse shortcuts, all in one client-side mod, with quick cartoon animations.
+<p align="center">
+<a href="https://github.com/ProfetGit"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/buttons/github.gif" alt="GitHub" width="23.96%"></a>
+<a href="https://ko-fi.com/profetgit"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/buttons/kofi.gif" alt="Ko-fi" width="23.96%"></a>
+</p>
 
-## Why
+**One click, all sorted.** Instant inventory sorting, slot locking, hotbar refill, tool-break protection and mouse shortcuts in one client-side mod, with quick cartoon animations.
 
-Most sorting mods send their clicks one by one, so you watch your items shuffle into place. Tidy Pockets works out the finished layout first and sends every click in the same frame, so a sort is done the moment you click. The animation plays on top of the finished inventory, and you can keep clicking while it runs.
+![Features](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-features.png)
 
-![Middle-click sorting a chest and the inventory](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/sort.gif)
+- **Instant sorting.** Middle-click any inventory, chest, barrel or shulker box. Tidy Pockets works out the finished layout and sends every click in the same frame, so the sort is done the moment you click. The animation just plays on top.
+- **Slot locking.** Alt-click a slot and its item stays put: no shift-click, drop, swap or sort can move it.
+- **Hotbar refill.** When the stack in your hand runs out, a matching stack from your inventory takes its place.
+- **Tool-break protection.** A tool about to break is swapped for a spare or moved to your inventory, so it never breaks.
+- **Mouse shortcuts.** Scroll to move items one at a time, shift-drag across slots to move many.
+- **Container tools.** Sort, Deposit matching and Restock buttons on chests, and Ctrl+F to search.
+- **Cartoon animations** for opening inventories, moving items and the hotbar. Each has its own toggle.
 
-## Features
+<p align="center">
+<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/sort.gif" alt="Middle-click sorting a chest and the inventory" width="49%">
+<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/locks.gif" alt="Locking slots with Alt-click; a locked item refuses to move" width="49%">
+<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/moves.gif" alt="Shift-clicks and scroll-wheel moves" width="49%">
+<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/tools.gif" alt="Deposit matching, restock, and Ctrl+F search" width="49%">
+</p>
 
-**Sorting**
-- Middle-click an inventory to sort it. This works on your own inventory, chests, double chests, barrels, shulker boxes, ender chests, hoppers, dispensers and droppers.
-- Stacks merge, full stacks come first, and items follow creative-inventory order. Name and ID order are options.
-- Sorting your own inventory leaves the hotbar alone unless you turn that on.
-- Items poof out and pop into their new slots in a quick diagonal wave.
-
-**Slot locking**
-
-![Locking slots with Alt-click; a locked item refuses to move](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/locks.gif)
-
-- Hold Left Alt and click a slot in your inventory to lock it. A padlock appears on it.
-- A locked item stays where it is: it can't be picked up, shift-clicked, shift-dragged, swapped with number keys, dropped with Q or pulled out by a double-click. The slot shakes to say no. You can still add more of the same item to it.
-- Sorting, depositing and the mouse shortcuts leave locked slots alone. Refill can still top up a locked hotbar slot, and tool protection can still move a tool that is about to break.
-- When a locked item is used up, the lock goes with it. The exception is a locked hotbar slot, which remembers its item and shows a faded copy of it. When you sort, that item is pulled back into the slot.
-
-**Hotbar refill**
-
-![Building until the stack runs out; the hotbar refills itself](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/refill.gif)
-
-- When the stack in your hand runs out, the best matching stack from your inventory takes its place. That covers placing your last block, eating your last food, and a bucket that just emptied.
-- Refill works for the offhand too.
-
-**Tool-break protection** (on by default)
-
-![A nearly broken pickaxe is swapped for a fresh one while mining](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/protect.gif)
-
-- When the next hit, block or use would break the tool in your hand, the action is stopped and:
-  1. a spare of the same tool is swapped in, or
-  2. the worn tool is moved to your inventory, or
-  3. if your inventory is full, the tool stays in your hand and the action is blocked.
-- Durability cost is read from the item itself, so swords that take 2 damage per block are protected in time.
-
-**Mouse shortcuts**
-
-![Shift-clicks and scroll-wheel moves](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/moves.gif)
-
-![Shift-dragging a whole row into a chest](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/drag.gif)
-
-- Scroll over a stack to move one item to the other side; scroll the other way to pull one back. Hold Shift to move the whole stack.
-- Hold Shift and drag across slots to shift-click all of them.
-- With items on the cursor, press on a matching stack and drag to collect matching stacks onto the cursor.
-
-**Container tools**
-
-![Deposit matching, restock, and Ctrl+F search](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/tools.gif)
-
-- Chests and other storage get three small buttons: Sort, Deposit matching and Restock.
-- Deposit matching moves every inventory stack whose item is already in the chest into it.
-- Restock tops up your partial stacks from the chest.
-- Press Ctrl+F for a search box that highlights matching slots and dims the rest.
-
-**Animation**
-
-![Inventory and chest popping open over a blurred world](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/open.gif)
-
-![The hotbar selector gliding between slots](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/hotbar.gif)
-
-- Inventories pop open in about 0.1 s. Recipe viewers such as JEI and REI stay still on purpose.
-- The world behind an open inventory is blurred. Strength follows the vanilla Menu Background Blur setting.
-- Items land in their new slot at once, and a quick ghost streaks over from where they came from. This happens for shift-clicks, the scroll wheel, deposit and restock.
-- The hotbar selector glides, a refilled slot pops, and a protected tool shakes red.
-- Stack counts bump when they change, and your character hops when you equip armour.
-- Lists scroll smoothly, and the creative inventory slides row by row.
-- Every animation has its own toggle, and one speed slider covers them all. Setting the slider to 0 turns them all off.
-
-## How to use
+![How to use](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-how-to-use.png)
 
 | Action | Default |
 |---|---|
-| Sort | Middle mouse button over an inventory |
-| Lock or unlock a slot | Hold Left Alt and left-click |
+| Sort | Middle-click over an inventory |
+| Lock or unlock a slot | Left Alt + click |
 | Search | Ctrl+F in a container |
-| Move one item / pull one back | Scroll wheel over a stack |
-| Move a whole stack | Shift + scroll wheel |
+| Move one item / a whole stack | Scroll wheel / Shift + scroll |
 | Shift-click many slots | Hold Shift and drag |
 
-All keys can be changed in Controls, under Tidy Pockets. Deposit and Restock have unbound keys you can assign.
+Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods list (NeoForge, Forge).
 
-In creative mode, middle-clicking an item still copies it as vanilla does. Middle-click an empty slot or the background to sort.
+![Compatibility](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-compatibility.png)
 
-## Settings
+- **Client-side only.** Works on any server, including vanilla servers and Realms.
+- Plays nice with Mouse Tweaks, Mouse Wheelie, Smooth Swapping, Smooth Scrolling and Inventory Profiles Next: the overlapping feature switches itself off.
+- If a server's anti-cheat objects to instant sorting, turn on **Safe mode**.
 
-Open the settings screen from Mod Menu on Fabric, or from the Mods list on NeoForge and Forge. Settings are saved in `config/tidypockets.json`, and slot locks in `config/tidypockets-locks.json`, per world and per server.
+![Installation](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-installation.png)
 
-## Compatibility
+Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.2 and 26.3.
 
-- **Client-side only.** Works on any server, including vanilla servers and Realms. Nothing needs to be installed on the server.
-- **Anti-cheat:** some anti-cheat plugins may object to a whole sort arriving at once. If a server does, turn on **Safe mode**, which sends the clicks a few per tick.
-- **Other mods that do the same job:** Tidy Pockets switches its matching feature off when one is installed, so the two never fight:
-  - Mouse Tweaks or Mouse Wheelie: mouse shortcuts off
-  - Smooth Swapping: item flight off
-  - Smooth Scrolling: smooth scrolling off
-  - Inventory Profiles Next: sorting and refill off
-- **Tested with** JEI, REI, Mouse Tweaks, Smooth Swapping and Mod Menu.
-
-## Installation
-
-Put the jar for your loader and Minecraft version in your `mods` folder.
-
-| Loader | Minecraft | Needs |
-|---|---|---|
-| Fabric (also Quilt) | 26.2, 26.3 | Fabric API |
-| NeoForge | 26.2, 26.3 | - |
-| Forge | 26.2, 26.3 | - |
-
-## Good to know
-
-- Sorting doesn't work inside the creative inventory screen itself, because it uses its own item grid. It does work in chests opened in creative.
-- A bundle is never clicked onto another stack, because vanilla would put that stack inside the bundle. In a completely full chest, bundles therefore stay where they are.
-- The item flight only animates moves that you make. Items moved by hoppers or other players just appear.
-
-## Support
+![Support](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-support.png)
 
 Tidy Pockets is free. If it saves you some inventory shuffling, a coffee helps fund the next update.
 
 [![Support me on Ko-fi](https://raw.githubusercontent.com/ProfetGit/assets/main/kofi-banner.gif)](https://ko-fi.com/profetgit)
 
-## License
+![License](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-license.png)
 
-All rights reserved, with permissions: you can use it anywhere, include it in modpacks with credit, and show it in videos. See [LICENSE](LICENSE).
+All rights reserved, with permissions: you can use it anywhere, include it in modpacks with credit, and show it in videos. Full terms: [LICENSE](https://github.com/ProfetGit/tidy-pockets/blob/main/LICENSE).
 
 Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
+
+![](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/divider.png)
