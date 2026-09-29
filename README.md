@@ -50,6 +50,17 @@ Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods l
 
 Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.2 and 26.3.
 
+![More from Profet](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-more-from-profet.png)
+
+<!-- promo:start -->
+<p align="center">
+<a href="https://www.curseforge.com/minecraft/mc-mods/having-a-blast"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/promo/having-a-blast.gif" alt="Having a Blast: One boom. Bouncy blocks. Client or server." width="49%"></a>
+<a href="https://www.curseforge.com/minecraft/mc-mods/far-out-zoom"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/promo/far-out-zoom.gif" alt="Far Out Zoom: The horizon, up close. Client side." width="49%"></a>
+<a href="https://www.curseforge.com/minecraft/mc-mods/travelers-lantern"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/promo/travelers-lantern.gif" alt="Traveler's Lantern: Your light. Hands free. Client or server." width="49%"></a>
+<a href="https://github.com/ProfetGit/overreacting-mobs"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/promo/overreacting-mobs.gif" alt="Overreacting Mobs: One hit. Big drama. Client side." width="49%"></a>
+</p>
+<!-- promo:end -->
+
 ![Support](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-support.png)
 
 Tidy Pockets is free. If it saves you some inventory shuffling, a coffee helps fund the next update.
