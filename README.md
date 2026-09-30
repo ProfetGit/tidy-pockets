@@ -27,6 +27,7 @@
 <img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/creative_trash.gif" alt="Creative: shift-click the bin; locked slots stay" width="49%">
 <img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/refill.gif" alt="Hotbar refill while pillaring" width="49%">
 <img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/protect.gif" alt="Tool-break protection swaps in a fresh pickaxe" width="49%">
+<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/palette.gif" alt="Random palette: press R on three planks, then every block placed is a random one" width="49%">
 </p>
 
 ![How to use](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-how-to-use.png)
