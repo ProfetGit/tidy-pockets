@@ -2,17 +2,19 @@ package io.github.profetgit.tidypockets.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.profetgit.tidypockets.Compat;
+import io.github.profetgit.tidypockets.config.TidyConfig;
 import io.github.profetgit.tidypockets.input.Keys;
 import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
+import io.github.profetgit.tidypockets.palette.Palette;
 import io.github.profetgit.tidypockets.sort.SortAction;
 import io.github.profetgit.tidypockets.tools.ContainerTools;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
+import io.github.profetgit.tidypockets.input.KeyEvt;
+import io.github.profetgit.tidypockets.input.MouseEvt;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -23,10 +25,10 @@ import net.minecraft.world.inventory.Slot;
 public final class ScreenInput {
     private ScreenInput() {}
 
-    public static boolean mouseClicked(AbstractContainerScreen<?> screen, Slot slot, MouseButtonEvent e) {
+    public static boolean mouseClicked(AbstractContainerScreen<?> screen, Slot slot, MouseEvt e) {
         LocalPlayer p = Minecraft.getInstance().player;
         if (p == null) return false;
-        if (Keys.SORT.matchesMouse(e)) {
+        if (Compat.matchesMouse(Keys.SORT, e)) {
             if (Creative.tab(screen) == Creative.Tab.ITEMS) return false;
             if (p.hasInfiniteMaterials() && slot != null && slot.hasItem()) return false;
             if (!screen.getMenu().getCarried().isEmpty()) return false;
@@ -46,29 +48,36 @@ public final class ScreenInput {
         return false;
     }
 
-    public static boolean keyPressed(AbstractContainerScreen<?> screen, Slot hovered, KeyEvent e) {
+    public static boolean keyPressed(AbstractContainerScreen<?> screen, Slot hovered, KeyEvt e) {
         Creative.Tab tab = Creative.tab(screen);
-        if (tab != Creative.Tab.NONE) return tab == Creative.Tab.INVENTORY && Keys.SORT.matches(e) && SortAction.trySort(screen, hovered);
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (Compat.matches(Keys.PALETTE, e) && TidyConfig.get().randomEnabled && tab != Creative.Tab.ITEMS && player != null && hovered != null
+            && !(screen.getFocused() instanceof EditBox) && !ContainerTools.searchOpen(screen)
+            && Inv.isPlayerSlot(hovered, player) && Inv.index(hovered) < Inventory.SELECTION_SIZE) {
+            Palette.press(player, Inv.index(hovered), Compat.shiftDown());
+            return true;
+        }
+        if (tab != Creative.Tab.NONE) return tab == Creative.Tab.INVENTORY && Compat.matches(Keys.SORT, e) && SortAction.trySort(screen, hovered);
         if (ContainerTools.searchOpen(screen)) {
             if (e.key() == InputConstants.KEY_ESCAPE) {
                 ContainerTools.toggleSearch(screen);
                 return true;
             }
             if (screen.getFocused() instanceof EditBox box) {
-                box.keyPressed(e);
+                Compat.keyPressed(box, e);
                 return true;
             }
         }
-        if ((e.hasControlDown() && e.key() == InputConstants.KEY_F) || Keys.SEARCH.matches(e)) {
+        if ((e.hasControlDown() && e.key() == InputConstants.KEY_F) || Compat.matches(Keys.SEARCH, e)) {
             ContainerTools.toggleSearch(screen);
             return true;
         }
-        if (Keys.SORT.matches(e)) return SortAction.trySort(screen, hovered);
-        if (Keys.DEPOSIT.matches(e)) {
+        if (Compat.matches(Keys.SORT, e)) return SortAction.trySort(screen, hovered);
+        if (Compat.matches(Keys.DEPOSIT, e)) {
             ContainerTools.deposit(screen);
             return true;
         }
-        if (Keys.RESTOCK.matches(e)) {
+        if (Compat.matches(Keys.RESTOCK, e)) {
             ContainerTools.restock(screen);
             return true;
         }

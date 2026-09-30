@@ -41,5 +41,6 @@ public abstract class HudMixin {
     @Inject(method = "extractSlot", at = @At("RETURN"))
     private void tidypockets$slotReturn(GuiGraphicsExtractor g, int x, int y, DeltaTracker dt, Player p, ItemStack stack, int seed, CallbackInfo ci) {
         HudAnims.afterSlot(g, x, y);
+        io.github.profetgit.tidypockets.palette.Palette.drawHudPip(g, x, y, p, stack);
     }
 }

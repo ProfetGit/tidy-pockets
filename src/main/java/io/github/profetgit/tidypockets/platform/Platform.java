@@ -13,8 +13,10 @@ public interface Platform {
 
     boolean isModLoaded(String modId);
 
+    //? if >=1.21.9 {
     /** NeoForge registers categories through its event, so it only constructs one here. */
     default KeyMapping.Category keyCategory(Identifier id) {
         return KeyMapping.Category.register(id);
     }
+    //?}
 }

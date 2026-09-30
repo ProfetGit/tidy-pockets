@@ -41,8 +41,11 @@ dependencies {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
+// Forge's patched Minecraft needs javac 26 or newer to read; use the JDK Gradle itself runs on when that is newer
+val forgeJavac = maxOf(26, JavaVersion.current().majorVersion.toInt())
+
 tasks.withType<JavaCompile>().configureEach {
-    javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(26) }
+    javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(forgeJavac) }
     options.release = 25
     options.encoding = "UTF-8"
 }

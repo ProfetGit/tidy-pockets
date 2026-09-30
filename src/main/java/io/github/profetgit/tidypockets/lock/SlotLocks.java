@@ -54,7 +54,7 @@ public final class SlotLocks {
         return all.computeIfAbsent(currentKey, k -> new WorldLocks());
     }
 
-    private static String worldKey() {
+    public static String worldKey() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.getSingleplayerServer() != null) return "world:" + mc.getSingleplayerServer().getWorldData().getLevelName();
         if (mc.getCurrentServer() != null) return "server:" + mc.getCurrentServer().ip;

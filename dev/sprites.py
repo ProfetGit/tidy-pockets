@@ -100,6 +100,20 @@ for y, r in enumerate(lock):
         img.putpixel((x, y), C[{"Y": "Y"}.get(ch, ch)] if ch != "." else C["."])
 img.save(OUT / "lock.png")
 
+# Random palette marker: a die in the corner of a hotbar slot. "dice" is lit (a palette slot is selected, so a click
+# rolls), "dice_dim" is the same die greyed out (the palette waits)
+dice = ["OOOOOOO", "OFFFFFO", "OKFFFKO", "OFFKFFO", "OKFFFKO", "OFFFFFO", "OOOOOOO"]
+for name, face, shade, pip in (("dice", (255, 250, 232, 255), (222, 206, 160, 255), (196, 48, 48, 255)),
+                               ("dice_dim", (176, 172, 164, 255), (140, 136, 128, 255), (84, 78, 70, 255))):
+    img = Image.new("RGBA", (7, 7))
+    for y, r in enumerate(dice):
+        for x, ch in enumerate(r):
+            img.putpixel((x, y), {"O": C["O"], "F": face, "K": pip}[ch])
+    for i in range(1, 6):
+        img.putpixel((i, 5), shade)
+        img.putpixel((5, i), shade) if img.getpixel((5, i)) == face else None
+    img.save(OUT / f"{name}.png")
+
 # 4-frame puff for the sort pop: a small ring of white dust that grows and thins
 for f in range(4):
     size = 16

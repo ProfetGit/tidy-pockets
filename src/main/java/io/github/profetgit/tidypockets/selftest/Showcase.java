@@ -14,8 +14,11 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import io.github.profetgit.tidypockets.mixin.CreativeScreenInvoker;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -39,19 +42,14 @@ import net.minecraft.world.phys.Vec3;
 /** Scripted scenes recorded for the Modrinth gallery and description. Run with dev/selftest/run.sh <ver> <loader> showcase. */
 final class Showcase {
     private static final int LEFT = InputConstants.MOUSE_BUTTON_LEFT, MIDDLE = InputConstants.MOUSE_BUTTON_MIDDLE;
-    private static final int SHIFT = InputConstants.MOD_SHIFT;
+    private static final int SHIFT = io.github.profetgit.tidypockets.Compat.MOD_SHIFT;
     private static BlockPos origin, chest;
 
     private Showcase() {}
 
     static Script build() {
         Script s = new Script();
-        s.run(mc -> mc.createWorldOpenFlows().createFreshLevel("showcase-" + System.currentTimeMillis(),
-                new net.minecraft.world.level.LevelSettings("Tidy Pockets", net.minecraft.world.level.GameType.SURVIVAL,
-                    new net.minecraft.world.level.LevelSettings.DifficultySettings(net.minecraft.world.Difficulty.PEACEFUL, false, false),
-                    true, net.minecraft.world.level.WorldDataConfiguration.DEFAULT),
-                new net.minecraft.world.level.levelgen.WorldOptions(42L, false, false),
-                net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen()))
+        s.run(mc -> io.github.profetgit.tidypockets.Compat.createWorld(mc, "showcase-" + System.currentTimeMillis()))
             .until("world", 2400, mc -> mc.player != null && mc.level != null && mc.gui.screen() == null)
             .waitTicks(40)
             .server(Showcase::buildStudio)
@@ -66,6 +64,8 @@ final class Showcase {
         refill(s);
         protect(s);
         hotbar(s);
+        creativeGrab(s);
+        creativeTrash(s);
         return s;
     }
 
@@ -169,7 +169,7 @@ final class Showcase {
     private static void record(Script s, Director.Timeline t) {
         boolean[] started = {false};
         s.steps.add(mc -> {
-            mc.gui.toastManager().clear();
+            io.github.profetgit.tidypockets.Compat.clearToasts(mc);
             mc.gui.hud.getChat().clearMessages(false);
             if (!started[0]) {
                 started[0] = true;
@@ -277,7 +277,7 @@ final class Showcase {
     private static void open(Script s) {
         s.run(mc -> mc.gui.hud.getChat().clearMessages(false));
         record(s, new Director.Timeline("open", "Inventories pop open over a soft blur", 3900)
-            .crop(Showcase::wideCrop).noCursor().captionTop().stride(2)
+            .crop(Showcase::wideCrop).noCursor().captionTop()
             .at(400, "E", mc -> mc.gui.setScreen(new InventoryScreen(mc.player)))
             .at(1600, null, mc -> mc.gui.setScreen(null))
             .at(2200, null, mc -> mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND,
@@ -390,8 +390,8 @@ final class Showcase {
             .move(1500, 1800, button("restock"))
             .click(1950, LEFT, 0, "Restock")
             .move(2500, 2900, chestSlot(22))
-            .at(3100, "Ctrl + F", mc -> ((AbstractContainerScreen<?>) mc.gui.screen())
-                .keyPressed(new KeyEvent(InputConstants.KEY_F, 0, InputConstants.MOD_CONTROL)))
+            .at(3100, "Ctrl + F", mc -> io.github.profetgit.tidypockets.Compat.keyPressed(mc.gui.screen(),
+                new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_F, 0, io.github.profetgit.tidypockets.Compat.MOD_CONTROL)))
             .at(3500, null, mc -> type(mc, "l"))
             .at(3650, null, mc -> type(mc, "o"))
             .at(3800, null, mc -> type(mc, "g")));
@@ -416,17 +416,22 @@ final class Showcase {
             mc.player.setXRot(yp[1]);
         }).waitTicks(10);
         Director.Timeline t = new Director.Timeline("refill", "Run out of blocks? Your hotbar refills itself.", 5300)
-            .crop(Showcase::wideCrop).noCursor().captionTop().stride(2);
+            .crop(Showcase::wideCrop).noCursor().captionTop().sway(0.35f);
+        double[] gaps = {0, 560, 610, 540, 660, 580, 630};
+        double at = 250;
         for (int i = 0; i < 7; i++) {
             int n = i;
-            double at = 400 + i * 620;
-            t.at(at, null, mc -> {
-                BlockPos f = origin.offset(1 - n, -1, -2);
+            at += gaps[i];
+            java.util.function.Supplier<BlockPos> f = () -> origin.offset(1 - n, -1, -2);
+            double flick = 230 + (n * 37 % 70);
+            t.look(at, at + flick, mc -> lookAt(mc, Vec3.atCenterOf(f.get()).add(0, 0.5, 0)));
+            t.at(at + flick + 40 + (n * 23 % 50), null, mc -> {
                 mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND,
-                    new BlockHitResult(Vec3.atCenterOf(f).add(0, 0.5, 0), Direction.UP, f, false));
+                    new BlockHitResult(Vec3.atCenterOf(f.get()).add(0, 0.5, 0), Direction.UP, f.get(), false));
                 Compat.swing();
             });
         }
+        t.look(at + 700, at + 1300, mc -> lookAt(mc, Vec3.atCenterOf(origin.offset(-2, 0, -3))));
         record(s, t);
         s.run(Showcase::faceChest);
     }
@@ -454,15 +459,21 @@ final class Showcase {
         int[] cur = {0};
         boolean[] started = {false};
         Director.Timeline t = new Director.Timeline("protect", "Tools stop before they break", 4600)
-            .crop(Showcase::wideCrop).noCursor().captionTop().stride(2)
+            .crop(Showcase::wideCrop).noCursor().captionTop().sway(0.3f)
+            .look(0, 200, mc -> lookAt(mc, Vec3.atCenterOf(origin.offset(targets.get(0))).add(0, 0, 0.5)))
             .everyTick(mc -> {
                 if (cur[0] >= targets.size()) return;
                 BlockPos pos = origin.offset(targets.get(cur[0]));
                 if (mc.level.getBlockState(pos).isAir()) {
                     cur[0]++;
                     started[0] = false;
+                    if (cur[0] < targets.size()) {
+                        Vec3 next = Vec3.atCenterOf(origin.offset(targets.get(cur[0]))).add(0, 0, 0.5);
+                        Director.lookNow(170 + cur[0] * 29 % 90, mc2 -> lookAt(mc2, next));
+                    }
                     return;
                 }
+                if (!Director.settled()) return;
                 if (!started[0]) started[0] = mc.gameMode.startDestroyBlock(pos, Direction.SOUTH);
                 else mc.gameMode.continueDestroyBlock(pos, Direction.SOUTH);
                 Compat.swing();
@@ -490,5 +501,79 @@ final class Showcase {
             t.at(300 + i * 180, null, mc -> mc.player.getInventory().setSelectedSlot(slot));
         }
         record(s, t);
+    }
+
+    // ---- creative (1.1.0) ----
+
+    private static void openCreative(Script s, CreativeModeTab.Type type) {
+        s.server(server -> cmd(server, "gamemode creative @a")).waitTicks(10)
+            .run(mc -> mc.gui.setScreen(new CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), false)))
+            .until("creative screen", 100, mc -> mc.gui.screen() instanceof CreativeModeInventoryScreen)
+            .waitTicks(5)
+            .run(mc -> {
+                CreativeModeTab tab = type == CreativeModeTab.Type.CATEGORY ? CreativeModeTabs.getDefaultTab()
+                    : CreativeModeTabs.allTabs().stream().filter(t -> t.getType() == type).findFirst().orElseThrow();
+                ((CreativeScreenInvoker) mc.gui.screen()).tidypockets$selectTab(tab);
+            })
+            .waitTicks(20);
+    }
+
+    private static int[] creativeCrop(Minecraft mc) {
+        AbstractContainerScreenAccessor a = acc(mc);
+        return new int[] {a.tidypockets$left() - 22, a.tidypockets$top() - 50, a.tidypockets$width() + 110, a.tidypockets$height() + 104};
+    }
+
+    private static Director.Target menuSlot(int i) {
+        return slot(mc -> mc.player.containerMenu.slots.get(i));
+    }
+
+    private static Director.Target lastSlot() {
+        return slot(mc -> mc.player.containerMenu.slots.getLast());
+    }
+
+    private static void unlockAll(Script s) {
+        s.run(mc -> {
+            for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) if (SlotLocks.isLocked(i)) SlotLocks.toggle(i, ItemStack.EMPTY);
+            mc.gui.setScreen(null);
+        }).server(server -> cmd(server, "gamemode survival @a")).waitTicks(10);
+    }
+
+    private static void creativeGrab(Script s) {
+        setInventory(s, inv -> {
+            inv.setItem(0, st(Items.DIAMOND_PICKAXE, 1));
+            inv.setItem(8, st(Items.TORCH, 12));
+        });
+        s.run(mc -> SlotLocks.toggle(0, mc.player.getInventory().getItem(0)));
+        openCreative(s, CreativeModeTab.Type.CATEGORY);
+        record(s, new Director.Timeline("creative_grab", "Creative: shift-drag to grab or bin", 6200)
+            .crop(Showcase::creativeCrop)
+            .move(0, 0, beside(12, 60))
+            .move(100, 600, menuSlot(0))
+            .press(750, LEFT, SHIFT, "Shift + drag")
+            .move(800, 1900, menuSlot(6))
+            .release(2000)
+            .move(2500, 3000, menuSlot(45))
+            .press(3150, LEFT, SHIFT, "Shift + drag")
+            .move(3200, 4500, menuSlot(53))
+            .release(4600));
+        unlockAll(s);
+    }
+
+    private static void creativeTrash(Script s) {
+        setInventory(s, inv -> {
+            messyInventory(inv);
+            inv.setItem(13, st(Items.DIAMOND, 16));
+        });
+        s.run(mc -> {
+            SlotLocks.toggle(0, mc.player.getInventory().getItem(0));
+            SlotLocks.toggle(13, mc.player.getInventory().getItem(13));
+        });
+        openCreative(s, CreativeModeTab.Type.INVENTORY);
+        record(s, new Director.Timeline("creative_trash", "Clear it all. Locked slots stay.", 3600)
+            .crop(Showcase::creativeCrop)
+            .move(0, 0, beside(12, 60))
+            .move(200, 1100, lastSlot())
+            .click(1400, LEFT, SHIFT, "Shift + click"));
+        unlockAll(s);
     }
 }

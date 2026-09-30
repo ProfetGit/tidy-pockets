@@ -25,6 +25,8 @@ SCENES = {
     "open": (25, 2 / 3, 0, 0),
     "refill": (25, 2 / 3, 0, 0),
     "protect": (25, 2 / 3, 0, 0),
+    "creative_grab": (30, 1.0, 0, 0),
+    "creative_trash": (30, 1.0, 0, 0),
 }
 GALLERY_LIMIT = 5 * 1024 * 1024
 
@@ -68,7 +70,7 @@ def build(scene_dir, out_dir, fps, scale, trim_start, trim_end):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *src, "-vf", "palettegen=max_colors=192:stats_mode=diff", str(pal)], check=True)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *src, "-i", str(pal), "-lavfi",
                     "paletteuse=dither=none:diff_mode=rectangle", "-loop", "0", str(gif)], check=True)
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *src, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *src, "-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
                     "-movflags", "+faststart", str(mp4)], check=True)
     Image.open(tmp / "00000.png").save(out_dir / f"{name}-first.png")
     Image.open(tmp / f"{n - 1:05d}.png").save(out_dir / f"{name}-last.png")

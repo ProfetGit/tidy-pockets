@@ -7,6 +7,7 @@ import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.inv.StackKeys;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
+import io.github.profetgit.tidypockets.palette.Palette;
 import io.github.profetgit.tidypockets.mixin.AbstractContainerScreenAccessor;
 import io.github.profetgit.tidypockets.mixin.CreativeScreenInvoker;
 import java.util.ArrayList;
@@ -21,8 +22,6 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -35,7 +34,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -81,6 +79,7 @@ final class Scenarios {
         sortPlayer(s);
         refill(s);
         protect(s);
+        palette(s);
         mouse(s);
         tools(s);
         locks(s);
@@ -163,10 +162,7 @@ final class Scenarios {
     }
 
     private static void createWorld(Script s) {
-        s.run(mc -> mc.createWorldOpenFlows().createFreshLevel("tptest-" + System.currentTimeMillis(),
-                new LevelSettings("tptest", GameType.SURVIVAL,
-                    new LevelSettings.DifficultySettings(Difficulty.PEACEFUL, false, false), true, WorldDataConfiguration.DEFAULT),
-                new WorldOptions(42L, false, false), WorldPresets::createTestWorldDimensions, mc.gui.screen()))
+        s.run(mc -> io.github.profetgit.tidypockets.Compat.createWorld(mc, "tptest-" + System.currentTimeMillis()))
             .until("world to load", 2400, mc -> mc.player != null && mc.level != null && mc.gui.screen() == null)
             .waitTicks(60);
     }
@@ -216,9 +212,9 @@ final class Scenarios {
         AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
         AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) scr;
         double x = a.tidypockets$left() + slot.x + 8, y = a.tidypockets$top() + slot.y + 8;
-        MouseButtonEvent e = new MouseButtonEvent(x, y, new MouseButtonInfo(button, 0));
-        scr.mouseClicked(e, false);
-        scr.mouseReleased(e);
+        io.github.profetgit.tidypockets.input.MouseEvt e = new io.github.profetgit.tidypockets.input.MouseEvt(x, y, button, 0);
+        io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+        io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
     }
 
     private static Map<String, Integer> totals(List<Slot> slots) {
@@ -406,6 +402,256 @@ final class Scenarios {
         return new BlockHitResult(Vec3.atCenterOf(pos).add(0, 0.5, 0), Direction.UP, pos, false);
     }
 
+    private static void markSelected(Script s) {
+        s.run(mc -> net.minecraft.client.KeyMapping.click(((io.github.profetgit.tidypockets.mixin.KeyMappingAccessor) io.github.profetgit.tidypockets.input.Keys.PALETTE).tidypockets$key()))
+            .waitTicks(3);
+    }
+
+    private static final BlockPos[] chestAt = new BlockPos[1];
+
+    /** Share of neighbouring cell pairs (x, z and up) in the 7x3x3 test grid that hold the same block. */
+    private static String sameNeighbours(Minecraft mc, double[] out) {
+        int same = 0, pairs = 0, placed = 0;
+        java.util.Map<Block, Integer> kinds = new java.util.HashMap<>();
+        for (int layer = 1; layer <= 3; layer++) {
+            for (int dz = 1; dz <= 3; dz++) {
+                for (int dx = -3; dx <= 3; dx++) {
+                    Block b = mc.level.getBlockState(ground.offset(dx, layer, dz)).getBlock();
+                    if (b == Blocks.AIR) continue;
+                    placed++;
+                    kinds.merge(b, 1, Integer::sum);
+                    int[][] next = {{1, 0, 0}, {0, 0, 1}, {0, 1, 0}};
+                    for (int[] d : next) {
+                        int x = dx + d[0], y = layer + d[1], z = dz + d[2];
+                        if (x > 3 || z > 3 || y > 3) continue;
+                        pairs++;
+                        if (mc.level.getBlockState(ground.offset(x, y, z)).getBlock() == b) same++;
+                    }
+                }
+            }
+        }
+        out[0] = pairs == 0 ? 1 : (double) same / pairs;
+        out[1] = placed;
+        out[2] = kinds.size();
+        for (int n : kinds.values()) out[3] = Math.max(out[3], n);
+        return null;
+    }
+
+    private static void clearGrid(Script s) {
+        s.server(server -> {
+            ServerLevel level = server.overworld();
+            for (int layer = 1; layer <= 3; layer++) {
+                for (int dz = 1; dz <= 3; dz++) {
+                    for (int dx = -3; dx <= 3; dx++) level.setBlock(ground.offset(dx, layer, dz), Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }).waitTicks(8);
+    }
+
+    private static final StringBuilder gridLog = new StringBuilder();
+
+    private static void placeGrid(Minecraft mc) {
+        gridLog.setLength(0);
+        for (int layer = 0; layer < 3; layer++) {
+            for (int dz = 1; dz <= 3; dz++) {
+                for (int dx = -3; dx <= 3; dx++) {
+                    if (dx == 0) continue; // the player stands there
+                    var r = mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, topOf(ground.offset(dx, layer, dz)));
+                    if (!(r instanceof net.minecraft.world.InteractionResult.Success)) {
+                        gridLog.append(" [").append(layer).append(',').append(dx).append(',').append(dz).append(' ').append(r).append(']');
+                    }
+                }
+            }
+        }
+    }
+
+    private static void palette(Script s) {
+        double[] spread = new double[4], plain = new double[4];
+        int[] serverSel = {-1};
+        resetInventory(s, inv -> {
+            inv.setItem(0, new ItemStack(Items.STONE, 64));
+            inv.setItem(1, new ItemStack(Items.COBBLESTONE, 64));
+            inv.setItem(2, new ItemStack(Items.DIRT, 64));
+            inv.setItem(3, new ItemStack(Items.IRON_SWORD));
+            inv.setItem(5, new ItemStack(Items.OAK_PLANKS, 64));
+        });
+        s.check("palette: which blocks are interactive", mc -> {
+            Object[][] cases = {{Blocks.CHEST, true}, {Blocks.OAK_DOOR, true}, {Blocks.OAK_BUTTON, true}, {Blocks.CRAFTING_TABLE, true},
+                {Blocks.LEVER, true}, {Blocks.HOPPER, true}, {Blocks.OAK_TRAPDOOR, true}, {Blocks.ENCHANTING_TABLE, true},
+                {Blocks.STONE, false}, {Blocks.OAK_STAIRS, false}, {Blocks.OAK_FENCE, false}, {Blocks.OAK_LOG, false},
+                {Blocks.GRASS_BLOCK, false}, {Blocks.GLASS, false}, {Blocks.OAK_LEAVES, false}, {Blocks.OAK_SLAB, false}};
+            for (Object[] c : cases) {
+                boolean got = io.github.profetgit.tidypockets.palette.RandomPlace.interactive(((Block) c[0]).defaultBlockState());
+                if (got != (Boolean) c[1]) return c[0] + " interactive=" + got;
+            }
+            return null;
+        });
+        for (int slot : new int[] {0, 1, 2, 3}) {
+            select(s, slot);
+            markSelected(s);
+        }
+        s.check("palette: the key marks block slots", mc -> Palette.has(0) && Palette.has(1) && Palette.has(2) ? null : "marks " + Palette.slots())
+            .check("palette: a sword can't join", mc -> !Palette.has(3) ? null : "sword is in the palette")
+            .run(mc -> Palette.reload())
+            .check("palette: marks are saved", mc -> Palette.has(0) && Palette.has(1) && Palette.has(2) && !Palette.has(3) ? null : "after reload " + Palette.slots())
+            .run(mc -> mc.player.getInventory().setSelectedSlot(0))
+            .waitTicks(4)
+            .capture("palette-hud", 4)
+            .waitTicks(6);
+        select(s, 0);
+        s.run(mc -> {
+                TidyConfig.get().randomSpread = true;
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = new java.util.Random(7)::nextDouble;
+                placeGrid(mc);
+            })
+            .waitTicks(25)
+            .run(mc -> sameNeighbours(mc, spread))
+            .server(server -> serverSel[0] = player(server).getInventory().getSelectedSlot())
+            .check("palette: every click placed a block", mc -> spread[1] == 54 ? null : "placed " + (int) spread[1] + " of 54, refused:" + gridLog)
+            .check("palette: all three blocks show up", mc -> spread[2] == 3 && spread[3] < 40 ? null : "kinds " + (int) spread[2] + " most " + (int) spread[3])
+            .check("palette: avoid-clumps keeps like blocks apart", mc -> spread[0] < 0.2 ? null : String.format("%.2f of neighbours alike", spread[0]))
+            .check("palette: server holds the rolled slot", mc -> serverSel[0] == mc.player.getInventory().getSelectedSlot() ? null
+                : "client " + mc.player.getInventory().getSelectedSlot() + " server " + serverSel[0])
+            .check("palette: placing used the stacks", mc -> {
+                int left = mc.player.getInventory().getItem(0).getCount() + mc.player.getInventory().getItem(1).getCount() + mc.player.getInventory().getItem(2).getCount();
+                return left == 192 - 54 ? null : "left " + left;
+            });
+        clearGrid(s);
+        select(s, 0);
+        s.run(mc -> {
+                TidyConfig.get().randomSpread = false;
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = new java.util.Random(7)::nextDouble;
+                placeGrid(mc);
+            })
+            .waitTicks(25)
+            .run(mc -> sameNeighbours(mc, plain))
+            .check("palette: plain random is patchier than avoid-clumps", mc -> plain[0] > spread[0] + 0.1
+                ? null : String.format("plain %.2f vs spread %.2f", plain[0], spread[0]));
+        clearGrid(s);
+        select(s, 0);
+        float[] heights = new float[6];
+        boolean[] shownNow = {false};
+        s.run(mc -> {
+                TidyConfig.get().randomSpread = false;
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = () -> 0.9;
+                mc.player.setXRot(60f);
+            })
+            .waitTicks(8)
+            .run(mc -> mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, topOf(ground.offset(1, 0, 2))))
+            .waitTicks(2)
+            .run(mc -> shownNow[0] = HandProbe.shown(mc) == mc.player.getMainHandItem());
+        for (int i = 0; i < heights.length; i++) {
+            int k = i;
+            s.run(mc -> heights[k] = HandProbe.height(mc)).waitTicks(2);
+        }
+        s.check("palette: the hand shows the rolled block at once", mc -> shownNow[0] ? null : "still showing " + HandProbe.shown(mc))
+            .check("palette: the hand is back up after the placing bounce", mc -> heights[3] > 0.95f ? null : "heights " + java.util.Arrays.toString(heights));
+        clearGrid(s);
+        select(s, 2);
+        s.server(server -> {
+                chestAt[0] = ground.offset(2, 1, 2);
+                server.overworld().setBlock(chestAt[0], Blocks.CHEST.defaultBlockState(), 3);
+            })
+            .waitTicks(8)
+            .run(mc -> {
+                TidyConfig.get().randomSpread = true;
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, topOf(chestAt[0]));
+            })
+            .until("chest to open", 100, mc -> mc.gui.screen() instanceof ContainerScreen)
+            .check("palette: a chest click opens it and keeps the hand", mc -> mc.player.getInventory().getSelectedSlot() == 2 ? null
+                : "selected slot became " + mc.player.getInventory().getSelectedSlot())
+            .run(mc -> mc.player.closeContainer())
+            .waitTicks(5)
+            .server(server -> server.overworld().setBlock(chestAt[0], Blocks.AIR.defaultBlockState(), 3))
+            .waitTicks(5);
+
+        // a slot that runs out is refilled, wherever the roll came from
+        resetInventory(s, inv -> {
+            inv.setItem(0, new ItemStack(Items.STONE, 1));
+            inv.setItem(1, new ItemStack(Items.COBBLESTONE, 1));
+            inv.setItem(20, new ItemStack(Items.STONE, 40));
+            inv.setItem(21, new ItemStack(Items.COBBLESTONE, 40));
+        });
+        s.run(mc -> {
+            Palette.clear();
+            mc.player.getInventory().setSelectedSlot(0);
+            Palette.toggle(0, mc.player.getInventory().getItem(0));
+            Palette.toggle(1, mc.player.getInventory().getItem(1));
+            TidyConfig.get().randomSpread = false;
+        }).waitTicks(3);
+        s.run(mc -> {
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = () -> 0.9;
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, topOf(ground.offset(2, 0, 2)));
+            })
+            .waitTicks(10)
+            .check("palette: the rolled slot was refilled", mc -> {
+                String a = inv(mc, 1, Items.COBBLESTONE, 40);
+                return a != null ? a : inv(mc, 21, null, 0);
+            })
+            .check("palette: the roll left the selection on that slot", mc -> mc.player.getInventory().getSelectedSlot() == 1 ? null
+                : "selected " + mc.player.getInventory().getSelectedSlot())
+            .run(mc -> {
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = () -> 0.1;
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, topOf(ground.offset(1, 0, 2)));
+            })
+            .waitTicks(10)
+            .check("palette: refill works from the other slot too", mc -> {
+                String a = inv(mc, 0, Items.STONE, 40);
+                return a != null ? a : inv(mc, 20, null, 0);
+            })
+            .server(Scenarios::snapshotPlayer)
+            .check("palette: server agrees after refills", Scenarios::serverMatches);
+
+        // a slot that turns into a non-block leaves the palette by itself
+        s.server(server -> {
+                player(server).getInventory().setItem(1, new ItemStack(Items.DIAMOND_SWORD));
+                player(server).getInventory().setItem(5, new ItemStack(Items.OAK_PLANKS, 64));
+            })
+            .waitTicks(6)
+            .check("palette: a slot holding a sword drops out", mc -> !Palette.has(1) && Palette.has(0) ? null : "marks " + Palette.slots());
+
+        // the key over a hotbar slot in the inventory screen, and Shift to clear
+        s.run(mc -> mc.gui.setScreen(new InventoryScreen(mc.player)))
+            .until("inventory", 100, mc -> mc.gui.screen() instanceof InventoryScreen)
+            .waitTicks(5)
+            .run(mc -> {
+                AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+                io.github.profetgit.tidypockets.screen.ScreenInput.keyPressed(scr, playerSlot(mc, 5),
+                    new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_R, 0, 0));
+                io.github.profetgit.tidypockets.screen.ScreenInput.keyPressed(scr, playerSlot(mc, 20),
+                    new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_R, 0, 0));
+            })
+            .check("palette: R over a hotbar block in the inventory adds it", mc -> Palette.has(5) ? null : "marks " + Palette.slots())
+            .check("palette: R over a main-inventory slot does nothing", mc -> !Palette.has(20) ? null : "slot 20 marked")
+            .waitTicks(4)
+            .capture("palette-inventory", 2)
+            .waitTicks(4)
+            .run(mc -> {
+                AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+                io.github.profetgit.tidypockets.Compat.forceShift = true;
+                io.github.profetgit.tidypockets.screen.ScreenInput.keyPressed(scr, playerSlot(mc, 5),
+                    new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_R, 0, io.github.profetgit.tidypockets.Compat.MOD_SHIFT));
+                io.github.profetgit.tidypockets.Compat.forceShift = false;
+            })
+            .check("palette: Shift+R clears the palette", mc -> Palette.slots().isEmpty() ? null : "marks " + Palette.slots())
+            .run(mc -> mc.player.closeContainer())
+            .waitTicks(3)
+            .run(mc -> mc.gui.setScreen(new io.github.profetgit.tidypockets.config.TidyConfigScreen(null)))
+            .waitTicks(10)
+            .capture("palette-config", 2)
+            .waitTicks(4)
+            .run(mc -> {
+                mc.gui.screen().onClose();
+            })
+            .waitTicks(3)
+            .run(mc -> {
+                io.github.profetgit.tidypockets.palette.RandomPlace.rng = null;
+                TidyConfig.get().randomSpread = true;
+                mc.player.closeContainer();
+            })
+            .waitTicks(3);
+    }
+
     private static void refill(Script s) {
         resetInventory(s, inv -> {
             inv.setItem(0, new ItemStack(Items.COBBLESTONE, 1));
@@ -473,7 +719,7 @@ final class Scenarios {
             ServerPlayer p = player(server);
             Entity pig = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
                 .getValue(net.minecraft.resources.Identifier.withDefaultNamespace("pig"))
-                .create(server.overworld(), EntitySpawnReason.COMMAND);
+                .create(server.overworld(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             pig.snapTo(p.getX(), p.getY(), p.getZ() + 2, 0, 0);
             ((net.minecraft.world.entity.Mob) pig).setNoAi(true);
             server.overworld().addFreshEntity(pig);
@@ -539,13 +785,13 @@ final class Scenarios {
         AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
         AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) scr;
         io.github.profetgit.tidypockets.Compat.forceShift = shift;
-        scr.mouseScrolled(a.tidypockets$left() + slot.x + 8, a.tidypockets$top() + slot.y + 8, 0, amount);
+        io.github.profetgit.tidypockets.Compat.mouseScrolled(scr, a.tidypockets$left() + slot.x + 8, a.tidypockets$top() + slot.y + 8, 0, amount);
         io.github.profetgit.tidypockets.Compat.forceShift = false;
     }
 
-    private static MouseButtonEvent at(Minecraft mc, Slot slot, int button, int mods) {
+    private static io.github.profetgit.tidypockets.input.MouseEvt at(Minecraft mc, Slot slot, int button, int mods) {
         AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) mc.gui.screen();
-        return new MouseButtonEvent(a.tidypockets$left() + slot.x + 8, a.tidypockets$top() + slot.y + 8, new MouseButtonInfo(button, mods));
+        return new io.github.profetgit.tidypockets.input.MouseEvt(a.tidypockets$left() + slot.x + 8, a.tidypockets$top() + slot.y + 8, button, mods);
     }
 
     private static String dump(Minecraft mc) {
@@ -588,11 +834,11 @@ final class Scenarios {
             .check("shift+wheel moves the stack", mc -> count(chestSlots(mc), Items.STONE) == 20 ? null : dump(mc))
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                int shift = InputConstants.MOD_SHIFT;
-                scr.mouseClicked(at(mc, playerSlot(mc, 11), LEFT, shift), false);
-                scr.mouseDragged(at(mc, playerSlot(mc, 12), LEFT, shift), 0, 0);
-                scr.mouseDragged(at(mc, playerSlot(mc, 13), LEFT, shift), 0, 0);
-                scr.mouseReleased(at(mc, playerSlot(mc, 13), LEFT, shift));
+                int shift = io.github.profetgit.tidypockets.Compat.MOD_SHIFT;
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, at(mc, playerSlot(mc, 11), LEFT, shift), false);
+                io.github.profetgit.tidypockets.Compat.mouseDragged(scr, at(mc, playerSlot(mc, 12), LEFT, shift), 0, 0);
+                io.github.profetgit.tidypockets.Compat.mouseDragged(scr, at(mc, playerSlot(mc, 13), LEFT, shift), 0, 0);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, at(mc, playerSlot(mc, 13), LEFT, shift));
             })
             .waitTicks(4)
             .check("shift-drag moves every slot passed", mc -> count(chestSlots(mc), Items.OAK_LOG) == 5
@@ -603,9 +849,9 @@ final class Scenarios {
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
                 List<Slot> c = chestSlots(mc);
-                scr.mouseClicked(at(mc, c.get(1), LEFT, 0), false);
-                scr.mouseDragged(at(mc, c.get(2), LEFT, 0), 0, 0);
-                scr.mouseReleased(at(mc, c.get(2), LEFT, 0));
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, at(mc, c.get(1), LEFT, 0), false);
+                io.github.profetgit.tidypockets.Compat.mouseDragged(scr, at(mc, c.get(2), LEFT, 0), 0, 0);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, at(mc, c.get(2), LEFT, 0));
             })
             .waitTicks(4)
             .check("drag collects matching stacks onto the cursor", mc -> {
@@ -629,9 +875,9 @@ final class Scenarios {
             if (child instanceof net.minecraft.client.gui.components.ImageButton b
                 && b.getMessage().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
                 && t.getKey().equals("tidypockets.button." + name)) {
-                MouseButtonEvent e = new MouseButtonEvent(b.getX() + 5, b.getY() + 5, new MouseButtonInfo(LEFT, 0));
-                scr.mouseClicked(e, false);
-                scr.mouseReleased(e);
+                io.github.profetgit.tidypockets.input.MouseEvt e = new io.github.profetgit.tidypockets.input.MouseEvt(b.getX() + 5, b.getY() + 5, LEFT, 0);
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
                 return;
             }
         }
@@ -673,7 +919,7 @@ final class Scenarios {
                 ? null : dump(mc))
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                scr.keyPressed(new net.minecraft.client.input.KeyEvent(InputConstants.KEY_F, 0, InputConstants.MOD_CONTROL));
+                io.github.profetgit.tidypockets.Compat.keyPressed(scr, new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_F, 0, io.github.profetgit.tidypockets.Compat.MOD_CONTROL));
                 if (scr.getFocused() instanceof net.minecraft.client.gui.components.EditBox box) box.setValue("torch");
             })
             .waitTicks(3)
@@ -681,8 +927,8 @@ final class Scenarios {
             .waitTicks(3)
             .check("ctrl+f opens search", mc -> "torch".equals(io.github.profetgit.tidypockets.tools.ContainerTools.query(
                 (AbstractContainerScreen<?>) mc.gui.screen())) ? null : "search query not set")
-            .run(mc -> ((AbstractContainerScreen<?>) mc.gui.screen()).keyPressed(
-                new net.minecraft.client.input.KeyEvent(InputConstants.KEY_E, 0, 0)))
+            .run(mc -> io.github.profetgit.tidypockets.Compat.keyPressed(((AbstractContainerScreen<?>) mc.gui.screen()), 
+                new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_E, 0, 0)))
             .waitTicks(2)
             .check("typing in search does not close the screen", mc -> mc.gui.screen() instanceof ContainerScreen ? null : "screen closed")
             .run(mc -> mc.player.closeContainer())
@@ -737,7 +983,7 @@ final class Scenarios {
             .capture("smooth-scroll", 14)
             .run(mc -> {
                 var area = scrollArea(mc);
-                area.mouseScrolled(area.getX() + 10, area.getY() + 10, 0, -3);
+                io.github.profetgit.tidypockets.Compat.mouseScrolled(area, area.getX() + 10, area.getY() + 10, 0, -3);
             })
             .waitTicks(1)
             .run(mc -> amounts[0] = scrollArea(mc).scrollAmount())
@@ -771,7 +1017,7 @@ final class Scenarios {
             .run(mc -> posed[0] = io.github.profetgit.tidypockets.anim.ScreenPop.posedPictures)
             .waitTicks(10)
             .run(mc -> posed[1] = io.github.profetgit.tidypockets.anim.ScreenPop.posedPictures)
-            .check(name + ": the 3D picture pops with the panel", mc -> posed[0] > 0 ? null : "no picture took the pop pose")
+            .check(name + ": the 3D picture pops with the panel", mc -> posed[0] > 0 || !io.github.profetgit.tidypockets.Compat.HAS_PIP ? null : "no picture took the pop pose")
             .check(name + ": after the pop the picture keeps vanilla's pose", mc -> posed[1] == posed[0] ? null
                 : (posed[1] - posed[0]) + " pictures posed after the pop ended")
             .run(mc -> mc.player.closeContainer())
@@ -799,19 +1045,19 @@ final class Scenarios {
                 && mc.player.getInventory().getItem(12).getCount() == 32 ? null : "cursor " + mc.player.containerMenu.getCarried())
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                MouseButtonEvent e = at(mc, playerSlot(mc, 0), LEFT, InputConstants.MOD_SHIFT);
-                scr.mouseClicked(e, false);
-                scr.mouseReleased(e);
+                io.github.profetgit.tidypockets.input.MouseEvt e = at(mc, playerSlot(mc, 0), LEFT, io.github.profetgit.tidypockets.Compat.MOD_SHIFT);
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
             })
             .waitTicks(3)
             .check("lock: shift-click leaves a locked item in place", mc -> mc.player.getInventory().getItem(0).is(Items.DIAMOND_SWORD)
                 ? null : "hotbar 0 = " + mc.player.getInventory().getItem(0))
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                int shift = InputConstants.MOD_SHIFT;
-                scr.mouseClicked(at(mc, playerSlot(mc, 15), LEFT, shift), false);
-                scr.mouseDragged(at(mc, playerSlot(mc, 14), LEFT, shift), 0, 0);
-                scr.mouseReleased(at(mc, playerSlot(mc, 14), LEFT, shift));
+                int shift = io.github.profetgit.tidypockets.Compat.MOD_SHIFT;
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, at(mc, playerSlot(mc, 15), LEFT, shift), false);
+                io.github.profetgit.tidypockets.Compat.mouseDragged(scr, at(mc, playerSlot(mc, 14), LEFT, shift), 0, 0);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, at(mc, playerSlot(mc, 14), LEFT, shift));
             })
             .waitTicks(3)
             .check("lock: shift-drag skips a locked item", mc -> mc.player.getInventory().getItem(14).is(Items.BREAD)
@@ -851,7 +1097,7 @@ final class Scenarios {
                 mc.player, mc.player.connection.enabledFeatures(), false)))
             .waitTicks(20)
             .capture("creative-scroll", 14)
-            .run(mc -> mc.gui.screen().mouseScrolled(213, 100, 0, -1))
+            .run(mc -> io.github.profetgit.tidypockets.Compat.mouseScrolled(mc.gui.screen(), 213, 100, 0, -1))
             .waitTicks(10)
             .check("creative screen scrolls", mc -> mc.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
                 ? null : "screen closed")
@@ -881,10 +1127,10 @@ final class Scenarios {
 
     private static void shiftDrag(Minecraft mc, Slot... path) {
         AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-        int shift = InputConstants.MOD_SHIFT;
-        scr.mouseClicked(at(mc, path[0], LEFT, shift), false);
-        for (int i = 1; i < path.length; i++) scr.mouseDragged(at(mc, path[i], LEFT, shift), 0, 0);
-        scr.mouseReleased(at(mc, path[path.length - 1], LEFT, shift));
+        int shift = io.github.profetgit.tidypockets.Compat.MOD_SHIFT;
+        io.github.profetgit.tidypockets.Compat.mouseClicked(scr, at(mc, path[0], LEFT, shift), false);
+        for (int i = 1; i < path.length; i++) io.github.profetgit.tidypockets.Compat.mouseDragged(scr, at(mc, path[i], LEFT, shift), 0, 0);
+        io.github.profetgit.tidypockets.Compat.mouseReleased(scr, at(mc, path[path.length - 1], LEFT, shift));
     }
 
     /** The "Survival Inventory" tab works like the survival inventory; the trash can spares locked slots. */
@@ -922,9 +1168,9 @@ final class Scenarios {
             .waitTicks(5)
             .run(mc -> {
                 AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) mc.gui.screen();
-                MouseButtonEvent e = new MouseButtonEvent(a.tidypockets$left() + 12, a.tidypockets$top() + 12, new MouseButtonInfo(MIDDLE, 0));
-                mc.gui.screen().mouseClicked(e, false);
-                mc.gui.screen().mouseReleased(e);
+                io.github.profetgit.tidypockets.input.MouseEvt e = new io.github.profetgit.tidypockets.input.MouseEvt(a.tidypockets$left() + 12, a.tidypockets$top() + 12, MIDDLE, 0);
+                io.github.profetgit.tidypockets.Compat.mouseClicked(mc.gui.screen(), e, false);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(mc.gui.screen(), e);
             })
             .waitTicks(4)
             .check("creative inv: middle-click on the background sorts", mc -> {
@@ -940,9 +1186,9 @@ final class Scenarios {
                 SlotLocks.toggle(dirt, mc.player.getInventory().getItem(dirt));
                 List<Slot> slots = creativeMenu(mc);
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                MouseButtonEvent e = at(mc, slots.get(slots.size() - 1), LEFT, InputConstants.MOD_SHIFT);
-                scr.mouseClicked(e, false);
-                scr.mouseReleased(e);
+                io.github.profetgit.tidypockets.input.MouseEvt e = at(mc, slots.get(slots.size() - 1), LEFT, io.github.profetgit.tidypockets.Compat.MOD_SHIFT);
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
             })
             .waitTicks(4)
             .check("creative inv: trash-can clear keeps the locked stack", mc -> {
@@ -1004,9 +1250,9 @@ final class Scenarios {
             .check("creative items: server in sync after deleting", Scenarios::serverMatches)
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                MouseButtonEvent e = at(mc, playerSlot(mc, 0), LEFT, InputConstants.MOD_SHIFT);
-                scr.mouseClicked(e, false);
-                scr.mouseReleased(e);
+                io.github.profetgit.tidypockets.input.MouseEvt e = at(mc, playerSlot(mc, 0), LEFT, io.github.profetgit.tidypockets.Compat.MOD_SHIFT);
+                io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+                io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
             })
             .waitTicks(4)
             .check("creative items: shift-click can't delete a locked hotbar item", mc -> mc.player.getInventory().getItem(0).is(Items.DIAMOND_SWORD)

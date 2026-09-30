@@ -1,44 +1,32 @@
--- Tidy Pockets icon sprites. Run through the aseprite MCP: dofile("<abs>/TidyPockets/dev/icon/draw_sprites.lua")
--- The diamond pickaxe is Veinminer's approved pickaxe_item (same author), moved into a 14x14 slot icon.
--- fx_puff, fx_spark, fx_ring and fx_star are copies of Veinminer's FX sprites.
+-- Tidy Pockets icon v2 sprites ("the heap that sorts itself"). Run through the aseprite MCP:
+--   dofile("<abs>/TidyPockets/dev/icon/draw_sprites.lua")
+-- apple, grass and gold (the ingot) keep v1's grids, because Description-Kit reads them from this folder.
+-- The fx_* sprites are Veinminer's FX (same author).
 dofile("/home/emppu/Projects/Minecraft Datapacks/.claude/skills/pack-icon-animation/assets/pixel_art.lua")
 local ROOT = "/home/emppu/Projects/Minecraft Datapacks/"
 local OUT = ROOT .. "TidyPockets/dev/icon/sprites/"
 local key = PA.key
+local pc = app.pixelColor
 
--- GUI panel: vanilla inventory greys. 3x3 slots of 16 px (1 px borders, 14 px inside), 3 px frame.
-local GUI = { W = "#FFFFFF", F = "#C6C6C6", S = "#555555", K = "#373737", N = "#8B8B8B" }
-local SLOT, COLS, ROWS, EDGE = 16, 3, 3, 3
-do
-  local w, h = COLS * SLOT + 2 * EDGE, ROWS * SLOT + 2 * EDGE
-  local px = {}
-  for y = 0, h - 1 do
-    for x = 0, w - 1 do
-      local c = GUI.F
-      if x == 0 or y == 0 then c = GUI.W end
-      if x == w - 1 or y == h - 1 then c = GUI.S end
-      px[key(x, y)] = c
+local function read(path, dx, dy, px)
+  local src = Sprite{ fromFile = path }
+  px = px or {}
+  for it in src.cels[1].image:pixels() do
+    local v = it()
+    if pc.rgbaA(v) > 0 then
+      px[key(it.x + (dx or 0), it.y + (dy or 0))] = string.format("#%02X%02X%02X", pc.rgbaR(v), pc.rgbaG(v), pc.rgbaB(v))
     end
   end
-  for _, p in ipairs({ { 0, 0 }, { w - 1, 0 }, { 0, h - 1 }, { w - 1, h - 1 } }) do px[key(p[1], p[2])] = nil end
-  for r = 0, ROWS - 1 do
-    for c = 0, COLS - 1 do
-      local ox, oy = EDGE + c * SLOT, EDGE + r * SLOT
-      for y = 0, SLOT - 1 do
-        for x = 0, SLOT - 1 do
-          local col = GUI.N
-          if x == 0 or y == 0 then col = GUI.K end
-          if x == SLOT - 1 or y == SLOT - 1 then col = GUI.W end
-          if (x == SLOT - 1 and y == 0) or (x == 0 and y == SLOT - 1) then col = GUI.N end
-          px[key(ox + x, oy + y)] = col
-        end
-      end
-    end
-  end
-  PA.save_pixels(OUT .. "panel", w, h, px)
+  local w, h = src.width, src.height
+  src:close()
+  return px, w, h
+end
+local function copy(src, name, dx, dy, w, h)
+  local px, sw, sh = read(src, dx, dy)
+  PA.save_pixels(OUT .. name, w or sw, h or sh, px)
 end
 
--- Items, 14x14 (the inside of a slot). Light from the upper left, a dark rim of the item's own hue.
+-- Items, 14x14 (the inside of a slot) -------------------------------------------------------------------------------
 PA.sprite_from_grid(OUT .. "apple", {
   "..............",
   "........Gll...",
@@ -92,143 +80,85 @@ PA.sprite_from_grid(OUT .. "gold", {
   "..............",
 }, { G = "#6B3413", H = "#B3561A", I = "#E8891C", J = "#FBB829", K = "#FFE14D", L = "#FFF7BD" })
 
-do
-  local src = Sprite{ fromFile = ROOT .. "Veinminer/dev/icon/sprites/pickaxe_item.png" }
-  local px, pc = {}, app.pixelColor
-  for it in src.cels[1].image:pixels() do
-    local v = it()
-    if pc.rgbaA(v) > 0 then
-      px[key(it.x - 1, it.y - 1)] = string.format("#%02X%02X%02X", pc.rgbaR(v), pc.rgbaG(v), pc.rgbaB(v))
-    end
-  end
-  src:close()
-  PA.save_pixels(OUT .. "pickaxe", 14, 14, px)
+-- FX: Veinminer's set.
+for _, n in ipairs({ "fx_puff", "fx_spark", "fx_ring", "fx_star" }) do
+  copy(ROOT .. "Veinminer/dev/icon/sprites/" .. n .. ".png", n)
 end
 
--- Stack-count digits 0-9, 3x5 each, packed side by side (the compositor adds the vanilla-style shadow).
-do
-  local D = {
-    { "###", "#.#", "#.#", "#.#", "###" }, { ".#.", "##.", ".#.", ".#.", "###" }, { "###", "..#", "###", "#..", "###" },
-    { "###", "..#", "###", "..#", "###" }, { "#.#", "#.#", "###", "..#", "..#" }, { "###", "#..", "###", "..#", "###" },
-    { "###", "#..", "###", "#.#", "###" }, { "###", "..#", "..#", ".#.", ".#." }, { "###", "#.#", "###", "#.#", "###" },
-    { "###", "#.#", "###", "..#", "###" },
-  }
-  local px = {}
-  for d = 0, 9 do
-    for y = 1, 5 do
-      for x = 1, 3 do
-        if D[d + 1][y]:sub(x, x) == "#" then px[key(d * 3 + x - 1, y - 1)] = "#FFFFFF" end
-      end
-    end
-  end
-  PA.save_pixels(OUT .. "digits", 30, 5, px)
-end
-
--- The mouse (the "tool"): cool white plastic, a cord curling off toward the panel, a 2 px scroll wheel.
-local MOUSE = {
-  "....cc..........",
-  "......c.........",
-  ".......c........",
-  "....WWWuuwwk....",
-  "...WWWWuuwwwk...",
-  "..WWWWWXxwwwvk..",
-  ".WWWWWWXxwwwwvk.",
-  ".WWWWWWXxwwwwvk.",
-  ".WWWWWwXxwwwwvk.",
-  ".WWWWwwuuwwwvvk.",
-  ".WWWwwwuuwwwvvk.",
-  ".Wvvvvvvvvvvvvk.",
-  ".WWwwwwwwwwwvvk.",
-  ".WWwwwwwwwwwvvk.",
-  ".WWwwwwwwwwwvvk.",
-  ".Wwwwwwwwwwvvvk.",
-  ".Wwwwwwwwwwvvvk.",
-  ".wwwwwwwwwvvvuk.",
-  ".vwwwwwwwvvvuuk.",
-  "..vwwwwwvvvuuk..",
-  "...uvvvvvuuuk...",
-  "....kkkkkkkk....",
+-- Blocks, 16x16: each is an index grid (0 darkest .. 5 lightest) painted through three ramps: top, left (one step
+-- darker) and right (about 1.5 steps darker). The render uses shading:false, so the faces carry their own light.
+local RAMPS = {
+  gold = {
+    top   = { "#6B3413", "#B3561A", "#E8891C", "#FBB829", "#FFE14D", "#FFF7BD" },
+    left  = { "#4A200A", "#6B3413", "#B3561A", "#E8891C", "#FBB829", "#FFE14D" },
+    right = { "#3A1808", "#5A2A0E", "#A94E17", "#D9781A", "#F0A020", "#FBB829" },
+  },
+  diamond = {
+    top   = { "#0D3F4A", "#198F94", "#27CEC4", "#62EBD8", "#B0FFF1", "#FFFFFF" },
+    left  = { "#082A33", "#0D3F4A", "#198F94", "#27CEC4", "#62EBD8", "#B0FFF1" },
+    right = { "#061E26", "#0B3440", "#147478", "#1FA8A6", "#3FD6C6", "#8AF2E2" },
+  },
+  redstone = {
+    top   = { "#4A0A12", "#8E1520", "#C8262A", "#EE4A3A", "#FF8A66", "#FFD0B8" },
+    left  = { "#33060C", "#4A0A12", "#8E1520", "#C8262A", "#EE4A3A", "#FF8A66" },
+    right = { "#26040A", "#3E0810", "#74111C", "#A81C24", "#D83A32", "#F46A52" },
+  },
 }
-local mouse = { W = "#FFFFFF", w = "#E4E6F0", v = "#BFC3D9", u = "#8F94B5", k = "#585D82", c = "#3B3F5C",
-                X = "#6E7396", x = "#3B3F5C" }
-PA.sprite_from_grid(OUT .. "mouse", MOUSE, mouse)
-local lit = {}
-for k, v in pairs(mouse) do lit[k] = v end
-lit.X, lit.x = "#FFF7BD", "#FFE14D"
-PA.sprite_from_grid(OUT .. "mouse_click", MOUSE, lit)
+local function bevel(x, y)   -- 1 px frame: lit top/left, dark bottom/right
+  if x == 15 or y == 15 then return 1 end
+  if x == 0 or y == 0 then return 5 end
+end
+local MOTIF = {
+  -- engraved inner square (dark top/left groove, lit bottom/right) and a diagonal shine
+  gold = function(x, y)
+    local r = math.min(x, y, 15 - x, 15 - y)
+    if r == 2 then return (x == 2 or y == 2) and (x < 13 and y < 13) and 2 or 4 end
+    if r >= 3 then
+      if x + y == 10 or x + y == 11 then return 5 end
+      if x + y == 14 and r >= 4 then return 4 end
+      if x + y >= 20 then return 2 end
+    end
+    return 3
+  end,
+  -- four cut gems: lit upper-left facets, dark lower-right, a white glint in each
+  diamond = function(x, y)
+    local cx, cy = (x < 8) and 4 or 11, (y < 8) and 4 or 11
+    local dx, dy = x - cx, y - cy
+    local d = math.abs(dx) + math.abs(dy)
+    if d == 0 then return 5 end
+    if d <= 2 then return (dx + dy < 0) and 4 or ((dx + dy > 0) and 2 or 3) end
+    if d == 3 then return (dx + dy <= 0) and 2 or 1 end
+    return 3
+  end,
+  -- dust studs in a 3x3 grid, joined by dark traces
+  redstone = function(x, y)
+    local sx, sy = (x - 2) % 5, (y - 2) % 5
+    local ix, iy = (x - 2) // 5, (y - 2) // 5
+    if x >= 2 and y >= 2 and ix <= 2 and iy <= 2 and sx <= 1 and sy <= 1 then
+      if sx == 0 and sy == 0 then return 5 end
+      if sx == 1 and sy == 1 then return 2 end
+      return 4
+    end
+    if x >= 2 and y >= 2 and x <= 13 and y <= 13 and (sx == 3 and sy <= 1 or sy == 3 and sx <= 1) then return 1 end
+    return 3
+  end,
+}
+for name, ramp in pairs(RAMPS) do
+  for _, side in ipairs({ "top", "left", "right" }) do
+    local px = {}
+    for y = 0, 15 do
+      for x = 0, 15 do px[key(x, y)] = ramp[side][(bevel(x, y) or MOTIF[name](x, y)) + 1] end
+    end
+    PA.save_pixels(OUT .. name .. "_" .. side, 16, 16, px)
+  end
+end
 
--- Background options, 72x72 (the icon canvas). The compositor adds the drop shadow and the dark outline.
+-- Backgrounds, 64x64 (x8 = 512). The icon compositor adds the ground shadow and the dark outline.
 local function bg(name, pattern)
   local px = {}
-  for y = 0, 71 do
-    for x = 0, 71 do px[key(x, y)] = pattern(x, y) end
+  for y = 0, 63 do
+    for x = 0, 63 do px[key(x, y)] = pattern(x, y) end
   end
-  PA.save_pixels(OUT .. name, 72, 72, px)
+  PA.save_pixels(OUT .. name, 64, 64, px)
 end
-local function flat(c) return function() return c end end
-bg("bg_leather", flat("#7A4E32"))
-bg("bg_denim", function(x, y) return (x + y) % 3 == 0 and "#34548A" or "#3B5E91" end)
-bg("bg_green", flat("#3C7A4A"))
-bg("bg_terracotta", flat("#B5553C"))
-bg("bg_plum", flat("#6B3A6E"))
-
--- Banner lettering (x8 title, x6 tagline): TIDY in diamond cyan, POCKETS in cream, dark leather outline.
-local INK = "#24140C"
-local N8 = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } }
-local function outline(px, colour)
-  local solid = {}
-  for k in pairs(px) do solid[k] = true end
-  for k in pairs(solid) do
-    local x, y = k % 4096, k // 4096
-    for _, d in ipairs(N8) do
-      local n = key(x + d[1], y + d[2])
-      if not solid[n] then px[n] = colour end
-    end
-  end
-end
--- PA.title_sprite with a style per character; each extruded cell takes the colour of its distance to the glyph above
-local function title(path, text, style_of)
-  local mask, right = PA.layout(text, PA.TITLE, 2, 4, 1, 1)
-  local px, ext = {}, {}
-  for k, v in pairs(mask) do px[k] = style_of(v[2]).bands[v[1]] end
-  for k, v in pairs(mask) do
-    local x, y = k % 4096, k // 4096
-    local st = style_of(v[2])
-    for d = 1, #st.extrude do
-      local n = key(x, y + d)
-      if mask[n] then break end
-      if not ext[n] or ext[n].d > d then ext[n] = { d = d, col = st.extrude[d] } end
-    end
-  end
-  for n, e in pairs(ext) do px[n] = e.col end
-  outline(px, INK)
-  PA.save_pixels(path, right + 1, 14, px)
-end
-local CYAN = { bands = { "#B0FFF1", "#62EBD8", "#62EBD8", "#62EBD8", "#27CEC4", "#27CEC4", "#27CEC4", "#1CAFAA", "#1CAFAA", "#1CAFAA" },
-               extrude = { "#157A80", "#0D4A52" } }
-local CREAM = { bands = { "#FFFBF0", "#FFF1D6", "#FFF1D6", "#FFF1D6", "#F5DDB0", "#F5DDB0", "#F5DDB0", "#E6C48E", "#E6C48E", "#E6C48E" },
-                extrude = { "#A8744A", "#6E4730" } }
-title(OUT .. "banner_title", "TIDY POCKETS", function(i) return i <= 4 and CYAN or CREAM end)
-PA.label_sprite(OUT .. "banner_tagline", "ONE CLICK. ALL SORTED.", function(i) return i > 11 and "#62EBD8" or "#FFFFFF" end, INK)
-
--- Banner background, 192x64 (x8 = 1536x512): leather with a stitched seam two cells inside the rounded edge.
-do
-  local W, H = 192, 64
-  local px = {}
-  for y = 0, H - 1 do
-    for x = 0, W - 1 do px[key(x, y)] = "#7A4E32" end
-  end
-  local thread = "#D2A06C"
-  -- each edge runs "on, off, off, on, on, off, off, ..., on" so it is symmetric; the corner cells join the end dashes
-  local function edge(cells)
-    for i, p in ipairs(cells) do
-      if i % 4 < 2 then px[key(p[1], p[2])] = thread end
-    end
-  end
-  local top, bottom, left, right = {}, {}, {}, {}
-  for x = 4, W - 5 do top[#top + 1] = { x, 2 }; bottom[#bottom + 1] = { x, H - 3 } end
-  for y = 4, H - 5 do left[#left + 1] = { 2, y }; right[#right + 1] = { W - 3, y } end
-  for _, e in ipairs({ top, bottom, left, right }) do edge(e) end
-  for _, p in ipairs({ { 3, 3 }, { W - 4, 3 }, { 3, H - 4 }, { W - 4, H - 4 } }) do px[key(p[1], p[2])] = thread end
-  PA.save_pixels(OUT .. "banner_bg", W, H, px)
-end
+bg("bg_leather", function() return "#7A4E32" end)

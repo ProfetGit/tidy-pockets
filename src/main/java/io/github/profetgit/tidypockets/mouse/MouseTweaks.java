@@ -1,5 +1,6 @@
 package io.github.profetgit.tidypockets.mouse;
 
+import io.github.profetgit.tidypockets.Compat;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.profetgit.tidypockets.anim.Anims;
 import io.github.profetgit.tidypockets.anim.SlotAnims;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.MouseButtonEvent;
+import io.github.profetgit.tidypockets.input.MouseEvt;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -50,6 +51,12 @@ public final class MouseTweaks {
     }
 
     // ---- wheel ----
+
+    /** The wheel over a container screen at a mouse position (before 1.21.2 the screens have no mouseScrolled of their own). */
+    public static boolean scrolledAt(AbstractContainerScreen<?> screen, double x, double y, double scrollY) {
+        return scrolled(screen, ((io.github.profetgit.tidypockets.mixin.AbstractContainerScreenAccessor) screen).tidypockets$hovered(x, y), scrollY,
+            io.github.profetgit.tidypockets.Compat.shiftDown());
+    }
 
     public static boolean scrolled(AbstractContainerScreen<?> screen, Slot hovered, double scrollY, boolean shift) {
         TidyConfig cfg = TidyConfig.get();
@@ -138,7 +145,7 @@ public final class MouseTweaks {
     // ---- drags ----
 
     /** Mouse down. Returns true to swallow the click (collect mode takes over the vanilla click). */
-    public static boolean pressed(AbstractContainerScreen<?> screen, Slot slot, MouseButtonEvent e) {
+    public static boolean pressed(AbstractContainerScreen<?> screen, Slot slot, MouseEvt e) {
         drag = Drag.NONE;
         visited.clear();
         if (e.button() != InputConstants.MOUSE_BUTTON_LEFT || slot == null || !usable(screen)) return false;

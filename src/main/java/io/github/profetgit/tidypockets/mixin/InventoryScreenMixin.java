@@ -21,6 +21,7 @@ public abstract class InventoryScreenMixin {
     @Unique
     private static boolean tidypockets$inner;
 
+    //? if >=1.21.2 {
     private static final String EFFECTS =
         "Lnet/minecraft/client/gui/screens/inventory/EffectsInInventory;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V";
 
@@ -33,6 +34,7 @@ public abstract class InventoryScreenMixin {
     private void tidypockets$unpopEffects(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         ScreenPop.pop(g);
     }
+    //?}
 
     @Inject(method = "extractEntityInInventoryFollowsMouse", at = @At("HEAD"), cancellable = true)
     private static void tidypockets$hopFigure(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int size,

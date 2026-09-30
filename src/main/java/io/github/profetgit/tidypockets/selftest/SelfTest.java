@@ -53,6 +53,7 @@ public final class SelfTest {
         }
         if (steps == null) {
             if (!mc.isGameLoadFinished() || !(mc.gui.screen() instanceof TitleScreen) || ++titleTicks < 20) return;
+            ModTestHook.audit();
             record("boot", true, "title screen reached");
             if (MODE.equals("boot")) {
                 finish(mc);
@@ -97,11 +98,11 @@ public final class SelfTest {
         long ms = (System.nanoTime() - regionStart) / 1_000_000;
         Path out = Path.of(OUT, "showcase", regionName, String.format("f%04d_%05dms.raw", regionFrame++, ms));
         int[] r = region;
-        Screenshot.takeScreenshot(mc.gameRenderer.mainRenderTarget(), (NativeImage img) -> WRITER.execute(() -> {
+        Screenshot.takeScreenshot(io.github.profetgit.tidypockets.Compat.mainTarget(mc), (NativeImage img) -> WRITER.execute(() -> {
             try (img) {
                 int x0 = r == null ? 0 : Math.clamp(r[0], 0, img.getWidth() - 1), y0 = r == null ? 0 : Math.clamp(r[1], 0, img.getHeight() - 1);
                 int w = r == null ? img.getWidth() : Math.min(r[2], img.getWidth() - x0), h = r == null ? img.getHeight() : Math.min(r[3], img.getHeight() - y0);
-                java.nio.ByteBuffer src = img.getPixelBytes();
+                java.nio.ByteBuffer src = io.github.profetgit.tidypockets.Compat.pixelBytes(img);
                 byte[] buf = new byte[16 + w * h * 4];
                 java.nio.ByteBuffer dst = java.nio.ByteBuffer.wrap(buf);
                 dst.putInt(w).putInt(h).putInt((int) ms).putInt(img.getWidth());
@@ -124,7 +125,7 @@ public final class SelfTest {
         long ms = (System.nanoTime() - captureStart) / 1_000_000;
         Path out = Path.of(OUT, "frames", captureName, String.format("f%03d_%04dms.png", captureFrame++, ms));
         captureLeft--;
-        Screenshot.takeScreenshot(mc.gameRenderer.mainRenderTarget(), (NativeImage img) -> WRITER.execute(() -> {
+        Screenshot.takeScreenshot(io.github.profetgit.tidypockets.Compat.mainTarget(mc), (NativeImage img) -> WRITER.execute(() -> {
             try (img) {
                 Files.createDirectories(out.getParent());
                 img.writeToFile(out);

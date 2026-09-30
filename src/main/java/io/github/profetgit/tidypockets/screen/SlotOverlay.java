@@ -3,6 +3,7 @@ package io.github.profetgit.tidypockets.screen;
 import io.github.profetgit.tidypockets.TidyPockets;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
+import io.github.profetgit.tidypockets.palette.Palette;
 import io.github.profetgit.tidypockets.tools.ContainerTools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -37,6 +38,9 @@ public final class SlotOverlay {
                 }
             }
             g.blitSprite(RenderPipelines.GUI_TEXTURED, LOCK, slot.x + 10, slot.y - 1, 7, 8);
+        }
+        if (Inv.isPlayerSlot(slot, p) && slot.hasItem() && Inv.index(slot) < net.minecraft.world.entity.player.Inventory.SELECTION_SIZE) {
+            Palette.drawPip(g, slot.x, slot.y, Inv.index(slot), slot.getItem());
         }
     }
 }

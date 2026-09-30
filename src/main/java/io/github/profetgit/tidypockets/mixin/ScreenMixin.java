@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
+    //? if >=1.21.6 {
     @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/client/gui/screens/Screen;extractBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
     private void tidypockets$popBackground(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
@@ -23,6 +24,7 @@ public abstract class ScreenMixin {
     private void tidypockets$unpopBackground(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         ScreenPop.pop(g);
     }
+    //?}
 
     @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
@@ -50,7 +52,7 @@ public abstract class ScreenMixin {
     private void tidypockets$backgroundHead(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
         ScreenPop.pushIdentity(self, g);
-        Blur.containerBackground(self, g);
+        Blur.containerBackground(self, g, dt);
     }
 
     @Inject(method = "extractBackground", at = @At("RETURN"))

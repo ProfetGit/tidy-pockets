@@ -15,3 +15,9 @@ dev/icon/bg_options.png
 dev/icon/banner_stills.png
 # release art: Modrinth icon, banner (docs/banner.gif is the committed copy)
 dev/icon/out/
+
+# generated icon renders and review sheets (regenerate with dev/make_icon.py)
+dev/icon/frames/
+dev/icon/test/
+dev/icon/contact*.png
+__pycache__/

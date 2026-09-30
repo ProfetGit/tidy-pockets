@@ -54,9 +54,21 @@ public final class Creative {
         if (p == null || !Inv.isPlayerSlot(slot, p)) return;
         Slot real = unwrap(slot);
         boolean had = slot.hasItem();
+        List<ItemStack> before = null;
+        //? if <1.21.2 {
+        /*// before 1.21.2 the client's inventory menu doesn't always report a slot it emptied, so the changes are sent by hand
+        before = new ArrayList<>();
+        for (Slot s : p.inventoryMenu.slots) before.add(s.getItem().copy());
+        *///?}
         if (real != slot) p.inventoryMenu.clicked(real.index, button, input, p);
         else menu.clicked(slot.index, button, input, p);
         p.inventoryMenu.broadcastChanges();
+        if (before != null && Minecraft.getInstance().gameMode != null) {
+            for (int i = 0; i < before.size(); i++) {
+                ItemStack now = p.inventoryMenu.getSlot(i).getItem();
+                if (!ItemStack.matches(before.get(i), now)) Minecraft.getInstance().gameMode.handleCreativeModeItemAdd(now.copy(), i);
+            }
+        }
         if (real == slot) poofIfDeleted(slot, had, input);
     }
 

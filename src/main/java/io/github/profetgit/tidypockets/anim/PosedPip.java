@@ -9,4 +9,9 @@ import org.joml.Matrix3x2fc;
  */
 public interface PosedPip {
     void tidypockets$pose(Matrix3x2fc pose);
+
+    /** The pose set through {@link #tidypockets$pose}, or null (the 1.21.x targets answer the interface's pose() with it). */
+    default org.joml.Matrix3x2f tidypockets$posed() {
+        return null;
+    }
 }

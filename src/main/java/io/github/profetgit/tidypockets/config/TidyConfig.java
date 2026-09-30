@@ -26,6 +26,10 @@ public final class TidyConfig {
     public boolean refillExactMatch = true;
     public boolean refillOffhand = true;
 
+    // Random palette
+    public boolean randomEnabled = true;
+    public boolean randomSpread = true;
+
     // Tool protection
     public Protect protect = Protect.ALL;
     public int protectMargin = 0;

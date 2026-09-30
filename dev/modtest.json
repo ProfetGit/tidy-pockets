@@ -1,0 +1,103 @@
+{
+  "id": "tidypockets",
+  "user": "PocketTester",
+  "out_prop": "tidypockets.selftest",
+  "props": {
+    "tidypockets.selftest.mode": "{mode}"
+  },
+  "defaults": {
+    "mode": "full"
+  },
+  "fabric_api": true,
+  "width": 1280,
+  "height": 720,
+  "timeout": 900,
+  "options": {
+    "fps": 60,
+    "volume": 0.0,
+    "render_distance": 4
+  },
+  "tiers": {
+    "quick": {
+      "unit": [
+        ":26.3-fabric:test"
+      ],
+      "jobs": [
+        {
+          "mc": "26.3",
+          "loader": "fabric"
+        }
+      ]
+    },
+    "full": {
+      "unit": [
+        ":26.3-fabric:test"
+      ],
+      "jobs": [
+        {
+          "mc": [
+            "26.3",
+            "26.2",
+            "1.21.11",
+            "1.21.8",
+            "1.21.4",
+            "1.21.1"
+          ],
+          "loader": "fabric"
+        },
+        {
+          "mc": "26.3",
+          "loader": "neoforge"
+        },
+        {
+          "mc": "26.2",
+          "loader": "neoforge",
+          "vars": {
+            "mode": "boot"
+          }
+        },
+        {
+          "mc": [
+            "26.3",
+            "26.2"
+          ],
+          "loader": [
+            "forge",
+            "quilt"
+          ],
+          "vars": {
+            "mode": "boot"
+          }
+        }
+      ]
+    },
+    "release": {
+      "unit": [
+        "test"
+      ],
+      "jobs": [
+        {
+          "mc": [
+            "26.3",
+            "26.2"
+          ],
+          "loader": [
+            "fabric",
+            "quilt",
+            "neoforge",
+            "forge"
+          ]
+        },
+        {
+          "mc": [
+            "1.21.11",
+            "1.21.8",
+            "1.21.4",
+            "1.21.1"
+          ],
+          "loader": "fabric"
+        }
+      ]
+    }
+  }
+}

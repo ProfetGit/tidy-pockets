@@ -1,5 +1,6 @@
 package io.github.profetgit.tidypockets.mixin;
 
+import io.github.profetgit.tidypockets.palette.RandomPlace;
 import io.github.profetgit.tidypockets.protect.ToolProtect;
 import io.github.profetgit.tidypockets.refill.Refill;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -48,7 +49,13 @@ public abstract class MultiPlayerGameModeMixin {
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
     private void tidypockets$useItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
         Refill.noteAction();
+        RandomPlace.before(player, hand, hit);
         if (ToolProtect.check(hand, ToolProtect.Cost.USE)) cir.setReturnValue(InteractionResult.FAIL);
+    }
+
+    @Inject(method = "useItemOn", at = @At("RETURN"))
+    private void tidypockets$placed(LocalPlayer player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+        RandomPlace.after(hand, cir.getReturnValue());
     }
 
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)

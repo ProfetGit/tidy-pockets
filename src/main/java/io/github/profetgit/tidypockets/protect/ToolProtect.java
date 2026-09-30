@@ -1,5 +1,6 @@
 package io.github.profetgit.tidypockets.protect;
 
+import io.github.profetgit.tidypockets.Compat;
 import io.github.profetgit.tidypockets.anim.Anims;
 import io.github.profetgit.tidypockets.config.TidyConfig;
 import io.github.profetgit.tidypockets.core.Rules;
@@ -14,7 +15,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.Tool;
-import net.minecraft.world.item.component.Weapon;
 
 /**
  * Stops a tool from breaking. Called before each action that costs durability; when the action would break the
@@ -68,8 +68,7 @@ public final class ToolProtect {
                 yield t == null ? 1 : t.damagePerBlock();
             }
             case ATTACK -> {
-                Weapon w = s.get(DataComponents.WEAPON);
-                yield w == null ? 1 : w.itemDamagePerAttack();
+                yield Compat.attackCost(s);
             }
             case USE -> 1;
         };
@@ -80,7 +79,7 @@ public final class ToolProtect {
         long now = System.currentTimeMillis();
         if (now - lastWarn < 1500) return;
         lastWarn = now;
-        p.sendOverlayMessage(Component.translatable(key, s.getHoverName(), s.getMaxDamage() - s.getDamageValue()));
+        Compat.overlay(p, Component.translatable(key, s.getHoverName(), s.getMaxDamage() - s.getDamageValue()));
         mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.ITEM_BREAK.value(), 1.8f, 0.35f));
     }
 }

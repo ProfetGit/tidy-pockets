@@ -12,8 +12,8 @@ import org.joml.Matrix3x2fStack;
 
 /** Hotbar: the selector glides between slots, refilled slots pop, and tool protection shakes the slot red. */
 public final class HudAnims {
-    static final double GLIDE_MS = 70, POP_MS = 130, SHAKE_MS = 220;
-    private static final Map<Integer, Double> POPS = new HashMap<>(), SHAKES = new HashMap<>();
+    static final double GLIDE_MS = 70, POP_MS = 130, SHAKE_MS = 220, ROLL_MS = 110;
+    private static final Map<Integer, Double> POPS = new HashMap<>(), SHAKES = new HashMap<>(), ROLLS = new HashMap<>();
     private static int lastSel = -1;
     private static double fromX, glideStart;
     private static double lastDrawnX;
@@ -28,6 +28,11 @@ public final class HudAnims {
 
     public static void pop(int invIndex) {
         POPS.put(invIndex, Ease.now());
+    }
+
+    /** The random palette just picked this hotbar slot: a small hop, gentler than a refill. */
+    public static void rolled(int invIndex) {
+        ROLLS.put(invIndex, Ease.now());
     }
 
     public static void shake(int invIndex) {
@@ -67,6 +72,12 @@ public final class HudAnims {
             double t = Ease.progress(popStart, POP_MS);
             if (t >= 1) POPS.remove(i);
             else k = 0.6 + 0.4 * Ease.outBack(t);
+        }
+        Double rollStart = ROLLS.get(i);
+        if (rollStart != null) {
+            double t = Ease.progress(rollStart, ROLL_MS);
+            if (t >= 1) ROLLS.remove(i);
+            else k = Math.min(k, 0.78 + 0.22 * Ease.outBack(t));
         }
         Double shakeStart = SHAKES.get(i);
         if (shakeStart != null) {

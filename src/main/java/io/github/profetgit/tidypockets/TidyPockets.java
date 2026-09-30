@@ -31,6 +31,8 @@ public final class TidyPockets {
     public static void clientTick(Minecraft mc) {
         ClickSender.tick();
         Refill.tick(mc);
+        io.github.profetgit.tidypockets.palette.RandomPlace.tick();
+        io.github.profetgit.tidypockets.palette.Palette.tick(mc);
         io.github.profetgit.tidypockets.lock.SlotLocks.tick(mc.player);
         if (SelfTest.active()) SelfTest.onClientTick(mc);
     }

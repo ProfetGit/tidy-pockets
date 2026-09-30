@@ -32,6 +32,7 @@ public abstract class CreativeModeInventoryScreenMixin {
     @Unique
     private boolean tidypockets$hadItem;
 
+    //? if >=1.21.2 {
     private static final String EFFECTS =
         "Lnet/minecraft/client/gui/screens/inventory/EffectsInInventory;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V";
 
@@ -44,6 +45,7 @@ public abstract class CreativeModeInventoryScreenMixin {
     private void tidypockets$unpopEffects(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         ScreenPop.pop(g);
     }
+    //?}
 
     /** The creative screen handles clicks itself, without the {@code AbstractContainerScreen} version our guard hooks. */
     @Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V", at = @At("HEAD"), cancellable = true)

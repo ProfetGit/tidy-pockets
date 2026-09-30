@@ -1,0 +1,363 @@
+[
+  {
+    "from": "GuiGraphicsExtractor",
+    "to": "GuiGraphics",
+    "when": "<26.2"
+  },
+  {
+    "from": "ContainerInput",
+    "to": "ClickType",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractRenderStateWithTooltipAndSubtitles",
+    "to": "renderWithTooltipAndSubtitles",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractRenderState",
+    "to": "render",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractBackground",
+    "to": "renderBackground",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractSlots",
+    "to": "renderSlots",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractSlot",
+    "to": "renderSlot",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractContents",
+    "to": "renderContents",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractItemHotbar",
+    "to": "renderItemHotbar",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractEntityInInventoryFollowsMouse",
+    "to": "renderEntityInInventoryFollowsMouse",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractCarriedItem",
+    "to": "renderCarriedItem",
+    "when": "<26.2"
+  },
+  {
+    "from": "extractTooltip",
+    "to": "renderTooltip",
+    "when": "<26.2"
+  },
+  {
+    "regex": "net\\.minecraft\\.client\\.renderer\\.state\\.gui\\.pip",
+    "to": "net.minecraft.client.gui.render.state.pip",
+    "when": "<26.2"
+  },
+  {
+    "regex": "net\\.minecraft\\.client\\.renderer\\.state\\.gui\\.GuiRenderState",
+    "to": "net.minecraft.client.gui.render.state.GuiRenderState",
+    "when": "<26.2"
+  },
+  {
+    "regex": "net/minecraft/client/renderer/state/gui/pip/",
+    "to": "net/minecraft/client/gui/render/state/pip/",
+    "when": "<26.2"
+  },
+  {
+    "regex": "net/minecraft/client/renderer/state/gui/GuiRenderState",
+    "to": "net/minecraft/client/gui/render/state/GuiRenderState",
+    "when": "<26.2"
+  },
+  {
+    "from": "Hud",
+    "to": "Gui",
+    "when": "<26.2",
+    "files": "^HudMixin\\.java$"
+  },
+  {
+    "regex": "net\\.fabricmc\\.fabric\\.api\\.client\\.keymapping\\.v1\\.KeyMappingHelper",
+    "to": "net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper",
+    "when": "<26.2",
+    "files": "^FabricEntry\\.java$"
+  },
+  {
+    "from": "KeyMappingHelper",
+    "to": "KeyBindingHelper",
+    "when": "<26.2",
+    "files": "^FabricEntry\\.java$"
+  },
+  {
+    "from": "registerKeyMapping",
+    "to": "registerKeyBinding",
+    "when": "<26.2",
+    "files": "^FabricEntry\\.java$"
+  },
+  {
+    "regex": "Lnet/minecraft/client/gui/GuiGraphics;blitSprite\"",
+    "to": "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V\"",
+    "when": "<26.2",
+    "files": "^HudMixin\\.java$"
+  },
+  {
+    "from": "extractOptions",
+    "to": "render",
+    "when": "<26.2",
+    "files": "^GameRendererMixin\\.java$"
+  },
+  {
+    "from": "Identifier",
+    "to": "ResourceLocation",
+    "when": "<1.21.11"
+  },
+  {
+    "regex": "\\.gui\\.screen\\(\\)",
+    "to": ".screen",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\.gui\\.setScreen\\(",
+    "to": ".setScreen(",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\.gui\\.hud\\b",
+    "to": ".gui",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\bg\\.item\\(",
+    "to": "g.renderItem(",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\bg\\.outline\\(",
+    "to": "g.renderOutline(",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\bg\\.text\\(",
+    "to": "g.drawString(",
+    "when": "<26.2"
+  },
+  {
+    "from": "handleContainerInput",
+    "to": "handleInventoryMouseClick",
+    "when": "<26.2"
+  },
+  {
+    "regex": "\\{\"book\", \"entity\", \"skin\", \"bannerPattern\"\\}",
+    "to": "{\"submitBookModelRenderState\", \"submitEntityRenderState\", \"submitSkinRenderState\", \"submitBannerPatternRenderState\"}",
+    "when": "<26.2"
+  },
+  {
+    "from": "addPicturesInPictureState",
+    "to": "submitPicturesInPictureState",
+    "when": "<26.2"
+  },
+  {
+    "regex": "Entity target, EntityHitResult hit, InteractionHand hand",
+    "to": "Entity target, InteractionHand hand",
+    "when": "<26.2",
+    "files": "^MultiPlayerGameModeMixin\\.java$"
+  },
+  {
+    "from": "renderWithTooltipAndSubtitles",
+    "to": "renderWithTooltip",
+    "when": "<1.21.11"
+  },
+  {
+    "regex": "EffectsInInventory;render\\(",
+    "to": "EffectsInInventory;renderEffects(",
+    "when": "<1.21.11"
+  },
+  {
+    "regex": "tidypockets\\$creativeGrid\\(GuiGraphics g, int mouseX, int mouseY, CallbackInfo ci\\)",
+    "to": "tidypockets$creativeGrid(GuiGraphics g, CallbackInfo ci)",
+    "when": ">=1.21.2 <1.21.11",
+    "files": "^AbstractContainerScreenMixin\\.java$"
+  },
+  {
+    "regex": "Slot slot, int mouseX, int mouseY, CallbackInfo ci",
+    "to": "Slot slot, CallbackInfo ci",
+    "when": "<1.21.11",
+    "files": "^AbstractContainerScreenMixin\\.java$"
+  },
+  {
+    "from": "Matrix3x2fStack",
+    "to": "PoseStack",
+    "when": "<1.21.6"
+  },
+  {
+    "regex": "import org\\.joml\\.PoseStack;",
+    "to": "import com.mojang.blaze3d.vertex.PoseStack;",
+    "when": "<1.21.6"
+  },
+  {
+    "from": "pushMatrix",
+    "to": "pushPose",
+    "when": "<1.21.6"
+  },
+  {
+    "from": "popMatrix",
+    "to": "popPose",
+    "when": "<1.21.6"
+  },
+  {
+    "regex": "g\\.pose\\(\\)\\.pushPose\\(\\)\\.identity\\(\\);",
+    "to": "io.github.profetgit.tidypockets.Compat.pushIdentity(g);",
+    "when": "<1.21.6"
+  },
+  {
+    "regex": "(\\bpose(?:\\(\\))?\\.translate\\()([^;]*?)\\);",
+    "to": "$1$2, 0.0F);",
+    "when": "<1.21.6",
+    "groups": "1"
+  },
+  {
+    "regex": "(\\bpose(?:\\(\\))?\\.scale\\()([^;]*?)\\);",
+    "to": "$1$2, 1.0F);",
+    "when": "<1.21.6",
+    "groups": "1"
+  },
+  {
+    "regex": "import net\\.minecraft\\.client\\.renderer\\.RenderPipelines;",
+    "to": "import net.minecraft.client.renderer.RenderType;",
+    "when": "<1.21.6"
+  },
+  {
+    "regex": "blitSprite\\(RenderPipelines\\.GUI_TEXTURED, ",
+    "to": "blitSprite(RenderType::guiTextured, ",
+    "when": ">=1.21.2 <1.21.6"
+  },
+  {
+    "regex": "blitSprite\\(RenderPipelines\\.GUI_TEXTURED, ",
+    "to": "blitSprite(",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "\\s*g\\.nextStratum\\(\\);",
+    "to": "",
+    "when": "<1.21.6"
+  },
+  {
+    "from": "render",
+    "to": "processBlurEffect",
+    "when": "<1.21.6",
+    "files": "^GameRendererMixin\\.java$"
+  },
+  {
+    "regex": "\\.getSelectedSlot\\(\\)",
+    "to": ".selected",
+    "when": "<1.21.5"
+  },
+  {
+    "regex": "\\.setSelectedSlot\\(([^()]*)\\)",
+    "to": ".selected = $1",
+    "when": "<1.21.5",
+    "groups": "1"
+  },
+  {
+    "regex": "\\bmc\\.getWindow\\(\\)\\.getGuiScale\\(\\)",
+    "to": "(int) mc.getWindow().getGuiScale()",
+    "when": "<1.21.5"
+  },
+  {
+    "regex": "Screenshot\\.takeScreenshot\\(io\\.github\\.profetgit\\.tidypockets\\.Compat\\.mainTarget\\(mc\\), ",
+    "to": "io.github.profetgit.tidypockets.Compat.screenshot(io.github.profetgit.tidypockets.Compat.mainTarget(mc), ",
+    "when": "<1.21.5"
+  },
+  {
+    "from": "snapTo",
+    "to": "moveTo",
+    "when": "<1.21.5"
+  },
+  {
+    "regex": "SoundEvents\\.ITEM_BREAK\\.value\\(\\)",
+    "to": "SoundEvents.ITEM_BREAK",
+    "when": "<1.21.5"
+  },
+  {
+    "regex": "EffectsInInventory;renderEffects\\(Lnet/minecraft/client/gui/GuiGraphics;II\\)V",
+    "to": "EffectsInInventory;render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V",
+    "when": "<1.21.6"
+  },
+  {
+    "regex": "blitSprite\\(Lcom/mojang/blaze3d/pipeline/RenderPipeline;",
+    "to": "blitSprite(Ljava/util/function/Function;",
+    "when": ">=1.21.2 <1.21.6"
+  },
+  {
+    "regex": "blitSprite\\(Lcom/mojang/blaze3d/pipeline/RenderPipeline;",
+    "to": "blitSprite(",
+    "when": "<1.21.2"
+  },
+  {
+    "from": "AbstractScrollArea",
+    "to": "AbstractSelectionList",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "\\bscrollAmount\\(\\)",
+    "to": "getScrollAmount()",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "\\bmaxScrollAmount\\(\\)",
+    "to": "getMaxScroll()",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "@Shadow\\s+protected abstract double scrollRate\\(\\);",
+    "to": "@Shadow\n    protected int itemHeight;",
+    "when": "<1.21.2",
+    "files": "^AbstractScrollAreaMixin\\.java$"
+  },
+  {
+    "regex": "\\bscrollRate\\(\\)",
+    "to": "(itemHeight / 2.0)",
+    "when": "<1.21.2",
+    "files": "^AbstractScrollAreaMixin\\.java$"
+  },
+  {
+    "regex": "ENTITY_TYPE\\s*\\.getValue\\(",
+    "to": "ENTITY_TYPE.get(",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "\\.create\\(server\\.overworld\\(\\), net\\.minecraft\\.world\\.entity\\.EntitySpawnReason\\.COMMAND\\)",
+    "to": ".create(server.overworld())",
+    "when": "<1.21.3"
+  },
+  {
+    "regex": "(?:net\\.minecraft\\.world\\.entity\\.player\\.)?Inventory\\.SELECTION_SIZE",
+    "to": "9",
+    "when": "<1.21.2"
+  },
+  {
+    "regex": "(\\w+) instanceof (?:net\\.minecraft\\.world\\.)?InteractionResult\\.Success",
+    "to": "$1.consumesAction()",
+    "when": "<1.21.2",
+    "groups": "1"
+  },
+  {
+    "regex": "s\\.is\\(ItemTags\\.BUNDLES\\)",
+    "to": "s.is(net.minecraft.world.item.Items.BUNDLE)",
+    "when": "<1.21.2"
+  },
+  {
+    "from": "getHoveredSlot",
+    "to": "findSlot",
+    "when": "<1.21.2"
+  }
+]

@@ -11,4 +11,13 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface ScreenInvoker {
     @Invoker("addRenderableWidget")
     <T extends GuiEventListener & Renderable & NarratableEntry> T tidypockets$addRenderableWidget(T widget);
+
+    //? if >=1.21.2 <1.21.6 {
+    /*@Invoker("renderBlurredBackground")
+    void tidypockets$blur();
+    *///?}
+    //? if <1.21.2 {
+    /*@Invoker("renderBlurredBackground")
+    void tidypockets$blur(float partialTick);
+    *///?}
 }

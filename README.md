@@ -5,13 +5,14 @@
 <a href="https://ko-fi.com/profetgit"><img src="https://raw.githubusercontent.com/ProfetGit/assets/main/buttons/kofi.gif" alt="Ko-fi" width="23.96%"></a>
 </p>
 
-**One click, all sorted.** Instant inventory sorting, slot locking, hotbar refill, tool-break protection and mouse shortcuts in one client-side mod, with quick cartoon animations.
+**One click, all sorted.** Instant inventory sorting, slot locking, hotbar refill, a random block palette, tool-break protection and mouse shortcuts in one client-side mod, with quick cartoon animations.
 
 ![Features](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-features.png)
 
 - **Instant sorting.** Middle-click any inventory, chest, barrel or shulker box. Tidy Pockets works out the finished layout and sends every click in the same frame, so the sort is done the moment you click. The animation just plays on top.
 - **Slot locking.** Alt-click a slot and its item stays put: no shift-click, drop, swap or sort can move it.
 - **Hotbar refill.** When the stack in your hand runs out, a matching stack from your inventory takes its place.
+- **Random palette.** Press R over the hotbar blocks you want to mix. With one of them selected, every block you place comes from a random palette slot, so walls and floors get texture without you switching slots. It keeps like blocks apart, so the mix never turns patchy.
 - **Tool-break protection.** A tool about to break is swapped for a spare or moved to your inventory, so it never breaks.
 - **Mouse shortcuts.** Scroll to move items one at a time, shift-drag across slots to move many.
 - **Container tools.** Sort, Deposit matching and Restock buttons on chests, and Ctrl+F to search.
@@ -34,9 +35,13 @@
 |---|---|
 | Sort | Middle-click over an inventory |
 | Lock or unlock a slot | Left Alt + click |
+| Add or remove a block in the random palette | R over a hotbar block (or R with it selected) |
+| Clear the random palette | Shift + R |
 | Search | Ctrl+F in a container |
 | Move one item / a whole stack | Scroll wheel / Shift + scroll |
 | Shift-click many slots | Hold Shift and drag |
+
+Random palette: press R on each hotbar block you want to mix (a small die shows on it), then place blocks as usual. A block in two slots comes up twice as often. Select any other slot, like a torch, and placing is normal again.
 
 Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods list (NeoForge, Forge).
 

@@ -23,6 +23,8 @@ public final class TidyConfigScreen extends OptionsSubScreen {
             bool("safeMode"), range("safeModeClicksPerTick", 1, 64));
         header("refill");
         small(bool("refillEnabled"), bool("refillExactMatch"), bool("refillOffhand"));
+        header("random");
+        small(bool("randomEnabled"), bool("randomSpread"));
         header("protect");
         small(choice("protect"), range("protectMargin", 0, 20));
         header("mouse");
@@ -41,7 +43,9 @@ public final class TidyConfigScreen extends OptionsSubScreen {
     }
 
     private void header(String group) {
+        //? if >=1.21.11 {
         list.addHeader(Component.translatable("tidypockets.config." + group));
+        //?}
     }
 
     private void small(OptionInstance<?>... options) {

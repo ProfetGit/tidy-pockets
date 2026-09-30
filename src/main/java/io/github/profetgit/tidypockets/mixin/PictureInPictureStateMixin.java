@@ -1,5 +1,8 @@
 package io.github.profetgit.tidypockets.mixin;
 
+import org.spongepowered.asm.mixin.Mixin;
+
+//? if >=1.21.6 {
 import io.github.profetgit.tidypockets.anim.PosedPip;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.state.gui.pip.GuiBannerResultRenderState;
@@ -13,7 +16,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+//? if >=26.2 {
 /**
  * Lets the GUI's 3D pictures (enchanting book, inventory and smithing figures, loom banner, skin widget) carry a pose.
  * {@code PictureInPictureRenderer.blitTexture} already blits through {@code pose()}; vanilla just always returns identity.
@@ -43,3 +50,40 @@ public abstract class PictureInPictureStateMixin implements PosedPip {
         return tidypockets$pose;
     }
 }
+//?} else {
+/*// Lets the GUI's 3D pictures (enchanting book, inventory figures, loom banner, skin widget) carry a pose. Before 26.2 the
+// shadows would have to be remapped per target and pose() is inherited from the interface, so this keeps its own fields,
+// reads the record accessors through the interface and answers bounds() by injection; PictureInPictureStateInterfaceMixin
+// answers pose().
+@Mixin({GuiBookModelRenderState.class, GuiEntityRenderState.class, GuiSkinRenderState.class, GuiBannerResultRenderState.class})
+public abstract class PictureInPictureStateMixin implements PosedPip {
+    @Unique
+    private org.joml.Matrix3x2f tidypockets$pose;
+    @Unique
+    private ScreenRectangle tidypockets$bounds;
+
+    @Override
+    public void tidypockets$pose(Matrix3x2fc pose) {
+        tidypockets$pose = new org.joml.Matrix3x2f(pose);
+        PictureInPictureRenderState self = (PictureInPictureRenderState) (Object) this;
+        ScreenRectangle box = new ScreenRectangle(self.x0(), self.y0(), self.x1() - self.x0(), self.y1() - self.y0()).transformMaxBounds(tidypockets$pose);
+        tidypockets$bounds = self.scissorArea() != null ? self.scissorArea().intersection(box) : box;
+    }
+
+    @Override
+    public org.joml.Matrix3x2f tidypockets$posed() {
+        return tidypockets$pose;
+    }
+
+    @Inject(method = "bounds", at = @At("RETURN"), cancellable = true)
+    private void tidypockets$bounds(CallbackInfoReturnable<ScreenRectangle> cir) {
+        if (tidypockets$bounds != null) cir.setReturnValue(tidypockets$bounds);
+    }
+}
+*///?}
+//?} else {
+/*// the 3D-picture and stratum pipeline of the GUI came with 1.21.6
+@Mixin(net.minecraft.client.Minecraft.class)
+public abstract class PictureInPictureStateMixin {
+}
+*///?}

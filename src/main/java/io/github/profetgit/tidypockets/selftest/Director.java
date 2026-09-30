@@ -10,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
@@ -52,6 +50,7 @@ public final class Director {
         boolean cursor = true, captionTop;
         int stride = 1;
         Consumer<Minecraft> perTick;
+        float sway;
 
         public Timeline(String name, String caption, double duration) {
             this.name = name;
@@ -76,6 +75,12 @@ public final class Director {
 
         public Timeline stride(int n) {
             stride = n;
+            return this;
+        }
+
+        /** Hand drift in degrees on top of the looks, like a player's mouse. */
+        public Timeline sway(float deg) {
+            sway = deg;
             return this;
         }
 
@@ -116,7 +121,7 @@ public final class Director {
 
         public Timeline scroll(double t, double amount, String badge) {
             return at(t, badge, mc -> {
-                if (mc.gui.screen() != null) mc.gui.screen().mouseScrolled(cx, cy, 0, amount);
+                if (mc.gui.screen() != null) io.github.profetgit.tidypockets.Compat.mouseScrolled(mc.gui.screen(), cx, cy, 0, amount);
                 clickAt = now();
             });
         }
@@ -137,6 +142,33 @@ public final class Director {
 
     static double now() {
         return System.nanoTime() / 1_000_000.0;
+    }
+
+    /** A look that starts now (for looks decided while recording). */
+    public static void lookNow(double ms, Function<Minecraft, float[]> yawPitch) {
+        if (active == null) return;
+        double t = now() - start;
+        active.looks.add(new Look(t, t + ms, yawPitch));
+    }
+
+    /** Whether the latest look has arrived. */
+    public static boolean settled() {
+        if (active == null || active.looks.isEmpty()) return true;
+        return now() - start >= active.looks.getLast().t1;
+    }
+
+    /** A player's flick: most of the way fast, then a small correction. */
+    private static double human(double k) {
+        if (k < 0.7) {
+            double u = k / 0.7;
+            return 0.94 * (1 - Math.pow(1 - u, 3));
+        }
+        double u = (k - 0.7) / 0.3;
+        return 0.94 + 0.06 * (u * u * (3 - 2 * u));
+    }
+
+    private static double noise(double t, double seed) {
+        return Math.sin(t * 1.3 + seed) * 0.6 + Math.sin(t * 2.9 + seed * 2.1) * 0.3 + Math.sin(t * 5.3 + seed * 3.7) * 0.1;
     }
 
     public static void begin(Minecraft mc, Timeline t) {
@@ -165,13 +197,13 @@ public final class Director {
         return active != null;
     }
 
-    private static MouseButtonEvent event(int button, int mods) {
-        return new MouseButtonEvent(cx, cy, new MouseButtonInfo(button, mods));
+    private static io.github.profetgit.tidypockets.input.MouseEvt event(int button, int mods) {
+        return new io.github.profetgit.tidypockets.input.MouseEvt(cx, cy, button, mods);
     }
 
     private static void doPress(Minecraft mc, int button, int mods) {
         Screen s = mc.gui.screen();
-        if (s != null) s.mouseClicked(event(button, mods), false);
+        if (s != null) io.github.profetgit.tidypockets.Compat.mouseClicked(s, event(button, mods), false);
         dragButton = button;
         dragMods = mods;
         clickAt = now();
@@ -179,7 +211,7 @@ public final class Director {
 
     private static void doRelease(Minecraft mc) {
         Screen s = mc.gui.screen();
-        if (s != null && dragButton >= 0) s.mouseReleased(event(dragButton, dragMods));
+        if (s != null && dragButton >= 0) io.github.profetgit.tidypockets.Compat.mouseReleased(s, event(dragButton, dragMods));
         dragButton = -1;
     }
 
@@ -203,7 +235,7 @@ public final class Director {
             MouseHandlerAccessor mouse = (MouseHandlerAccessor) mc.mouseHandler;
             mouse.tidypockets$setX(cx * s);
             mouse.tidypockets$setY(cy * s);
-            if (dragButton >= 0 && (px != cx || py != cy)) mc.gui.screen().mouseDragged(event(dragButton, dragMods), cx - px, cy - py);
+            if (dragButton >= 0 && (px != cx || py != cy)) io.github.profetgit.tidypockets.Compat.mouseDragged(mc.gui.screen(), event(dragButton, dragMods), cx - px, cy - py);
         }
         int li = -1;
         for (int i = 0; i < active.looks.size(); i++) if (t >= active.looks.get(i).t0) li = i;
@@ -211,13 +243,16 @@ public final class Director {
             Look l = active.looks.get(li);
             if (li != lookIndex) {
                 lookIndex = li;
-                lookFrom = new float[] {mc.player.getYRot(), mc.player.getXRot()};
+                lookFrom = new float[] {(float) (mc.player.getYRot() - active.sway * noise(t / 1000, 0.7)),
+                    (float) (mc.player.getXRot() - active.sway * 0.6 * noise(t / 1000, 4.1))};
             }
             float[] to = l.yawPitch.apply(mc);
-            double k = l.t1 <= l.t0 ? 1 : Math.clamp((t - l.t0) / (l.t1 - l.t0), 0, 1);
-            k = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+            double span = Math.max(1, l.t1 - l.t0);
+            double k = human(Math.clamp((t - l.t0) / span, 0, 1));
+            double kp = human(Math.clamp((t - l.t0 - span * 0.12) / (span * 0.88), 0, 1));
             float dyaw = ((to[0] - lookFrom[0]) % 360 + 540) % 360 - 180;
-            float yaw = (float) (lookFrom[0] + dyaw * k), pitch = (float) (lookFrom[1] + (to[1] - lookFrom[1]) * k);
+            double sy = active.sway * noise(t / 1000, 0.7), sp = active.sway * 0.6 * noise(t / 1000, 4.1);
+            float yaw = (float) (lookFrom[0] + dyaw * k + sy), pitch = (float) (lookFrom[1] + (to[1] - lookFrom[1]) * kp + sp);
             mc.player.setYRot(yaw);
             mc.player.yRotO = yaw;
             mc.player.setXRot(pitch);

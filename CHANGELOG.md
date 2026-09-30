@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.1 — 2026-09-30
+
+- Now also runs on Minecraft Java 1.21.1, 1.21.4, 1.21.8 and 1.21.11 (Fabric). Nothing changes on 26.2 and 26.3.
+
+## 1.2.0 — 2026-09-30
+
+- Random palette. Press R over a hotbar block (in the world with the block selected, or over it in an inventory) to add it to your palette; a small die marks it. With a palette block selected, every block you place comes from a random palette slot. Shift + R clears the palette.
+- Avoid clumps (on by default): blocks that already sit next to the spot you place at are less likely, so walls and floors look mixed instead of patchy. Turn it off for plain random.
+- A block in two palette slots comes up twice as often. Empty slots and slots that don't hold a block are skipped, and so are blocks that can't be placed on the spot you clicked.
+- Clicking a chest, door, button or anything else that reacts to a click doesn't roll. Sneak-clicking still places.
+- Hotbar refill keeps working: a palette slot that runs out is topped up from your inventory. The hand shows each new block at once and keeps its little placing bounce, and the hotbar selector hops to the block that was picked.
+- Palettes are saved per world or server. Settings: Random palette and Avoid clumps, in their own section.
+
 ## 1.1.0 — 2026-09-24
 
 - Creative inventory support. The Survival Inventory tab now works like the survival inventory: sorting, slot locks, shift-drag, scroll-wheel moves and drag-to-collect.

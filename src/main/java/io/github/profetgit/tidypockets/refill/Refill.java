@@ -28,6 +28,14 @@ public final class Refill {
         lastAction = ticks;
     }
 
+    /** The random palette switched the selected slot just before a click: watch that slot for running out instead. */
+    public static void retarget(int slot) {
+        LocalPlayer p = Minecraft.getInstance().player;
+        if (p == null) return;
+        lastSelected = slot;
+        lastMain = p.getInventory().getItem(slot).copy();
+    }
+
     public static void tick(Minecraft mc) {
         ticks++;
         LocalPlayer p = mc.player;
