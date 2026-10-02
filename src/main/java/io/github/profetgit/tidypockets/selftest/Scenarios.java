@@ -745,6 +745,23 @@ final class Scenarios {
                 return "pickaxe vanished";
             })
             .check("protect keeps the block intact", mc -> mc.level.getBlockState(ground.offset(1, 0, 2)).is(Blocks.STONE) ? null : "block was broken");
+        s.server(server -> {
+                var inv = player(server).getInventory();
+                for (int i = 0; i < 36; i++) {
+                    if (inv.getItem(i).is(Items.DIAMOND_PICKAXE)) {
+                        ItemStack st = inv.getItem(i);
+                        inv.setItem(i, ItemStack.EMPTY);
+                        inv.setItem(3, st);
+                        break;
+                    }
+                }
+            }).waitTicks(5)
+            .run(mc -> mc.gameMode.startDestroyBlock(ground.offset(1, 0, 2), Direction.UP))
+            .waitTicks(10)
+            .check("protect lets a deliberately re-equipped tool be used", mc -> {
+                ItemStack st = mc.player.getInventory().getItem(3);
+                return st.is(Items.DIAMOND_PICKAXE) && st.getMaxDamage() - st.getDamageValue() == 1 ? null : "hand holds " + st;
+            });
         resetInventory(s, inv -> {
             for (int i = 9; i < 36; i++) inv.setItem(i, new ItemStack(Items.DIRT, 64));
             inv.setItem(4, worn(Items.DIAMOND_PICKAXE));

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.4 — 2026-10-02
+
+- Tool-break protection no longer fights you: if you pick a tool it moved away back into your hand on purpose, it stays there and you can use it until it breaks.
+
+## 1.2.3 — 2026-10-01
+
+- The animations now run on the game's frame clock instead of the system clock. In play nothing changes; video capture tools that step frames at a fixed rate now record them at their real speed.
+
+## 1.2.2 — 2026-09-30
+
+- Fixed the mod's textures and text missing on Minecraft Java 1.21.1, 1.21.4 and 1.21.8 (its resource pack metadata was in the 1.21.9 format). Nothing changes on 26.2 and 26.3.
+
 ## 1.2.1 — 2026-09-30
 
 - Now also runs on Minecraft Java 1.21.1, 1.21.4, 1.21.8 and 1.21.11 (Fabric). Nothing changes on 26.2 and 26.3.

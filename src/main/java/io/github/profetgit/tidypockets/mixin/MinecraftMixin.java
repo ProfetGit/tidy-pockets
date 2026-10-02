@@ -1,6 +1,7 @@
 package io.github.profetgit.tidypockets.mixin;
 
 import io.github.profetgit.tidypockets.TidyPockets;
+import io.github.profetgit.tidypockets.anim.Ease;
 import io.github.profetgit.tidypockets.selftest.SelfTest;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,6 +18,7 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "runTick", at = @At("TAIL"))
     private void tidypockets$frame(boolean advanceGameTime, CallbackInfo ci) {
+        Ease.frame(((Minecraft) (Object) this).getDeltaTracker().getRealtimeDeltaTicks());
         if (SelfTest.active()) SelfTest.onFrame((Minecraft) (Object) this);
     }
 

@@ -25,6 +25,7 @@ public final class ToolProtect {
     public enum Cost { BLOCK, ATTACK, USE }
 
     private static long lastWarn;
+    private static final java.util.List<ItemStack> released = new java.util.ArrayList<>();
 
     private ToolProtect() {}
 
@@ -37,6 +38,9 @@ public final class ToolProtect {
         ItemStack s = p.getItemInHand(hand);
         if (!s.isDamageableItem()) return false;
         if (cfg.protect == TidyConfig.Protect.ENCHANTED && !s.isEnchanted()) return false;
+        for (ItemStack r : released) {
+            if (ItemStack.isSameItemSameComponents(r, s)) return false;
+        }
         int cost = cost(s, kind);
         if (!Rules.wouldBreak(s.getMaxDamage(), s.getDamageValue(), cost, cfg.protectMargin)) return false;
 
@@ -45,13 +49,16 @@ public final class ToolProtect {
         int button = hand == InteractionHand.MAIN_HAND ? slot : PlayerInv.OFFHAND_BUTTON;
         int fresh = Rules.pick(PlayerInv.candidates(p, s, slot), true, false, cost + cfg.protectMargin);
         String what;
+        ItemStack old = s.copy();
         if (fresh >= 0) {
             PlayerInv.swapInto(p, fresh, button);
+            release(old);
             what = "tidypockets.protect.swapped";
         } else {
             int empty = PlayerInv.firstEmptyMain(p);
             if (empty >= 0) {
                 PlayerInv.swapInto(p, empty, button);
+                release(old);
                 what = "tidypockets.protect.stowed";
             } else {
                 what = "tidypockets.protect.blocked";
@@ -59,6 +66,12 @@ public final class ToolProtect {
         }
         warn(mc, p, s, slot, what);
         return true;
+    }
+
+    /** A tool we moved away: if the player picks it up again on purpose, let it break. */
+    private static void release(ItemStack s) {
+        released.add(s);
+        if (released.size() > 16) released.remove(0);
     }
 
     private static int cost(ItemStack s, Cost kind) {

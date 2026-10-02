@@ -1,5 +1,10 @@
 [
   {
+    "from": "getDeltaTracker",
+    "to": "getTimer",
+    "when": "<1.21.2"
+  },
+  {
     "from": "GuiGraphicsExtractor",
     "to": "GuiGraphics",
     "when": "<26.2"

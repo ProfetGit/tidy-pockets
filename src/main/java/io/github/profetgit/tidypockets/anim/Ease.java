@@ -6,8 +6,16 @@ import io.github.profetgit.tidypockets.config.TidyConfig;
 public final class Ease {
     private Ease() {}
 
+    private static double clock = System.nanoTime() / 1_000_000.0;
+
+    /** Animation time in ms: the sum of the frames' real-time deltas, so a recorder that steps frames at a fixed
+     * rate (lockstep capture) sees the animations at their real speed. In play it follows the wall clock. */
     public static double now() {
-        return System.nanoTime() / 1_000_000.0;
+        return clock;
+    }
+
+    public static void frame(float realtimeDeltaTicks) {
+        clock += realtimeDeltaTicks * 50.0;
     }
 
     public static boolean enabled() {
