@@ -59,7 +59,7 @@ PROPS
 fi
 
 set +e
-python3 "$ROOT/../ModTest/client.py" "$VER" "$LOADER" "$OUT" --game "$WORK/game" "${ARGS[@]}" \
+python3 "$ROOT/../../tools/ModTest/client.py" "$VER" "$LOADER" "$OUT" --game "$WORK/game" "${ARGS[@]}" \
     --user PocketTester --uuid "${PLAYER_UUID:-5e1dcaa0-0000-4000-8000-000000000002}" --width 1280 --height 720 --timeout 900 \
     --opt "fps=${MAX_FPS:-60}" --opt volume=0.0 --opt render_distance=4 --opt "gui_scale=$GUI_SCALE" \
     --log-errors 'ERROR\]: tidypockets\.mixins\.json' \

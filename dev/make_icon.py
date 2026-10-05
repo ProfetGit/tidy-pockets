@@ -40,7 +40,7 @@ INK = (36, 20, 12)
 def write_gif(frames: list, out: Path, fps: int, delta: bool = True) -> int:
     """RGB frames -> GIF with an exact palette (Pillow's quantize(palette=...) snaps close colours together).
     Slot 255 is transparent: (delta) every pixel unchanged since the previous frame. Without delta, Pillow crops each
-    frame to the box that changed. Returns the colour count. (From FullGhastAhead/dev/make_icon.py.)"""
+    frame to the box that changed. Returns the colour count. (From packs/FullGhastAhead/dev/make_icon.py.)"""
     used = sorted({c for f in frames for _, c in f.getcolors(f.width * f.height)})
     if len(used) > 255:
         sys.exit(f"{len(used)} colours - more than a GIF palette holds next to the transparent slot")

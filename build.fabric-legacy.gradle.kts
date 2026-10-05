@@ -79,4 +79,4 @@ tasks.named<Jar>("jar") {
 }
 
 extra["mcVersion"] = mc
-apply(from = rootProject.file("../Backport/renames.gradle.kts"))
+apply(from = rootProject.file("../../tools/Backport/renames.gradle.kts"))

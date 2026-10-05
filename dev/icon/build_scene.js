@@ -10,7 +10,7 @@
 // Every channel is sampled once per frame (linear keys), so rendered frames land exactly on the computed poses.
 var TP = (function () {
   const fs = require('fs');
-  const DIR = '/home/emppu/Projects/Minecraft Datapacks/TidyPockets/dev/icon/';
+  const DIR = '/home/emppu/Projects/Minecraft Datapacks/mods/TidyPockets/dev/icon/';
   const TEX = DIR + 'sprites/';
   const FPS = 25, DT = 1 / FPS, LEN = 3.2, FR = Math.round(LEN * FPS);
   const CAM_POS = [0, 60, 104], CAM_TARGET = [0, 16, 0];
