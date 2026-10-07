@@ -21,3 +21,6 @@ dev/icon/frames/
 dev/icon/test/
 dev/icon/contact*.png
 __pycache__/
+release-art/
+dev/icon/frames60/
+dev/icon/banner_frames60/
