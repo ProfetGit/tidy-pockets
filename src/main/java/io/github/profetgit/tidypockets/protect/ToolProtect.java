@@ -88,6 +88,7 @@ public final class ToolProtect {
     }
 
     private static void warn(Minecraft mc, LocalPlayer p, ItemStack s, int slot, String key) {
+        if (!TidyConfig.get().protectWarn && !key.endsWith("blocked")) return;
         Anims.toolWarn(slot);
         long now = System.currentTimeMillis();
         if (now - lastWarn < 1500) return;

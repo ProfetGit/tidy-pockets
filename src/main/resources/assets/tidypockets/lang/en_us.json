@@ -41,6 +41,8 @@
   "tidypockets.option.refillOffhand.tooltip": "Refill the offhand too, e.g. torches.",
   "tidypockets.option.protect": "Tool protection",
   "tidypockets.option.protect.tooltip": "Stop tools and weapons from breaking: swap in a spare, or move the tool out of your hand.",
+  "tidypockets.option.protectWarn": "Protection warning",
+  "tidypockets.option.protectWarn.tooltip": "Show the \"almost broken\" message and play its sound and slot animation when a tool is protected. Off: protection still works, silently.",
   "tidypockets.option.protectMargin": "Protection margin",
   "tidypockets.option.protectMargin.tooltip": "Extra durability to keep. 0 uses a tool down to its last point.",
   "tidypockets.option.randomEnabled": "Random palette",

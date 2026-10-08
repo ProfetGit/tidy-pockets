@@ -26,7 +26,7 @@ public final class TidyConfigScreen extends OptionsSubScreen {
         header("random");
         small(bool("randomEnabled"), bool("randomSpread"));
         header("protect");
-        small(choice("protect"), range("protectMargin", 0, 20));
+        small(choice("protect"), range("protectMargin", 0, 20), bool("protectWarn"));
         header("mouse");
         small(bool("wheelMove"), bool("wheelInvert"), bool("shiftDrag"), bool("collectDrag"));
         header("tools");

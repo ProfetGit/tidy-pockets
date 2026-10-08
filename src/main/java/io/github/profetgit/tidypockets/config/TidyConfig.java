@@ -33,6 +33,7 @@ public final class TidyConfig {
     // Tool protection
     public Protect protect = Protect.ALL;
     public int protectMargin = 0;
+    public boolean protectWarn = true;
 
     // Mouse
     public boolean wheelMove = true;

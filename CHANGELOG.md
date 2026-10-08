@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.8 — 2026-10-08
+
+- New option "Protection warning" (Tool protection section). Turn it off and tool protection still swaps or stows a nearly broken tool, but without the message, sound and slot animation. When your inventory is full and the action is blocked, the message still shows so you know why.
+
 ## 1.2.7 — 2026-10-08
 
 - Controlify no longer lists every Tidy Pockets action twice. It was adding an automatic copy of each key next to the real controller binding, and the copy did nothing useful. Also fixed a crash that could happen at startup when Controlify loaded first.
