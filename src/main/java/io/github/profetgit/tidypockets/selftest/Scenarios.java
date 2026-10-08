@@ -272,6 +272,16 @@ final class Scenarios {
         s.until("controller connected", 200, mc -> io.github.profetgit.tidypockets.compat.ControlifyCompat.controllerReady())
             .run(mc -> {
                 SelfTest.record("pad controller connected", true, pad());
+                java.util.List<String> ids = io.github.profetgit.tidypockets.compat.ControlifyCompat.bindingIds();
+                SelfTest.record("controlify lists only our 7 bindings, no automatic duplicates", ids.size() == 7, ids.toString());
+                for (var key : io.github.profetgit.tidypockets.input.Keys.ALL) {
+                    if (key == io.github.profetgit.tidypockets.input.Keys.SORT || key == io.github.profetgit.tidypockets.input.Keys.LOCK
+                        || key == io.github.profetgit.tidypockets.input.Keys.PALETTE || key == io.github.profetgit.tidypockets.input.Keys.SEARCH
+                        || key == io.github.profetgit.tidypockets.input.Keys.DEPOSIT || key == io.github.profetgit.tidypockets.input.Keys.RESTOCK) {
+                        java.util.List<String> c = io.github.profetgit.tidypockets.compat.ControlifyCompat.correlated(key);
+                        SelfTest.record("key " + key.getName() + " maps to one binding", c.size() == 1 && c.getFirst().startsWith("tidypockets:"), c.toString());
+                    }
+                }
                 for (String[] b : new String[][] {{"lock", "right_shoulder"}, {"palette", "left_shoulder"}, {"search", "guide"},
                     {"deposit", "start"}, {"restock", "left_stick"}}) {
                     boolean ok = io.github.profetgit.tidypockets.compat.ControlifyCompat.bindForTest(b[0], "controlify:button/" + b[1]);

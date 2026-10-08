@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.7 — 2026-10-08
+
+- Controlify no longer lists every Tidy Pockets action twice. It was adding an automatic copy of each key next to the real controller binding, and the copy did nothing useful. Also fixed a crash that could happen at startup when Controlify loaded first.
+
 ## 1.2.6 — 2026-10-08
 
 - Controlify's button guide now lists Tidy Pockets' actions (Sort, Lock/Unlock, Add to or Remove from Palette, Clear Palette, Search, Deposit, Restock) next to the buttons they are bound to, and only when the action would do something for the slot under the cursor.

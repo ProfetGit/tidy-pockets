@@ -8,8 +8,17 @@ import net.minecraft.resources.Identifier;
 
 public final class Keys {
     //? if >=1.21.9 {
-    public static final KeyMapping.Category CATEGORY =
-        TidyPockets.platform().keyCategory(Identifier.fromNamespaceAndPath(TidyPockets.MOD_ID, "main"));
+    public static final KeyMapping.Category CATEGORY = category(Identifier.fromNamespaceAndPath(TidyPockets.MOD_ID, "main"));
+
+    /** Controlify's entrypoint can load this class before the loader entry has run, so there may be no platform yet. */
+    private static KeyMapping.Category category(Identifier id) {
+        if (TidyPockets.platform() != null) return TidyPockets.platform().keyCategory(id);
+        //? neoforge {
+        /*return new KeyMapping.Category(id);
+        *///?} else {
+        return KeyMapping.Category.register(id);
+        //?}
+    }
     //?} else {
     /*public static final String CATEGORY = "key.categories.tidypockets";
     *///?}

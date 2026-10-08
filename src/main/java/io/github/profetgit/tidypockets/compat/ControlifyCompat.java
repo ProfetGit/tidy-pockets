@@ -8,6 +8,7 @@ import dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint;
 import dev.isxander.controlify.api.entrypoint.PreInitContext;
 import dev.isxander.controlify.bindings.BindContext;
 import io.github.profetgit.tidypockets.config.TidyConfig;
+import io.github.profetgit.tidypockets.input.Keys;
 import io.github.profetgit.tidypockets.inv.Creative;
 import io.github.profetgit.tidypockets.inv.Inv;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
@@ -24,23 +25,27 @@ import net.minecraft.network.chat.Component;
 public final class ControlifyCompat implements ControlifyEntrypoint {
     private static InputBindingSupplier sort, lock, palette, clearPalette, search, deposit, restock;
 
-    private static InputBindingSupplier bind(ControlifyBindApi api, String id) {
-        return api.registerBinding(b -> b
-            .id("tidypockets", id)
-            .category(Component.translatable("controlify.binding.tidypockets.category"))
-            .allowedContexts(BindContext.CONTAINER));
+    /** {@code key} is the vanilla key mapping this replaces; correlating it stops Controlify adding a second, automatic binding for it. */
+    private static InputBindingSupplier bind(ControlifyBindApi api, String id, net.minecraft.client.KeyMapping key) {
+        return api.registerBinding(b -> {
+            b.id("tidypockets", id)
+                .category(Component.translatable("controlify.binding.tidypockets.category"))
+                .allowedContexts(BindContext.CONTAINER);
+            if (key != null) b.addKeyCorrelation(key);
+            return b;
+        });
     }
 
     @Override
     public void onControlifyPreInit(PreInitContext ctx) {
         ControlifyBindApi api = ctx.bindings();
-        sort = bind(api, "sort");
-        lock = bind(api, "lock");
-        palette = bind(api, "palette");
-        clearPalette = bind(api, "clear_palette");
-        search = bind(api, "search");
-        deposit = bind(api, "deposit");
-        restock = bind(api, "restock");
+        sort = bind(api, "sort", Keys.SORT);
+        lock = bind(api, "lock", Keys.LOCK);
+        palette = bind(api, "palette", Keys.PALETTE);
+        clearPalette = bind(api, "clear_palette", null);
+        search = bind(api, "search", Keys.SEARCH);
+        deposit = bind(api, "deposit", Keys.DEPOSIT);
+        restock = bind(api, "restock", Keys.RESTOCK);
         ctx.contextualDomains().container().registerContributor(ControlifyCompat::contribute);
         io.github.profetgit.tidypockets.TidyPockets.LOG.info("Controlify bindings registered");
     }
@@ -115,6 +120,17 @@ public final class ControlifyCompat implements ControlifyEntrypoint {
         return ControlifyApi.get().getCurrentController().isPresent();
     }
 
+    /** Self-test: every Controlify binding that is ours or Controlify's automatic copy of one of our keys, sorted. */
+    public static java.util.List<String> bindingIds() {
+        return ControlifyBindApi.get().getAllBindIds().filter(i -> i.getNamespace().equals("tidypockets") || i.getPath().contains("tidypockets"))
+            .map(Object::toString).sorted().toList();
+    }
+
+    /** Self-test: the bindings that stand in for a vanilla key mapping. */
+    public static java.util.List<String> correlated(net.minecraft.client.KeyMapping key) {
+        return ControlifyBindApi.get().getKeyCorrelation(key).stream().map(b -> b.bindId().toString()).sorted().toList();
+    }
+
     /** Self-test: gives a binding a controller button (the real ones are unbound except Sort). */
     public static boolean bindForTest(String id, String button) {
         var controller = ControlifyApi.get().getCurrentController().orElse(null);
@@ -160,6 +176,14 @@ public final class ControlifyCompat implements ControlifyEntrypoint {
 
     public static boolean controllerReady() {
         return false;
+    }
+
+    public static java.util.List<String> bindingIds() {
+        return java.util.List.of();
+    }
+
+    public static java.util.List<String> correlated(net.minecraft.client.KeyMapping key) {
+        return java.util.List.of();
     }
 
     public static boolean bindForTest(String id, String button) {
