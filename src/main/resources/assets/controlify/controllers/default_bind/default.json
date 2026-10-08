@@ -1,0 +1,5 @@
+{
+  "defaults": {
+    "tidypockets:sort": { "button": "controlify:button/right_stick" }
+  }
+}

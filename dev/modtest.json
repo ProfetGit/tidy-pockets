@@ -98,6 +98,41 @@
           "loader": "fabric"
         }
       ]
+    },
+    "pad": {
+      "jobs": [
+        {
+          "mc": "26.3",
+          "loader": "fabric",
+          "addons": [
+            "pad"
+          ],
+          "vars": {
+            "mode": "pad"
+          }
+        }
+      ]
+    }
+  },
+  "addons": {
+    "controlify": {
+      "profile": {
+        "26.3": "Fabric 26.3"
+      },
+      "mods": [
+        "controlify-*.jar",
+        "yet_another_config_lib_v3-*.jar"
+      ]
+    },
+    "pad": {
+      "pad": true,
+      "profile": {
+        "26.3": "Fabric 26.3"
+      },
+      "mods": [
+        "controlify-*.jar",
+        "yet_another_config_lib_v3-*.jar"
+      ]
     }
   }
 }

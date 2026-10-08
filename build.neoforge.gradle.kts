@@ -65,9 +65,14 @@ tasks.named<Jar>("jar") {
 
 repositories {
     mavenCentral()
+    maven("https://api.modrinth.com/maven") {
+        name = "Modrinth"
+        content { includeGroup("maven.modrinth") }
+    }
 }
 
 dependencies {
+    compileOnly("maven.modrinth:controlify:${property("deps.controlify")}") { isTransitive = false }
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

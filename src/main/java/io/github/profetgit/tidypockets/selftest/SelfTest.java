@@ -36,6 +36,17 @@ public final class SelfTest {
 
     private SelfTest() {}
 
+    /** Sends one command line to the virtual gamepad the test runner started (tools/ModTest/vpad.py); a no-op without one. */
+    public static void pad(String command) {
+        String file = System.getProperty("modtest.pad");
+        if (file == null) return;
+        try {
+            Files.writeString(Path.of(file), command + "\n", java.nio.file.StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            TidyPockets.LOG.warn("[selftest] pad write failed: {}", e.toString());
+        }
+    }
+
     public static boolean active() {
         return OUT != null;
     }
@@ -61,6 +72,7 @@ public final class SelfTest {
             }
             steps = switch (MODE) {
                 case "compat" -> Scenarios.buildCompat().steps;
+                case "pad" -> Scenarios.buildPad().steps;
                 case "showcase" -> Showcase.build().steps;
                 default -> Scenarios.build().steps;
             };

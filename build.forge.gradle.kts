@@ -42,7 +42,7 @@ dependencies {
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 // Forge's patched Minecraft needs javac 26 or newer to read; use the JDK Gradle itself runs on when that is newer
-val forgeJavac = maxOf(26, JavaVersion.current().majorVersion.toInt())
+val forgeJavac = maxOf(27, JavaVersion.current().majorVersion.toInt())
 
 tasks.withType<JavaCompile>().configureEach {
     javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(forgeJavac) }
@@ -57,7 +57,7 @@ tasks.named<Jar>("jar") {
 }
 
 tasks.processResources {
-    exclude("fabric.mod.json", "META-INF/neoforge.mods.toml")
+    exclude("fabric.mod.json", "META-INF/neoforge.mods.toml", "META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint")
     val props = mapOf(
         "version" to project.version.toString(),
         "mc" to mc,

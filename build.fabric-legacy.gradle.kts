@@ -58,7 +58,7 @@ tasks.test {
 }
 
 tasks.processResources {
-    exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml")
+    exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml", "META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint")
     val props = mapOf(
         "version" to project.version.toString(),
         "mc" to mc,

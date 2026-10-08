@@ -26,37 +26,53 @@ public final class ScreenInput {
     private ScreenInput() {}
 
     public static boolean mouseClicked(AbstractContainerScreen<?> screen, Slot slot, MouseEvt e) {
-        LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null) return false;
-        if (Compat.matchesMouse(Keys.SORT, e)) {
-            if (Creative.tab(screen) == Creative.Tab.ITEMS) return false;
-            if (p.hasInfiniteMaterials() && slot != null && slot.hasItem()) return false;
-            if (!screen.getMenu().getCarried().isEmpty()) return false;
-            return SortAction.trySort(screen, slot);
-        }
-        if (e.button() == InputConstants.MOUSE_BUTTON_LEFT && slot != null && Inv.isPlayerSlot(slot, p)
-            && Compat.isHeld(Keys.LOCK) && screen.getMenu().getCarried().isEmpty()) {
-            int i = Inv.index(slot);
-            if (i < Inventory.INVENTORY_SIZE || i == Inventory.SLOT_OFFHAND) {
-                SlotLocks.toggle(i, slot.getItem());
-                boolean on = SlotLocks.isLocked(i);
-                Minecraft.getInstance().getSoundManager().play(
-                    SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), on ? 1.4f : 1.0f, 0.4f));
-                return true;
-            }
-        }
+        if (Minecraft.getInstance().player == null) return false;
+        if (Compat.matchesMouse(Keys.SORT, e)) return sort(screen, slot);
+        if (e.button() == InputConstants.MOUSE_BUTTON_LEFT && Compat.isHeld(Keys.LOCK) && toggleLock(screen, slot)) return true;
         return false;
+    }
+
+    public static boolean toggleLock(AbstractContainerScreen<?> screen, Slot slot) {
+        LocalPlayer p = Minecraft.getInstance().player;
+        if (p == null || slot == null || !Inv.isPlayerSlot(slot, p) || !screen.getMenu().getCarried().isEmpty()) return false;
+        int i = Inv.index(slot);
+        if (i >= Inventory.INVENTORY_SIZE && i != Inventory.SLOT_OFFHAND) return false;
+        SlotLocks.toggle(i, slot.getItem());
+        boolean on = SlotLocks.isLocked(i);
+        Minecraft.getInstance().getSoundManager().play(
+            SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), on ? 1.4f : 1.0f, 0.4f));
+        return true;
+    }
+
+    /** The palette key's action on a hovered hotbar slot. */
+    public static boolean palette(AbstractContainerScreen<?> screen, Slot hovered, boolean clear) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (!TidyConfig.get().randomEnabled || Creative.tab(screen) == Creative.Tab.ITEMS || player == null || hovered == null
+            || screen.getFocused() instanceof EditBox || ContainerTools.searchOpen(screen)
+            || !Inv.isPlayerSlot(hovered, player) || Inv.index(hovered) >= Inventory.SELECTION_SIZE) return false;
+        Palette.press(player, Inv.index(hovered), clear);
+        return true;
+    }
+
+    /** What the sort key does in a screen, for input that is not a mouse click. */
+    public static boolean sort(AbstractContainerScreen<?> screen, Slot hovered) {
+        LocalPlayer p = Minecraft.getInstance().player;
+        if (p == null || Creative.tab(screen) == Creative.Tab.ITEMS) return false;
+        if (p.hasInfiniteMaterials() && hovered != null && hovered.hasItem()) return false;
+        if (!screen.getMenu().getCarried().isEmpty()) return false;
+        return SortAction.trySort(screen, hovered);
+    }
+
+    /** Search, deposit and restock only exist on plain container screens. */
+    public static boolean tool(AbstractContainerScreen<?> screen, Runnable action) {
+        if (Creative.tab(screen) != Creative.Tab.NONE) return false;
+        action.run();
+        return true;
     }
 
     public static boolean keyPressed(AbstractContainerScreen<?> screen, Slot hovered, KeyEvt e) {
         Creative.Tab tab = Creative.tab(screen);
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (Compat.matches(Keys.PALETTE, e) && TidyConfig.get().randomEnabled && tab != Creative.Tab.ITEMS && player != null && hovered != null
-            && !(screen.getFocused() instanceof EditBox) && !ContainerTools.searchOpen(screen)
-            && Inv.isPlayerSlot(hovered, player) && Inv.index(hovered) < Inventory.SELECTION_SIZE) {
-            Palette.press(player, Inv.index(hovered), Compat.shiftDown());
-            return true;
-        }
+        if (Compat.matches(Keys.PALETTE, e) && palette(screen, hovered, Compat.shiftDown())) return true;
         if (tab != Creative.Tab.NONE) return tab == Creative.Tab.INVENTORY && Compat.matches(Keys.SORT, e) && SortAction.trySort(screen, hovered);
         if (ContainerTools.searchOpen(screen)) {
             if (e.key() == InputConstants.KEY_ESCAPE) {

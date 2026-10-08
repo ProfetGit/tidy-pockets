@@ -34,6 +34,7 @@ public final class TidyPockets {
         io.github.profetgit.tidypockets.palette.RandomPlace.tick();
         io.github.profetgit.tidypockets.palette.Palette.tick(mc);
         io.github.profetgit.tidypockets.lock.SlotLocks.tick(mc.player);
+        if (platform.isModLoaded("controlify")) io.github.profetgit.tidypockets.compat.ControlifyCompat.tick(mc);
         if (SelfTest.active()) SelfTest.onClientTick(mc);
     }
 }

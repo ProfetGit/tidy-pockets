@@ -18,6 +18,9 @@ public interface AbstractContainerScreenAccessor {
     @Accessor("imageHeight")
     int tidypockets$height();
 
+    @Accessor("hoveredSlot")
+    net.minecraft.world.inventory.Slot tidypockets$hoveredSlot();
+
     @org.spongepowered.asm.mixin.gen.Invoker("getHoveredSlot")
     net.minecraft.world.inventory.Slot tidypockets$hovered(double x, double y);
 }

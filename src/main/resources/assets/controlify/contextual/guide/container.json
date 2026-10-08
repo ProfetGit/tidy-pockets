@@ -1,0 +1,85 @@
+{
+  "rules": [
+    {
+      "for": "tidypockets:sort",
+      "where": "right",
+      "if": "tidypockets:can_sort",
+      "then": {
+        "translate": "tidypockets.guide.sort"
+      }
+    },
+    {
+      "for": "tidypockets:lock",
+      "where": "right",
+      "if": {
+        "all_of": [
+          "tidypockets:hovering_locked"
+        ]
+      },
+      "then": {
+        "translate": "tidypockets.guide.unlock"
+      }
+    },
+    {
+      "for": "tidypockets:lock",
+      "where": "right",
+      "if": "tidypockets:can_lock",
+      "then": {
+        "translate": "tidypockets.guide.lock"
+      }
+    },
+    {
+      "for": "tidypockets:palette",
+      "where": "right",
+      "if": {
+        "all_of": [
+          "tidypockets:hovering_palette",
+          "tidypockets:can_palette"
+        ]
+      },
+      "then": {
+        "translate": "tidypockets.guide.palette_remove"
+      }
+    },
+    {
+      "for": "tidypockets:palette",
+      "where": "right",
+      "if": "tidypockets:can_palette",
+      "then": {
+        "translate": "tidypockets.guide.palette_add"
+      }
+    },
+    {
+      "for": "tidypockets:clear_palette",
+      "where": "right",
+      "if": "tidypockets:palette_set",
+      "then": {
+        "translate": "tidypockets.guide.palette_clear"
+      }
+    },
+    {
+      "for": "tidypockets:search",
+      "where": "right",
+      "if": "tidypockets:container_tools",
+      "then": {
+        "translate": "tidypockets.guide.search"
+      }
+    },
+    {
+      "for": "tidypockets:deposit",
+      "where": "right",
+      "if": "tidypockets:container_tools",
+      "then": {
+        "translate": "tidypockets.guide.deposit"
+      }
+    },
+    {
+      "for": "tidypockets:restock",
+      "where": "right",
+      "if": "tidypockets:container_tools",
+      "then": {
+        "translate": "tidypockets.guide.restock"
+      }
+    }
+  ]
+}

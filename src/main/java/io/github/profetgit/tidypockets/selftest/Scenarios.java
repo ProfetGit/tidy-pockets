@@ -77,6 +77,7 @@ final class Scenarios {
         sortChest(s, "sort-double-chest", 12, true, 0.8);
         sortChest(s, "sort-full-chest-bundles", 13, false, 1.0);
         sortPlayer(s);
+        if (io.github.profetgit.tidypockets.TidyPockets.platform().isModLoaded("controlify")) sortChest(s, "controlify-sort-chest", 14, false, 0.8, true);
         refill(s);
         protect(s);
         palette(s);
@@ -241,7 +242,146 @@ final class Scenarios {
         return Inv.containerSlots(menu, mc.player);
     }
 
+    private static String pad() {
+        return io.github.profetgit.tidypockets.compat.ControlifyCompat.status();
+    }
+
+    /** Moves the cursor with the d-pad (Controlify snaps it slot to slot) until it rests on a slot matching {@code target}. */
+    private static java.util.function.Predicate<Minecraft> padGoTo(java.util.function.Predicate<Slot> target) {
+        int[] n = {0};
+        return mc -> {
+            if (!(mc.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c)) return false;
+            Slot h = ((io.github.profetgit.tidypockets.mixin.AbstractContainerScreenAccessor) c).tidypockets$hoveredSlot();
+            if (h != null && target.test(h)) return true;
+            if (n[0]++ % 8 != 0) return false;
+            Slot goal = null;
+            for (Slot sl : c.getMenu().slots) if (target.test(sl)) { goal = sl; break; }
+            if (goal == null) throw new IllegalStateException("no slot matches the pad target");
+            int dx = h == null ? 0 : goal.x - h.x, dy = h == null ? 1 : goal.y - h.y;
+            String hat = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "hat 1 0" : "hat -1 0") : (dy > 0 ? "hat 0 -1" : "hat 0 1");
+            SelfTest.pad(hat);
+            SelfTest.pad("wait 100");
+            SelfTest.pad("hat 0 0");
+            return false;
+        };
+    }
+
+    static Script buildPad() {
+        Script s = new Script();
+        createWorld(s);
+        s.until("controller connected", 200, mc -> io.github.profetgit.tidypockets.compat.ControlifyCompat.controllerReady())
+            .run(mc -> {
+                SelfTest.record("pad controller connected", true, pad());
+                for (String[] b : new String[][] {{"lock", "right_shoulder"}, {"palette", "left_shoulder"}, {"search", "guide"},
+                    {"deposit", "start"}, {"restock", "left_stick"}}) {
+                    boolean ok = io.github.profetgit.tidypockets.compat.ControlifyCompat.bindForTest(b[0], "controlify:button/" + b[1]);
+                    SelfTest.record("pad bound " + b[0], ok, b[1]);
+                }
+            });
+        padSortChest(s);
+        padLockAndPalette(s);
+        padTools(s);
+        return s;
+    }
+
+    /** The default bind: a right-stick click sorts the container under the cursor. */
+    private static void padSortChest(Script s) {
+        String name = "pad-sort-chest";
+        openChest(s, new BlockPos(2, 0, 2), c -> fill(c, 0, c.getContainerSize(), 14, 0.8, false));
+        s.waitTicks(20)
+            .capture(name + "-clip", 480)
+            .waitTicks(30)
+            .run(mc -> {
+                List<Slot> slots = chestSlots(mc);
+                expected = ClickPlanner.plan(StackKeys.read(slots), new boolean[slots.size()]).target();
+                totalsBefore = totals(slots);
+                SelfTest.pad("axis lx 0.6");
+            })
+            .waitTicks(10)
+            .run(mc -> SelfTest.pad("axis lx 0"))
+            .until("pad cursor on a chest slot", 400, padGoTo(slot -> slot.container != Minecraft.getInstance().player.getInventory() && slot.index == 4))
+            .waitTicks(30)
+            .run(mc -> SelfTest.pad("tap rs 150"))
+            .waitTicks(75)
+            .check(name + " layout", mc -> {
+                Stack[] after = StackKeys.read(chestSlots(mc));
+                return Arrays.equals(after, expected) ? null : "layout differs from plan: " + pad();
+            })
+            .check(name + " items conserved", mc -> totals(chestSlots(mc)).equals(totalsBefore) ? null : "totals changed")
+            .run(mc -> mc.player.closeContainer())
+            .waitTicks(10);
+    }
+
+    /** Lock and Palette bound to shoulder buttons: pressed over a player slot. */
+    private static void padLockAndPalette(Script s) {
+        resetInventory(s, inv -> {
+            inv.setItem(12, new ItemStack(Items.EGG, 7));
+            inv.setItem(0, new ItemStack(Items.DIRT, 20));
+            inv.setItem(1, new ItemStack(Items.STONE, 20));
+        });
+        openChest(s, new BlockPos(-2, 0, 2), c -> c.setItem(0, new ItemStack(Items.TORCH, 8)));
+        s.waitTicks(10)
+            .capture("pad-lock-clip", 600)
+            .waitTicks(30)
+            .run(mc -> SelfTest.pad("axis lx 0.6"))
+            .waitTicks(10)
+            .run(mc -> SelfTest.pad("axis lx 0"))
+            .until("pad cursor on the egg", 600, padGoTo(sl -> sl.getItem().is(Items.EGG)))
+            .waitTicks(30)
+            .run(mc -> SelfTest.pad("tap rb 150"))
+            .waitTicks(40)
+            .check("pad lock locks the slot under the cursor", mc -> SlotLocks.isLocked(12) ? null : "slot 12 not locked: " + pad())
+            .run(mc -> SelfTest.pad("tap rb 150"))
+            .waitTicks(40)
+            .check("pad lock unlocks it again", mc -> !SlotLocks.isLocked(12) ? null : "still locked: " + pad())
+            .until("pad cursor on the dirt", 600, padGoTo(sl -> sl.getItem().is(Items.DIRT)))
+            .waitTicks(30)
+            .run(mc -> SelfTest.pad("tap lb 150"))
+            .waitTicks(60)
+            .check("pad palette adds the hotbar block", mc -> io.github.profetgit.tidypockets.palette.Palette.has(0) ? null
+                : "palette " + io.github.profetgit.tidypockets.palette.Palette.slots() + " " + pad())
+            .run(mc -> {
+                io.github.profetgit.tidypockets.palette.Palette.clear();
+                mc.player.closeContainer();
+            })
+            .waitTicks(10);
+    }
+
+    /** Search, Deposit and Restock on bound buttons. */
+    private static void padTools(Script s) {
+        resetInventory(s, inv -> {
+            inv.setItem(10, new ItemStack(Items.STONE, 20));
+            inv.setItem(11, new ItemStack(Items.DIRT, 5));
+            inv.setItem(0, new ItemStack(Items.TORCH, 10));
+        });
+        openChest(s, new BlockPos(-2, 0, -2), c -> {
+            c.setItem(0, new ItemStack(Items.STONE, 1));
+            c.setItem(1, new ItemStack(Items.DIRT, 1));
+            c.setItem(6, new ItemStack(Items.TORCH, 64));
+        });
+        s.run(mc -> SelfTest.pad("tap start 150"))
+            .waitTicks(10)
+            .check("pad deposit moves the matching stacks", mc -> {
+                Inventory inv = mc.player.getInventory();
+                return inv.getItem(10).isEmpty() && inv.getItem(11).isEmpty() ? null : dump(mc) + " " + pad();
+            })
+            .run(mc -> SelfTest.pad("tap ls 150"))
+            .waitTicks(10)
+            .check("pad restock tops the hotbar up", mc -> mc.player.getInventory().getItem(0).getCount() == 64 ? null : dump(mc) + " " + pad())
+            .run(mc -> SelfTest.pad("tap guide 150"))
+            .waitTicks(10)
+            .check("pad search opens the search box", mc -> io.github.profetgit.tidypockets.tools.ContainerTools.searchOpen(
+                (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc.gui.screen()) ? null : "search closed: " + pad())
+            .run(mc -> mc.player.closeContainer())
+            .waitTicks(10);
+    }
+
     private static void sortChest(Script s, String name, long seed, boolean dbl, double fill) {
+        sortChest(s, name, seed, dbl, fill, false);
+    }
+
+    /** {@code viaController}: the sort comes from Controlify's Sort binding instead of a middle click. */
+    private static void sortChest(Script s, String name, long seed, boolean dbl, double fill, boolean viaController) {
         BlockPos[] pos = new BlockPos[1];
         s.server(server -> {
                 ServerPlayer p = player(server);
@@ -268,9 +408,18 @@ final class Scenarios {
                 totalsBefore = totals(slots);
                 contentPacketsReset();
             })
-            .capture(name, 24)
-            .run(mc -> click(mc, chestSlots(mc).get(4), MIDDLE))
+            .waitTicks(viaController ? 30 : 0)
+            .capture(viaController ? name + "-before" : name, viaController ? 2 : 24)
+            .waitTicks(viaController ? 4 : 0)
+            .run(mc -> {
+                if (viaController) {
+                    boolean ok = io.github.profetgit.tidypockets.compat.ControlifyCompat.press("sort",
+                        (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc.gui.screen(), chestSlots(mc).get(4));
+                    SelfTest.record("controlify sort binding acted", ok, "");
+                } else click(mc, chestSlots(mc).get(4), MIDDLE);
+            })
             .waitTicks(10)
+            .capture(name + "-after", 2)
             .server(server -> {
                 BlockState st = server.overworld().getBlockState(pos[0]);
                 Container c = ChestBlock.getContainer((ChestBlock) st.getBlock(), st, server.overworld(), pos[0], true);

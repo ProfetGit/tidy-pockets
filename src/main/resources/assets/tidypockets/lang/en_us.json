@@ -93,5 +93,22 @@
   "tidypockets.config.protect": "Tool protection",
   "tidypockets.config.mouse": "Mouse",
   "tidypockets.config.tools": "Container tools",
-  "tidypockets.config.animation": "Animation"
+  "tidypockets.config.animation": "Animation",
+  "controlify.binding.tidypockets.category": "Tidy Pockets",
+  "controlify.binding.tidypockets.sort": "Sort inventory",
+  "controlify.binding.tidypockets.lock": "Lock or unlock slot",
+  "controlify.binding.tidypockets.palette": "Random palette: add or remove slot",
+  "controlify.binding.tidypockets.clear_palette": "Random palette: clear",
+  "controlify.binding.tidypockets.search": "Search container",
+  "controlify.binding.tidypockets.deposit": "Deposit matching items",
+  "controlify.binding.tidypockets.restock": "Restock from container",
+  "tidypockets.guide.sort": "Sort",
+  "tidypockets.guide.lock": "Lock",
+  "tidypockets.guide.unlock": "Unlock",
+  "tidypockets.guide.palette_add": "Add to Palette",
+  "tidypockets.guide.palette_remove": "Remove from Palette",
+  "tidypockets.guide.palette_clear": "Clear Palette",
+  "tidypockets.guide.search": "Search",
+  "tidypockets.guide.deposit": "Deposit",
+  "tidypockets.guide.restock": "Restock"
 }

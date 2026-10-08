@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.6 — 2026-10-08
+
+- Controlify's button guide now lists Tidy Pockets' actions (Sort, Lock/Unlock, Add to or Remove from Palette, Clear Palette, Search, Deposit, Restock) next to the buttons they are bound to, and only when the action would do something for the slot under the cursor.
+
+## 1.2.5 — 2026-10-05
+
+- Controlify support (Fabric and NeoForge, 26.2 and 26.3): Sort inventory, Lock slot, Random palette, Search, Deposit and Restock are controller bindings under Tidy Pockets in Controlify's controls. Sort is on a click of the right stick by default; point the cursor at a slot and press. Without Controlify nothing changes.
+
 ## 1.2.4 — 2026-10-02
 
 - Tool-break protection no longer fights you: if you pick a tool it moved away back into your hand on purpose, it stays there and you can use it until it breaks.

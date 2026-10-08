@@ -49,6 +49,7 @@ Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods l
 ![Compatibility](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-compatibility.webp)
 
 - **Client-side only.** Works on any server, including vanilla servers and Realms.
+- **Controller support** through Controlify (Fabric and NeoForge): sort, lock, random palette and the container tools are bindings in Controlify's controls. Sort starts on a right-stick click.
 - Plays nice with Mouse Tweaks, Mouse Wheelie, Smooth Swapping, Smooth Scrolling and Inventory Profiles Next: the overlapping feature switches itself off.
 - If a server's anti-cheat objects to instant sorting, turn on **Safe mode**.
 
