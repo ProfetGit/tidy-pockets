@@ -49,13 +49,13 @@ Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods l
 ![Compatibility](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-compatibility.webp)
 
 - **Client-side only.** Works on any server, including vanilla servers and Realms.
-- **Controller support** through Controlify (Fabric and NeoForge): sort, lock, random palette and the container tools are bindings in Controlify's controls. Sort starts on a right-stick click. Only Sort has a default button; if another mod or your own setup already uses the right-stick click, change it under Tidy Pockets in Controlify's Controls, where the other actions can be bound too.
+- **Controller support** through Controlify (Fabric and NeoForge, 26.2 and 26.3): sort, lock, random palette and the container tools are bindings in Controlify's controls. Sort starts on a right-stick click. Only Sort has a default button; if another mod or your own setup already uses the right-stick click, change it under Tidy Pockets in Controlify's Controls, where the other actions can be bound too.
 - Plays nice with Mouse Tweaks, Mouse Wheelie, Smooth Swapping, Smooth Scrolling and Inventory Profiles Next: the overlapping feature switches itself off.
 - If a server's anti-cheat objects to instant sorting, turn on **Safe mode**.
 
 ![Installation](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-installation.webp)
 
-Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.2 and 26.3.
+Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.3, 26.2, 1.21.11, 1.21.1 and 1.20.1. Minecraft 1.21.8 and 1.21.4 have Fabric and Quilt builds. On 1.20.1, NeoForge uses the Forge jar.
 
 ![More from Profet](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-more-from-profet.webp)
 
