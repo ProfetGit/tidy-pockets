@@ -12,7 +12,9 @@ public final class Blur {
 
     public static void containerBackground(Screen s, GuiGraphicsExtractor g, float partialTick) {
         if (!(s instanceof AbstractContainerScreen<?>) || !TidyConfig.get().blur) return;
+        //? if >=1.20.5 {
         if (Minecraft.getInstance().options.getMenuBackgroundBlurriness() < 1) return;
+        //?}
         //? if >=1.21.6 {
         io.github.profetgit.tidypockets.mixin.GuiRenderStateAccessor state = (io.github.profetgit.tidypockets.mixin.GuiRenderStateAccessor)
             ((io.github.profetgit.tidypockets.mixin.GuiGraphicsExtractorAccessor) g).tidypockets$state();
@@ -22,7 +24,7 @@ public final class Blur {
         //? if >=1.21.2 <1.21.6 {
         /*((io.github.profetgit.tidypockets.mixin.ScreenInvoker) s).tidypockets$blur();
         *///?}
-        //? if <1.21.2 {
+        //? if >=1.20.5 <1.21.2 {
         /*((io.github.profetgit.tidypockets.mixin.ScreenInvoker) s).tidypockets$blur(partialTick);
         *///?}
     }

@@ -7,7 +7,15 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21 {
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+//?} else {
+/*import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.client.gui.screens.OptionsSubScreen;
+import net.minecraft.network.chat.CommonComponents;
+*///?}
 import net.minecraft.network.chat.Component;
 
 /** Every option on one scrolling page, grouped under headers. Built from the {@link TidyConfig} fields by name. */
@@ -16,7 +24,27 @@ public final class TidyConfigScreen extends OptionsSubScreen {
         super(parent, Minecraft.getInstance().options, Component.translatable("tidypockets.config.title"));
     }
 
+    //? if <1.21 {
+    /*private OptionsList list;
+
     @Override
+    protected void init() {
+        list = new OptionsList(minecraft, width, height, 32, height - 32, 25);
+        addOptions();
+        addWidget(list);
+        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> minecraft.setScreen(lastScreen))
+            .bounds(width / 2 - 100, height - 27, 200, 20).build());
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mx, int my, float pt) {
+        basicListRender(g, list, mx, my, pt);
+    }
+    *///?}
+
+    //? if >=1.21 {
+    @Override
+    //?}
     protected void addOptions() {
         header("sorting");
         small(bool("sortEnabled"), bool("sortHotbar"), choice("sortOrder"), bool("sortSound"),

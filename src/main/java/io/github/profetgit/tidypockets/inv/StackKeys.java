@@ -33,7 +33,7 @@ public final class StackKeys {
 
         @Override
         public int hashCode() {
-            return ItemStack.hashItemAndComponents(stack);
+            return io.github.profetgit.tidypockets.Compat.stackHash(stack);
         }
     }
 
@@ -49,7 +49,7 @@ public final class StackKeys {
 
     public static ItemKey key(ItemStack s, Slot slot) {
         String id = BuiltInRegistries.ITEM.getKey(s.getItem()).toString();
-        String tiebreak = id + s.getComponentsPatch();
+        String tiebreak = id + io.github.profetgit.tidypockets.Compat.stackData(s);
         long order = switch (TidyConfig.get().sortOrder) {
             case CREATIVE -> creativeOrder(s);
             case NAME -> 0;
@@ -57,7 +57,7 @@ public final class StackKeys {
         };
         if (TidyConfig.get().sortOrder == TidyConfig.SortOrder.NAME) tiebreak = s.getHoverName().getString().toLowerCase() + "|" + tiebreak;
         int max = slot == null ? s.getMaxStackSize() : Math.min(s.getMaxStackSize(), slot.getMaxStackSize(s));
-        return new ItemKey(new Ident(s.copyWithCount(1)), ItemStack.hashItemAndComponents(s), max,
+        return new ItemKey(new Ident(s.copyWithCount(1)), io.github.profetgit.tidypockets.Compat.stackHash(s), max,
             s.is(ItemTags.BUNDLES), order, tiebreak);
     }
 

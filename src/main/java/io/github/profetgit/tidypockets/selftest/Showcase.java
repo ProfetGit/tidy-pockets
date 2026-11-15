@@ -21,7 +21,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -72,7 +71,7 @@ final class Showcase {
     // ---- set ----
 
     private static ServerPlayer player(MinecraftServer server) {
-        return server.getPlayerList().getPlayers().getFirst();
+        return server.getPlayerList().getPlayers().get(0);
     }
 
     private static void cmd(MinecraftServer server, String c) {
@@ -442,7 +441,7 @@ final class Showcase {
         });
         setInventory(s, inv -> {
             ItemStack worn = st(Items.DIAMOND_PICKAXE, 1);
-            worn.set(DataComponents.DAMAGE, worn.getMaxDamage() - 2);
+            io.github.profetgit.tidypockets.Compat.setDamage(worn, worn.getMaxDamage() - 2);
             inv.setItem(0, st(Items.COBBLESTONE, 32));
             inv.setItem(1, worn);
             inv.setItem(2, st(Items.TORCH, 16));
@@ -528,7 +527,7 @@ final class Showcase {
     }
 
     private static Director.Target lastSlot() {
-        return slot(mc -> mc.player.containerMenu.slots.getLast());
+        return slot(mc -> mc.player.containerMenu.slots.get(mc.player.containerMenu.slots.size() - 1));
     }
 
     private static void unlockAll(Script s) {

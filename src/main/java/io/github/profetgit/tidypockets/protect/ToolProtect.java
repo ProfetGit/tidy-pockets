@@ -8,13 +8,11 @@ import io.github.profetgit.tidypockets.inv.PlayerInv;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.Tool;
 
 /**
  * Stops a tool from breaking. Called before each action that costs durability; when the action would break the
@@ -76,10 +74,7 @@ public final class ToolProtect {
 
     private static int cost(ItemStack s, Cost kind) {
         return switch (kind) {
-            case BLOCK -> {
-                Tool t = s.get(DataComponents.TOOL);
-                yield t == null ? 1 : t.damagePerBlock();
-            }
+            case BLOCK -> Compat.blockCost(s);
             case ATTACK -> {
                 yield Compat.attackCost(s);
             }

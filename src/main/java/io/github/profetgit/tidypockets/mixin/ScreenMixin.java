@@ -48,6 +48,7 @@ public abstract class ScreenMixin {
         }
     }
 
+    //? if >=1.20.2 {
     @Inject(method = "extractBackground", at = @At("HEAD"))
     private void tidypockets$backgroundHead(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
@@ -59,4 +60,17 @@ public abstract class ScreenMixin {
     private void tidypockets$backgroundReturn(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         ScreenPop.pop(g);
     }
+    //?} else {
+    /*@Inject(method = "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V", at = @At("HEAD"))
+    private void tidypockets$backgroundHead(GuiGraphics g, CallbackInfo ci) {
+        Screen self = (Screen) (Object) this;
+        ScreenPop.pushIdentity(self, g);
+        Blur.containerBackground(self, g, 0f);
+    }
+
+    @Inject(method = "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V", at = @At("RETURN"))
+    private void tidypockets$backgroundReturn(GuiGraphics g, CallbackInfo ci) {
+        ScreenPop.pop(g);
+    }
+    *///?}
 }

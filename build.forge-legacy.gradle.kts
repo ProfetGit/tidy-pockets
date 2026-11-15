@@ -1,0 +1,95 @@
+// Forge 1.21.x build (ForgeGradle 7; Forge 1.21.6+ needs it, FG6 cannot set up Forge 61): build.forge.gradle.kts plus Java 21 and the dev/renames.json pass.
+plugins {
+    id("net.minecraftforge.gradle")
+}
+
+val mc = stonecutter.current.version
+val modId = property("mod.id") as String
+val selftest = providers.gradleProperty("tp.selftest").orNull
+val selftestMode = providers.gradleProperty("tp.selftest.mode").getOrElse("full")
+val mcNext = mc.split(".").let { "${it[0]}.${it[1].toInt() + 1}" }
+
+version = "${property("mod.version")}+$mc-forge"
+group = property("mod.group") as String
+base.archivesName = modId
+
+minecraft {
+    runs {
+        configureEach {
+            workingDir.convention(layout.projectDirectory.dir("run"))
+            args("--mixin.config=$modId.mixins.json")
+        }
+        register("client") {
+            args("--username", "PocketTester")
+            if (selftest != null) {
+                systemProperty("tidypockets.selftest", selftest)
+                systemProperty("tidypockets.selftest.mode", selftestMode)
+            }
+        }
+    }
+}
+
+repositories {
+    minecraft.mavenizer(this)
+    maven(fg.forgeMaven)
+    maven(fg.minecraftLibsMaven)
+    mavenCentral()
+}
+
+dependencies {
+    implementation(minecraft.dependency("net.minecraftforge:forge:$mc-${property("deps.forge")}"))
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release = 21
+    options.encoding = "UTF-8"
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes["MixinConfigs"] = "$modId.mixins.json"
+    }
+}
+
+tasks.processResources {
+    exclude("fabric.mod.json", "META-INF/neoforge.mods.toml", "META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint")
+    val props = mapOf(
+        "version" to project.version.toString(),
+        "mc" to mc,
+        "mc_next" to mcNext,
+        "name" to project.property("mod.name"),
+        "description" to project.property("mod.description"),
+        "author" to project.property("mod.author"),
+        "homepage" to project.property("mod.homepage"),
+    )
+    inputs.properties(props)
+    filesMatching("META-INF/mods.toml") { expand(props) }
+    // 1.21.11 reads resource pack format 75
+    filesMatching("pack.mcmeta") { filter { it.replace(Regex("\"(min|max)_format\": \\d+"), "\"$1_format\": 75") } }
+}
+
+tasks.named<Jar>("jar") {
+    from(rootProject.file("LICENSE"))
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+extra["mcVersion"] = mc
+apply(from = rootProject.file("../../tools/Backport/renames.gradle.kts"))

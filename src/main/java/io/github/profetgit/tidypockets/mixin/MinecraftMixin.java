@@ -18,7 +18,11 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "runTick", at = @At("TAIL"))
     private void tidypockets$frame(boolean advanceGameTime, CallbackInfo ci) {
+        //? if >=1.21 {
         Ease.frame(((Minecraft) (Object) this).getDeltaTracker().getRealtimeDeltaTicks());
+        //?} else {
+        /*Ease.frame(((Minecraft) (Object) this).getDeltaFrameTime());
+        *///?}
         if (SelfTest.active()) SelfTest.onFrame((Minecraft) (Object) this);
     }
 

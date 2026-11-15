@@ -4,10 +4,8 @@ import io.github.profetgit.tidypockets.core.Rules;
 import io.github.profetgit.tidypockets.lock.SlotLocks;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -45,7 +43,7 @@ public final class PlayerInv {
             ItemStack s = inv.getItem(i);
             if (s.isEmpty() || !s.is(like.getItem())) continue;
             boolean exact = ItemStack.isSameItemSameComponents(s, like);
-            boolean sameEnch = Objects.equals(s.get(DataComponents.ENCHANTMENTS), like.get(DataComponents.ENCHANTMENTS));
+            boolean sameEnch = io.github.profetgit.tidypockets.Compat.sameEnchantments(s, like);
             int remaining = s.isDamageableItem() ? s.getMaxDamage() - s.getDamageValue() : Integer.MAX_VALUE;
             out.add(new Rules.Candidate(i, exact, sameEnch, remaining, s.getCount()));
         }

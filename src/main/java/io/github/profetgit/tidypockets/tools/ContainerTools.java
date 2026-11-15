@@ -14,7 +14,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
+//? if >=1.20.2 {
 import net.minecraft.client.gui.components.WidgetSprites;
+//?}
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -32,10 +34,12 @@ public final class ContainerTools {
 
     private ContainerTools() {}
 
+    //? if >=1.20.2 {
     private static WidgetSprites sprites(String name) {
         return new WidgetSprites(Identifier.fromNamespaceAndPath(TidyPockets.MOD_ID, name),
             Identifier.fromNamespaceAndPath(TidyPockets.MOD_ID, name + "_highlighted"));
     }
+    //?}
 
     public static void init(AbstractContainerScreen<?> screen) {
         search = null;
@@ -59,16 +63,37 @@ public final class ContainerTools {
             box.setHint(Component.translatable("tidypockets.search.hint"));
             box.setMaxLength(40);
             box.setVisible(false);
-            search = inv.tidypockets$addRenderableWidget(box);
+            search = addWidget(inv, box);
             searchScreen = screen;
         }
     }
 
+    /** Screen.addRenderableWidget through the widget lists. */
+    private static <T extends net.minecraft.client.gui.components.events.GuiEventListener & net.minecraft.client.gui.components.Renderable
+        & net.minecraft.client.gui.narration.NarratableEntry> T addWidget(ScreenInvoker screen, T widget) {
+        screen.tidypockets$renderables().add(widget);
+        screen.tidypockets$children().add(widget);
+        screen.tidypockets$narratables().add(widget);
+        return widget;
+    }
+
     private static void button(ScreenInvoker screen, int x, int y, String name, Runnable action) {
+        //? if >=1.20.2 {
         ImageButton b = new ImageButton(x, y, 11, 11, sprites(name), btn -> action.run(),
             Component.translatable("tidypockets.button." + name));
+        //?} else {
+        /*net.minecraft.resources.ResourceLocation lo = new net.minecraft.resources.ResourceLocation(TidyPockets.MOD_ID, "textures/gui/sprites/" + name + ".png");
+        net.minecraft.resources.ResourceLocation hi = new net.minecraft.resources.ResourceLocation(TidyPockets.MOD_ID, "textures/gui/sprites/" + name + "_highlighted.png");
+        ImageButton b = new ImageButton(x, y, 11, 11, 0, 0, 11, lo, 11, 11, btn -> action.run(),
+            Component.translatable("tidypockets.button." + name)) {
+            @Override
+            public void renderWidget(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float pt) {
+                g.blit(isHoveredOrFocused() ? hi : lo, getX(), getY(), 0, 0, 11, 11, 11, 11);
+            }
+        };
+        *///?}
         if (!io.github.profetgit.tidypockets.selftest.SelfTest.active()) b.setTooltip(Tooltip.create(Component.translatable("tidypockets.button." + name)));
-        screen.tidypockets$addRenderableWidget(b);
+        addWidget(screen, b);
     }
 
     // ---- search ----

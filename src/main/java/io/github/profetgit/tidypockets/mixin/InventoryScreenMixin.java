@@ -36,6 +36,7 @@ public abstract class InventoryScreenMixin {
     }
     //?}
 
+    //? if >=1.20.5 {
     @Inject(method = "extractEntityInInventoryFollowsMouse", at = @At("HEAD"), cancellable = true)
     private static void tidypockets$hopFigure(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int size,
             float yOffset, float mouseX, float mouseY, LivingEntity entity, CallbackInfo ci) {
@@ -51,4 +52,19 @@ public abstract class InventoryScreenMixin {
         }
         ci.cancel();
     }
+    //?} else {
+    /*@Inject(method = "renderEntityInInventoryFollowsMouse", at = @At("HEAD"), cancellable = true)
+    private static void tidypockets$hopFigure(GuiGraphics g, int x, int y, int size, float mouseX, float mouseY, LivingEntity entity, CallbackInfo ci) {
+        if (tidypockets$inner) return;
+        float hop = PlayerHop.offset(entity);
+        if (hop == 0) return;
+        tidypockets$inner = true;
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(g, x, Math.round(y - hop), size, mouseX, mouseY, entity);
+        } finally {
+            tidypockets$inner = false;
+        }
+        ci.cancel();
+    }
+    *///?}
 }

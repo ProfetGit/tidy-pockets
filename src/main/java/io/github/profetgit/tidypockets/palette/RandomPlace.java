@@ -124,11 +124,20 @@ public final class RandomPlace {
         protected Boolean computeValue(Class<?> type) {
             // fences only react to leads
             if (FenceBlock.class.isAssignableFrom(type)) return false;
+            //? if <1.20.5 {
+            /*// 1.20.1 stairs override use() only to forward it to their base block
+            if (net.minecraft.world.level.block.StairBlock.class.isAssignableFrom(type)) return false;
+            *///?}
             // matched by signature, not name: the runtime names differ from the Mojang names on 1.21.x
             for (Class<?> c = type; c != null && c != BlockBehaviour.class; c = c.getSuperclass()) {
                 for (Method m : c.getDeclaredMethods()) {
                     if (java.lang.reflect.Modifier.isStatic(m.getModifiers()) || m.getReturnType() != InteractionResult.class) continue;
+                    //? if >=1.20.5 {
                     if (java.util.Arrays.equals(m.getParameterTypes(), new Class<?>[] {BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class})) return true;
+                    //?} else {
+                    /*if (java.util.Arrays.equals(m.getParameterTypes(), new Class<?>[] {BlockState.class, Level.class, BlockPos.class, Player.class,
+                        net.minecraft.world.InteractionHand.class, BlockHitResult.class})) return true;
+                    *///?}
                 }
             }
             return false;

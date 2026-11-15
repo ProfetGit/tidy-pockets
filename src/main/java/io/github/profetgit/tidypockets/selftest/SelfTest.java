@@ -63,7 +63,7 @@ public final class SelfTest {
             steps = Scenarios.buildRemote().steps;
         }
         if (steps == null) {
-            if (!mc.isGameLoadFinished() || !(mc.gui.screen() instanceof TitleScreen) || ++titleTicks < 20) return;
+            if (!io.github.profetgit.tidypockets.Compat.gameLoaded(mc) || !(mc.gui.screen() instanceof TitleScreen) || ++titleTicks < 20) return;
             ModTestHook.audit();
             record("boot", true, "title screen reached");
             if (MODE.equals("boot")) {

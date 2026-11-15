@@ -154,7 +154,7 @@ public final class Director {
     /** Whether the latest look has arrived. */
     public static boolean settled() {
         if (active == null || active.looks.isEmpty()) return true;
-        return now() - start >= active.looks.getLast().t1;
+        return now() - start >= active.looks.get(active.looks.size() - 1).t1;
     }
 
     /** A player's flick: most of the way fast, then a small correction. */

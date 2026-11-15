@@ -81,8 +81,8 @@ public final class MouseTweaks {
         if (!container.isEmpty()) {
             if (fromPlayer) out.addAll(container);
             else {
-                out.addAll(Inv.playerSlots(menu, p, 0, Inventory.SELECTION_SIZE).reversed());
-                out.addAll(Inv.playerSlots(menu, p, Inventory.SELECTION_SIZE, Inventory.INVENTORY_SIZE).reversed());
+                out.addAll(Compat.reversed(Inv.playerSlots(menu, p, 0, Inventory.SELECTION_SIZE)));
+                out.addAll(Compat.reversed(Inv.playerSlots(menu, p, Inventory.SELECTION_SIZE, Inventory.INVENTORY_SIZE)));
             }
         } else if ((menu instanceof InventoryMenu || Creative.isMenu(menu)) && fromPlayer) {
             int i = Inv.index(from);

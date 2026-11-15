@@ -1,16 +1,18 @@
 package io.github.profetgit.tidypockets.mixin;
 
-import io.github.profetgit.tidypockets.anim.ScreenPop;
-import net.minecraft.client.Options;
-import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(GameRenderer.class)
+/** The menu blur fade. Before 1.20.5 there is no menu background blur, so this is an empty placeholder. */
+//? if >=1.20.5 {
+@Mixin(net.minecraft.client.renderer.GameRenderer.class)
 public abstract class GameRendererMixin {
-    @Redirect(method = "extractOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getMenuBackgroundBlurriness()I"))
-    private int tidypockets$fadeBlur(Options options) {
-        return ScreenPop.blurRadius(options.getMenuBackgroundBlurriness());
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "extractOptions", at = @org.spongepowered.asm.mixin.injection.At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getMenuBackgroundBlurriness()I"))
+    private int tidypockets$fadeBlur(net.minecraft.client.Options options) {
+        return io.github.profetgit.tidypockets.anim.ScreenPop.blurRadius(options.getMenuBackgroundBlurriness());
     }
 }
+//?} else {
+/*@Mixin(net.minecraft.client.Minecraft.class)
+public abstract class GameRendererMixin {
+}
+*///?}

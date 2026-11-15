@@ -68,12 +68,20 @@ public abstract class CreativeModeInventoryScreenMixin {
     }
 
     @Inject(method = "mouseScrolled", at = @At("HEAD"))
+    //? if >=1.20.2 {
     private void tidypockets$scrollHead(double x, double y, double sx, double sy, CallbackInfoReturnable<Boolean> cir) {
+    //?} else {
+    /*private void tidypockets$scrollHead(double x, double y, double sy, CallbackInfoReturnable<Boolean> cir) {
+    *///?}
         tidypockets$before = scrollOffs;
     }
 
     @Inject(method = "mouseScrolled", at = @At("RETURN"))
+    //? if >=1.20.2 {
     private void tidypockets$scrollReturn(double x, double y, double sx, double sy, CallbackInfoReturnable<Boolean> cir) {
+    //?} else {
+    /*private void tidypockets$scrollReturn(double x, double y, double sy, CallbackInfoReturnable<Boolean> cir) {
+    *///?}
         if (scrollOffs != tidypockets$before) CreativeSlide.rowChanged(scrollOffs > tidypockets$before ? 1 : -1);
     }
 }

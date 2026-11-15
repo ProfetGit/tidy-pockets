@@ -31,8 +31,16 @@ public abstract class AbstractScrollAreaMixin implements SmoothScroller {
     private double tidypockets$target = Double.NaN, tidypockets$set = Double.NaN, tidypockets$time;
 
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
+    //? if >=1.20.2 {
     private void tidypockets$scroll(double x, double y, double sx, double sy, CallbackInfoReturnable<Boolean> cir) {
-        if (!TidyConfig.get().smoothScroll || Conflicts.scroll || !Ease.enabled() || !((AbstractScrollArea) (Object) this).visible) return;
+    //?} else {
+    /*private void tidypockets$scroll(double x, double y, double sy, CallbackInfoReturnable<Boolean> cir) {
+    *///?}
+        if (!TidyConfig.get().smoothScroll || Conflicts.scroll || !Ease.enabled() 
+            //? if >=1.20.2 {
+            || !((AbstractScrollArea) (Object) this).visible
+            //?}
+            ) return;
         double base = Double.isNaN(tidypockets$target) ? scrollAmount() : tidypockets$target;
         tidypockets$target = Math.clamp(base - sy * scrollRate(), 0, maxScrollAmount());
         tidypockets$set = scrollAmount();
@@ -40,6 +48,14 @@ public abstract class AbstractScrollAreaMixin implements SmoothScroller {
         cir.setReturnValue(true);
     }
 
+    //? if <1.20.2 {
+    /*// 1.20.1 lists are not AbstractWidgets, so AbstractWidgetMixin never steps them: step from their own render.
+    @Inject(method = "render", at = @At("HEAD"))
+    private void tidypockets$stepScroll(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float dt, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        tidypockets$step();
+    }
+
+    *///?}
     @Override
     public void tidypockets$step() {
         if (Double.isNaN(tidypockets$target)) return;

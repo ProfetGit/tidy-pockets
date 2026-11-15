@@ -364,5 +364,64 @@
     "from": "getHoveredSlot",
     "to": "findSlot",
     "when": "<1.21.2"
+  },
+  {
+    "regex": "\\s*e\\.registerCategory\\(Keys\\.CATEGORY\\);",
+    "to": "",
+    "when": "<1.21.9",
+    "files": "^NeoForgeEntry\\.java$"
+  },
+  {
+    "regex": "@Override\\s*public KeyMapping\\.Category keyCategory\\([^)]*\\) \\{[^}]*\\}",
+    "to": "",
+    "when": "<1.21.9",
+    "files": "^NeoForgeEntry\\.java$"
+  },
+  {
+    "to": "FMLLoader.versionInfo()",
+    "when": "<1.21.9",
+    "files": "^NeoForgeEntry\\.java$",
+    "regex": "FMLLoader\\.getCurrent\\(\\)\\.getVersionInfo\\(\\)"
+  },
+  {
+    "regex": "ModList\\.isLoaded\\(",
+    "to": "ModList.get().isLoaded(",
+    "when": "<26.1",
+    "files": "^ForgeEntry\\.java$"
+  },
+  {
+    "from": "isSameItemSameComponents",
+    "to": "isSameItemSameTags",
+    "when": "<1.20.5"
+  },
+  {
+    "regex": "\\bg\\.blitSprite\\(",
+    "to": "io.github.profetgit.tidypockets.Compat.sprite(g, ",
+    "when": "<1.20.2"
+  },
+  {
+    "regex": "(?:net\\.minecraft\\.resources\\.)?ResourceLocation\\.fromNamespaceAndPath\\(",
+    "to": "new net.minecraft.resources.ResourceLocation(",
+    "when": "<1.21"
+  },
+  {
+    "regex": "(?:net\\.minecraft\\.resources\\.)?ResourceLocation\\.parse\\(",
+    "to": "new net.minecraft.resources.ResourceLocation(",
+    "when": "<1.21"
+  },
+  {
+    "regex": "(?:net\\.minecraft\\.resources\\.)?ResourceLocation\\.withDefaultNamespace\\(",
+    "to": "new net.minecraft.resources.ResourceLocation(",
+    "when": "<1.21"
+  },
+  {
+    "regex": "\\.hasInfiniteMaterials\\(\\)",
+    "to": ".getAbilities().instabuild",
+    "when": "<1.20.5"
+  },
+  {
+    "regex": "\\bMath\\.clamp\\(",
+    "to": "net.minecraft.util.Mth.clamp(",
+    "when": "<1.20.5"
   }
 ]

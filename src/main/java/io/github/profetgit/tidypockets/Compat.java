@@ -150,7 +150,7 @@ public final class Compat {
             new net.minecraft.world.level.levelgen.WorldOptions(42L, false, false),
             net.minecraft.world.level.levelgen.presets.WorldPresets::createFlatWorldDimensions, mc.screen);
         *///?}
-        //? if <1.21.2 {
+        //? if >=1.20.5 <1.21.2 {
         /*mc.createWorldOpenFlows().createFreshLevel(name,
             new net.minecraft.world.level.LevelSettings(name, net.minecraft.world.level.GameType.SURVIVAL, false, net.minecraft.world.Difficulty.PEACEFUL, true,
                 gameRules(),
@@ -158,6 +158,15 @@ public final class Compat {
             new net.minecraft.world.level.levelgen.WorldOptions(42L, false, false),
             access -> access.registryOrThrow(net.minecraft.core.registries.Registries.WORLD_PRESET)
                 .getHolderOrThrow(net.minecraft.world.level.levelgen.presets.WorldPresets.FLAT).value().createWorldDimensions(), mc.screen);
+        *///?}
+        //? if <1.20.5 {
+        /*mc.createWorldOpenFlows().createFreshLevel(name,
+            new net.minecraft.world.level.LevelSettings(name, net.minecraft.world.level.GameType.SURVIVAL, false, net.minecraft.world.Difficulty.PEACEFUL, true,
+                gameRules(),
+                net.minecraft.world.level.WorldDataConfiguration.DEFAULT),
+            new net.minecraft.world.level.levelgen.WorldOptions(42L, false, false),
+            access -> access.registryOrThrow(net.minecraft.core.registries.Registries.WORLD_PRESET)
+                .getHolderOrThrow(net.minecraft.world.level.levelgen.presets.WorldPresets.FLAT).value().createWorldDimensions());
         *///?}
     }
 
@@ -259,7 +268,7 @@ public final class Compat {
     /*private static net.minecraft.world.level.GameRules gameRules() {
         return new net.minecraft.world.level.GameRules(net.minecraft.world.level.WorldDataConfiguration.DEFAULT.enabledFeatures());
     }
-    *///?} else if >=1.20.5 {
+    *///?} else {
     /*private static net.minecraft.world.level.GameRules gameRules() {
         return new net.minecraft.world.level.GameRules();
     }
@@ -277,6 +286,93 @@ public final class Compat {
         return w == null ? 1 : w.itemDamagePerAttack();
         //?} else {
         /*return stack.getItem() instanceof net.minecraft.world.item.DiggerItem ? 2 : 1;
+        *///?}
+    }
+
+    //? if <1.20.2 {
+    /*// Before 1.20.2 there is no sprite atlas: a GUI sprite is the plain texture under textures/gui/sprites (all of ours are w x h).
+    public static void sprite(net.minecraft.client.gui.GuiGraphics g, net.minecraft.resources.ResourceLocation id, int x, int y, int w, int h) {
+        g.blit(new net.minecraft.resources.ResourceLocation(id.getNamespace(), "textures/gui/sprites/" + id.getPath() + ".png"), x, y, 0, 0, w, h, w, h);
+    }
+
+    *///?}
+
+    /** A potion stack for tests: swiftness, or healing. */
+    public static net.minecraft.world.item.ItemStack potion(boolean swiftness) {
+        //? if >=1.20.5 {
+        return net.minecraft.world.item.alchemy.PotionContents.createItemStack(net.minecraft.world.item.Items.POTION,
+            swiftness ? net.minecraft.world.item.alchemy.Potions.SWIFTNESS : net.minecraft.world.item.alchemy.Potions.HEALING);
+        //?} else {
+        /*return net.minecraft.world.item.alchemy.PotionUtils.setPotion(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.POTION),
+            swiftness ? net.minecraft.world.item.alchemy.Potions.SWIFTNESS : net.minecraft.world.item.alchemy.Potions.HEALING);
+        *///?}
+    }
+
+    /** The item's merge-relevant data (components, or the NBT tag before 1.20.5) as text, for tiebreaks and test totals. */
+    public static String stackData(net.minecraft.world.item.ItemStack stack) {
+        //? if >=1.20.5 {
+        return "" + stack.getComponentsPatch();
+        //?} else {
+        /*return "" + stack.getTag();
+        *///?}
+    }
+
+    public static int stackHash(net.minecraft.world.item.ItemStack stack) {
+        //? if >=1.20.5 {
+        return net.minecraft.world.item.ItemStack.hashItemAndComponents(stack);
+        //?} else {
+        /*return 31 * stack.getItem().hashCode() + (stack.getTag() == null ? 0 : stack.getTag().hashCode());
+        *///?}
+    }
+
+    /** The game has finished loading (the loading overlay is gone). */
+    public static boolean gameLoaded(Minecraft mc) {
+        //? if >=1.20.5 {
+        return mc.isGameLoadFinished();
+        //?} else {
+        /*return mc.getOverlay() == null;
+        *///?}
+    }
+
+    /** A reversed copy (List.reversed() is Java 21, 1.20.1 runs on Java 17). */
+    public static <T> java.util.List<T> reversed(java.util.List<T> list) {
+        java.util.List<T> copy = new java.util.ArrayList<>(list);
+        java.util.Collections.reverse(copy);
+        return copy;
+    }
+
+    /** Durability a block break with this stack costs. */
+    public static int blockCost(net.minecraft.world.item.ItemStack stack) {
+        //? if >=1.20.5 {
+        net.minecraft.world.item.component.Tool t = stack.get(net.minecraft.core.component.DataComponents.TOOL);
+        return t == null ? 1 : t.damagePerBlock();
+        //?} else {
+        /*return stack.getItem() instanceof net.minecraft.world.item.SwordItem ? 2 : 1;
+        *///?}
+    }
+
+    public static void setDamage(net.minecraft.world.item.ItemStack stack, int damage) {
+        //? if >=1.20.5 {
+        stack.set(net.minecraft.core.component.DataComponents.DAMAGE, damage);
+        //?} else {
+        /*stack.setDamageValue(damage);
+        *///?}
+    }
+
+    public static void setCustomName(net.minecraft.world.item.ItemStack stack, net.minecraft.network.chat.Component name) {
+        //? if >=1.20.5 {
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, name);
+        //?} else {
+        /*stack.setHoverName(name);
+        *///?}
+    }
+
+    /** Whether two stacks carry the same enchantments. */
+    public static boolean sameEnchantments(net.minecraft.world.item.ItemStack a, net.minecraft.world.item.ItemStack b) {
+        //? if >=1.20.5 {
+        return java.util.Objects.equals(a.get(net.minecraft.core.component.DataComponents.ENCHANTMENTS), b.get(net.minecraft.core.component.DataComponents.ENCHANTMENTS));
+        //?} else {
+        /*return net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(a).equals(net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(b));
         *///?}
     }
 
@@ -302,8 +398,16 @@ public final class Compat {
     public static boolean mouseScrolled(net.minecraft.client.gui.components.events.GuiEventListener screen, double x, double y, double sx, double sy) {
         //? if >=1.21.2 {
         return screen.mouseScrolled(x, y, sx, sy);
-        //?} else {
+        //?}
+        //? if >=1.20.2 <1.21.2 {
         /*boolean handled = screen.mouseScrolled(x, y, sx, sy);
+        if (!handled && screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c) {
+            handled = io.github.profetgit.tidypockets.mouse.MouseTweaks.scrolledAt(c, x, y, sy);
+        }
+        return handled;
+        *///?}
+        //? if <1.20.2 {
+        /*boolean handled = screen.mouseScrolled(x, y, sy);
         if (!handled && screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c) {
             handled = io.github.profetgit.tidypockets.mouse.MouseTweaks.scrolledAt(c, x, y, sy);
         }

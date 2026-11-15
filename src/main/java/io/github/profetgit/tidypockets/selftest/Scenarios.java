@@ -24,7 +24,6 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -46,8 +45,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -169,7 +166,7 @@ final class Scenarios {
     }
 
     private static ServerPlayer player(MinecraftServer server) {
-        return server.getPlayerList().getPlayers().getFirst();
+        return server.getPlayerList().getPlayers().get(0);
     }
 
     private static List<ItemStack> pool() {
@@ -186,13 +183,13 @@ final class Scenarios {
         p.add(new ItemStack(Items.BUNDLE, 1));
         p.add(new ItemStack(Items.IRON_SWORD, 1));
         ItemStack pick = new ItemStack(Items.DIAMOND_PICKAXE, 1);
-        pick.set(DataComponents.DAMAGE, 100);
+        io.github.profetgit.tidypockets.Compat.setDamage(pick, 100);
         p.add(pick);
         ItemStack named = new ItemStack(Items.COBBLESTONE, 64);
-        named.set(DataComponents.CUSTOM_NAME, Component.literal("Special Cobble"));
+        io.github.profetgit.tidypockets.Compat.setCustomName(named, Component.literal("Special Cobble"));
         p.add(named);
-        p.add(PotionContents.createItemStack(Items.POTION, Potions.SWIFTNESS));
-        p.add(PotionContents.createItemStack(Items.POTION, Potions.HEALING));
+        p.add(io.github.profetgit.tidypockets.Compat.potion(true));
+        p.add(io.github.profetgit.tidypockets.Compat.potion(false));
         return p;
     }
 
@@ -222,7 +219,7 @@ final class Scenarios {
         Map<String, Integer> m = new HashMap<>();
         for (Slot s : slots) {
             ItemStack st = s.getItem();
-            if (!st.isEmpty()) m.merge(st.getItem() + "" + st.getComponentsPatch(), st.getCount(), Integer::sum);
+            if (!st.isEmpty()) m.merge(st.getItem() + "" + io.github.profetgit.tidypockets.Compat.stackData(st), st.getCount(), Integer::sum);
         }
         return m;
     }
@@ -279,7 +276,7 @@ final class Scenarios {
                         || key == io.github.profetgit.tidypockets.input.Keys.PALETTE || key == io.github.profetgit.tidypockets.input.Keys.SEARCH
                         || key == io.github.profetgit.tidypockets.input.Keys.DEPOSIT || key == io.github.profetgit.tidypockets.input.Keys.RESTOCK) {
                         java.util.List<String> c = io.github.profetgit.tidypockets.compat.ControlifyCompat.correlated(key);
-                        SelfTest.record("key " + key.getName() + " maps to one binding", c.size() == 1 && c.getFirst().startsWith("tidypockets:"), c.toString());
+                        SelfTest.record("key " + key.getName() + " maps to one binding", c.size() == 1 && c.get(0).startsWith("tidypockets:"), c.toString());
                     }
                 }
                 for (String[] b : new String[][] {{"lock", "right_shoulder"}, {"palette", "left_shoulder"}, {"search", "guide"},
@@ -863,7 +860,7 @@ final class Scenarios {
 
     private static ItemStack worn(net.minecraft.world.item.Item item) {
         ItemStack s = new ItemStack(item);
-        s.set(DataComponents.DAMAGE, s.getMaxDamage() - 1);
+        io.github.profetgit.tidypockets.Compat.setDamage(s, s.getMaxDamage() - 1);
         return s;
     }
 
@@ -1159,7 +1156,11 @@ final class Scenarios {
             .capture("smooth-scroll", 14)
             .run(mc -> {
                 var area = scrollArea(mc);
+                //? if >=1.20.2 {
                 io.github.profetgit.tidypockets.Compat.mouseScrolled(area, area.getX() + 10, area.getY() + 10, 0, -3);
+                //?} else {
+                /*io.github.profetgit.tidypockets.Compat.mouseScrolled(area, 10, 10, 0, -3);
+                *///?}
             })
             .waitTicks(1)
             .run(mc -> amounts[0] = scrollArea(mc).scrollAmount())

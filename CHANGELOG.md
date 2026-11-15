@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.9 — 2026-11-15
+
+- New versions and loaders: NeoForge and Forge on 1.21.11 and 1.21.1, and Minecraft 1.20.1 on Fabric, Quilt, Forge and NeoForge. Tidy Pockets now runs on 26.3, 26.2, 1.21.11 and 1.21.1 with all four loaders, on 1.20.1 with all four, and on 1.21.8 and 1.21.4 with Fabric and Quilt.
+- On 1.20.1 menus have no background blur (that version has none), so there is nothing to fade.
+
 ## 1.2.8 — 2026-10-08
 
 - New option "Protection warning" (Tool protection section). Turn it off and tool protection still swaps or stows a nearly broken tool, but without the message, sound and slot animation. When your inventory is full and the action is blocked, the message still shows so you know why.
