@@ -13,16 +13,25 @@ public abstract class HandSwapLegacyMixin {
 //?} else {
 /*@Mixin(net.minecraft.client.renderer.ItemInHandRenderer.class)
 public abstract class HandSwapLegacyMixin {
-    @org.spongepowered.asm.mixin.injection.Redirect(method = "tick", at = @org.spongepowered.asm.mixin.injection.At(value = "INVOKE",
-        target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
-    private float tidypockets$steadyHand(net.minecraft.client.player.LocalPlayer player, float partialTick) {
-        return io.github.profetgit.tidypockets.palette.RandomPlace.handSteady() ? 1.0f : player.getAttackStrengthScale(partialTick);
+    // No @Redirect here: other mods (Simply Swords) redirect calls in tick, and two redirects of one call crash the game.
+    @org.spongepowered.asm.mixin.injection.ModifyVariable(method = "tick", at = @org.spongepowered.asm.mixin.injection.At("STORE"), ordinal = 0)
+    private float tidypockets$steadyHand(float strength) {
+        return io.github.profetgit.tidypockets.palette.RandomPlace.handSteady() ? 1.0f : strength;
     }
     //? if <1.21.2 {
-    /^@org.spongepowered.asm.mixin.injection.Redirect(method = "tick", at = @org.spongepowered.asm.mixin.injection.At(value = "INVOKE",
-        target = "Lnet/minecraft/world/item/ItemStack;matches(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
-    private boolean tidypockets$rolled(net.minecraft.world.item.ItemStack from, net.minecraft.world.item.ItemStack to) {
-        return io.github.profetgit.tidypockets.palette.RandomPlace.recentlyRolled() || net.minecraft.world.item.ItemStack.matches(from, to);
+    /^@org.spongepowered.asm.mixin.Shadow
+    private net.minecraft.world.item.ItemStack mainHandItem;
+
+    @org.spongepowered.asm.mixin.Shadow
+    private net.minecraft.world.item.ItemStack offHandItem;
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "tick", at = @org.spongepowered.asm.mixin.injection.At("HEAD"))
+    private void tidypockets$rolled(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+        if (player != null && io.github.profetgit.tidypockets.palette.RandomPlace.recentlyRolled()) {
+            mainHandItem = player.getMainHandItem();
+            offHandItem = player.getOffhandItem();
+        }
     }
     ^///?}
 }
