@@ -46,6 +46,8 @@ Random palette: press R on each hotbar block you want to mix (a small die shows 
 
 Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods list (NeoForge, Forge).
 
+On Minecraft 26.3 the settings open in the shared **Profet Mods** screen (also from the copper golem button in the Game Menu on Fabric and Quilt) with a live preview of every option and Quick setup presets. Its **Report bug** button sends a bug report from inside the game: what happened plus your Minecraft and loader versions, mod list, changed settings and recent errors. **Privacy:** reports go through Profet's report server (Cloudflare) and are posted as public issues on GitHub. Your player name, home folder and IP addresses are removed first, and a **View report** link shows exactly what will be sent. Nothing is sent unless you press Send.
+
 ![Compatibility](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-compatibility.webp)
 
 - **Client-side only.** Works on any server, including vanilla servers and Realms.

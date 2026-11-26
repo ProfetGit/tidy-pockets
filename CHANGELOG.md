@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.2.16 — unreleased
+## 1.2.25 — 2026-11-26
 
+- **New settings screen on Minecraft 26.3**: every Tidy Pockets option in the shared Profet Mods screen with a live preview of what it does (a chest window that sorts, refills and protects in front of you), Quick setup presets, and Cancel to put everything back. Also opened by the copper golem button in the Game Menu on Fabric and Quilt, together with the other Profet mods you have installed.
 - **New: Report bug** button in the settings screen (Minecraft 26.3): write what happened and send it from inside the game. It attaches your Minecraft, loader, mod list, changed settings and recent errors (your name, home folder and IPs hidden) and posts it as a public GitHub issue. If sending fails, the report is copied and GitHub opens instead.
 - Bug reports have short fields for what happened, the steps and what you expected; a **View report** link shows exactly what gets sent; your draft is kept until it is sent. After a crash caused by a Profet mod, the title screen offers to report it with the crash attached. New **Ko-fi** button in the settings footer.
 - Moving items onto a stack no longer makes that slot blink empty: it keeps showing the old stack until the new items land.
