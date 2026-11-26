@@ -75,7 +75,8 @@ public final class StackKeys {
         return (long) base * 4096 + v;
     }
 
-    private static void ensureOrder() {
+    /** Rebuilds the creative order for the current world; call before {@link #key} when no slots are read. */
+    public static void ensureOrder() {
         Minecraft mc = Minecraft.getInstance();
         ClientPacketListener conn = mc.getConnection();
         if (conn == null || builtFor == conn.registryAccess()) return;

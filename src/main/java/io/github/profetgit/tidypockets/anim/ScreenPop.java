@@ -19,7 +19,7 @@ import org.joml.Matrix3x2fStack;
  * Closing is instant.
  */
 public final class ScreenPop {
-    static final double POP_MS = 120;
+    public static final double POP_MS = 120;
     private static Screen current;
     private static double start;
     private static final Deque<Boolean> PUSHED = new ArrayDeque<>();
@@ -55,7 +55,11 @@ public final class ScreenPop {
 
     /** Current scale of a screen, 1 when not popping. */
     public static double scale(Screen s) {
-        double p = progress(s);
+        return scaleAt(progress(s));
+    }
+
+    /** A popping screen's scale, {@code p} (0..1) of the way through the pop. */
+    public static double scaleAt(double p) {
         return p >= 1 ? 1 : 0.92 + 0.08 * Ease.outBack(p);
     }
 

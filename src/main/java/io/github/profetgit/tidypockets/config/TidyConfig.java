@@ -81,6 +81,17 @@ public final class TidyConfig {
         save();
     }
 
+    /** A deep copy of the current options, to put back with {@link #restore}. */
+    public static TidyConfig snapshot() {
+        TidyConfig c = GSON.fromJson(GSON.toJson(instance), TidyConfig.class);
+        return c == null ? new TidyConfig() : c.sanitized();
+    }
+
+    public static void restore(TidyConfig snapshot) {
+        instance = snapshot.sanitized();
+        save();
+    }
+
     public static void save() {
         try {
             Files.createDirectories(file().getParent());

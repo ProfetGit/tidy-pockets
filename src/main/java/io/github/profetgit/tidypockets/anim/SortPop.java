@@ -21,7 +21,12 @@ public final class SortPop {
             if (!moved[i]) continue;
             Slot s = slots.get(i);
             int col = (s.x - minX) / 18, row = (s.y - minY) / 18;
-            SlotAnims.pop(s, Math.min(MAX_DELAY_MS, (row + col) * STEP_MS), true);
+            SlotAnims.pop(s, delay(col, row), true);
         }
+    }
+
+    /** When a slot of the sorted region starts to pop, in animation ms after the sort. */
+    public static double delay(int col, int row) {
+        return Math.min(MAX_DELAY_MS, (row + col) * STEP_MS);
     }
 }

@@ -74,6 +74,7 @@ public final class SelfTest {
                 case "compat" -> Scenarios.buildCompat().steps;
                 case "pad" -> Scenarios.buildPad().steps;
                 case "showcase" -> Showcase.build().steps;
+                case "ui" -> Scenarios.buildUi().steps;
                 default -> Scenarios.build().steps;
             };
         }
@@ -145,6 +146,10 @@ public final class SelfTest {
                 TidyPockets.LOG.warn("[selftest] frame write failed: {}", e.toString());
             }
         }));
+    }
+
+    static boolean capturing() {
+        return captureLeft > 0;
     }
 
     static void startCapture(String name, int frames) {

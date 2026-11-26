@@ -79,7 +79,7 @@ public final class Compat {
 
     /** A message over the hotbar. */
     public static void overlay(net.minecraft.client.player.LocalPlayer player, net.minecraft.network.chat.Component message) {
-        //? if >=26.2 {
+        //? if >=26.1 {
         player.sendOverlayMessage(message);
         //?} else {
         /*player.displayClientMessage(message, true);
@@ -134,7 +134,7 @@ public final class Compat {
     }
 
     public static void createWorld(Minecraft mc, String name) {
-        //? if >=26.2 {
+        //? if >=26.1 {
         mc.createWorldOpenFlows().createFreshLevel(name,
             new net.minecraft.world.level.LevelSettings(name, net.minecraft.world.level.GameType.SURVIVAL,
                 new net.minecraft.world.level.LevelSettings.DifficultySettings(net.minecraft.world.Difficulty.PEACEFUL, false, false),
@@ -142,7 +142,7 @@ public final class Compat {
             new net.minecraft.world.level.levelgen.WorldOptions(42L, false, false),
             net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
         //?}
-        //? if >=1.21.2 <26.2 {
+        //? if >=1.21.2 <26.1 {
         /*mc.createWorldOpenFlows().createFreshLevel(name,
             new net.minecraft.world.level.LevelSettings(name, net.minecraft.world.level.GameType.SURVIVAL, false, net.minecraft.world.Difficulty.PEACEFUL, true,
                 gameRules(),

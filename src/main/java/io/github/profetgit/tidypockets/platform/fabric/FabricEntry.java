@@ -35,5 +35,10 @@ public final class FabricEntry implements ClientModInitializer, Platform {
     public boolean isModLoaded(String modId) {
         return FabricLoader.getInstance().isModLoaded(modId);
     }
+
+    @Override
+    public String modVersion(String modId) {
+        return FabricLoader.getInstance().getModContainer(modId).map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("");
+    }
 }
 //?}

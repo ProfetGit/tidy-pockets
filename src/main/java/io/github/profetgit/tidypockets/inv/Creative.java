@@ -94,11 +94,11 @@ public final class Creative {
             SlotAnims.shake(from);
             return false;
         }
-        ItemStack put = item.copyWithCount(item.getMaxStackSize());
+        ItemStack put = item.copyWithCount(item.getMaxStackSize()), was = inv.getItem(to).copy();
         inv.setItem(to, put);
         p.inventoryMenu.broadcastChanges();
         Slot shown = shown(screen.getMenu(), p, to);
-        if (shown != null) FlyAnims.launch(put, from, shown);
+        if (shown != null) FlyAnims.launch(put, was, from, shown);
         else SlotAnims.bump(from);
         return true;
     }

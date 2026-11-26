@@ -3,10 +3,14 @@
   "user": "PocketTester",
   "out_prop": "tidypockets.selftest",
   "props": {
-    "tidypockets.selftest.mode": "{mode}"
+    "tidypockets.selftest.mode": "{mode}",
+    "tidypockets.ui.gs": "{gs}",
+    "tidypockets.selftest.pvdense": "{pvdense}"
   },
   "defaults": {
-    "mode": "full"
+    "mode": "full",
+    "gs": "2",
+    "pvdense": "false"
   },
   "fabric_api": true,
   "width": 1280,
@@ -38,6 +42,7 @@
           "mc": [
             "26.3",
             "26.2",
+            "26.1.2",
             "1.21.11",
             "1.21.8",
             "1.21.4",
@@ -60,7 +65,8 @@
         {
           "mc": [
             "26.3",
-            "26.2"
+            "26.2",
+            "26.1.2"
           ],
           "loader": [
             "forge",
@@ -95,7 +101,8 @@
         {
           "mc": [
             "26.3",
-            "26.2"
+            "26.2",
+            "26.1.2"
           ],
           "loader": [
             "fabric",

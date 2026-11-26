@@ -127,6 +127,8 @@ public abstract class AbstractContainerScreenMixin {
         if (!SlotAnims.before(g, slot)) {
             CreativeSlide.after(g);
             SlotAnims.puff(g, slot);
+            // a stack still showing under a flight keeps its padlock, pip and search marks
+            if (SlotAnims.showsUnderFlight(slot)) SlotOverlay.afterSlot(self, g, slot);
             ci.cancel();
         }
     }

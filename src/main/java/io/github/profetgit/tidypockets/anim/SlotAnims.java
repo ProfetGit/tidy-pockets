@@ -4,6 +4,7 @@ import io.github.profetgit.tidypockets.TidyPockets;
 import io.github.profetgit.tidypockets.config.TidyConfig;
 import java.util.Map;
 import java.util.WeakHashMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -18,7 +19,8 @@ import org.joml.Matrix3x2fStack;
 public final class SlotAnims {
     private record Pop(double start, double delay, boolean puff) {}
 
-    static final double POP_MS = 90, PUFF_MS = 80, BUMP_MS = 70, SHAKE_MS = 180;
+    public static final double POP_MS = 90, PUFF_MS = 80, BUMP_MS = 70;
+    static final double SHAKE_MS = 180;
     private static final Identifier[] PUFF = new Identifier[4];
 
     static {
@@ -33,6 +35,33 @@ public final class SlotAnims {
     private static boolean pushed;
 
     private SlotAnims() {}
+
+    /** Real ms as animation ms: the times below are for speed 1. */
+    private static double effectMs(double realMs) {
+        return realMs * TidyConfig.get().animSpeed;
+    }
+
+    /** A popping item's scale, {@code ms} animation ms after the sort: hidden until its delay, then in with an overshoot. */
+    public static double popScale(double ms, double delayMs) {
+        double t = (ms - delayMs) / POP_MS;
+        if (t < 0) return 0;
+        return t < 1 ? Math.max(0, Ease.outBack(t)) : 1;
+    }
+
+    /** The puff sprite showing at that moment, or -1: it leads its item's pop by 40 ms. */
+    public static int puffFrame(double ms, double delayMs) {
+        double t = (ms - delayMs + 40) / PUFF_MS;
+        return t < 0 || t >= 1 ? -1 : (int) (t * 4);
+    }
+
+    /** A bumped item's scale, {@code t} (0..1) of the way through the bump. */
+    public static double bumpScale(double t) {
+        return 1 + 0.2 * (1 - Ease.outCubic(t));
+    }
+
+    public static Identifier puffSprite(int frame) {
+        return PUFF[frame];
+    }
 
     public static void pop(Slot s, double delayMs, boolean puff) {
         POPS.put(s, new Pop(Ease.now(), delayMs, puff));
@@ -63,15 +92,14 @@ public final class SlotAnims {
         double now = Ease.now();
         Pop p = POPS.get(s);
         if (p != null) {
-            double t = (now - p.start - Ease.scaled(p.delay)) / Ease.scaled(POP_MS);
-            if (t < 0) return 0;
-            if (t < 1) return Math.max(0, Ease.outBack(t));
+            double ms = effectMs(now - p.start);
+            if (ms < p.delay + POP_MS) return popScale(ms, p.delay);
             POPS.remove(s);
         }
         Double b = BUMPS.get(s);
         if (b != null) {
             double t = Ease.progress(b, BUMP_MS);
-            if (t < 1) return 1 + 0.2 * (1 - Ease.outCubic(t));
+            if (t < 1) return bumpScale(t);
             BUMPS.remove(s);
         }
         return 1;
@@ -90,6 +118,14 @@ public final class SlotAnims {
         trackCount(s);
         double k = scale(s), dx = shakeOffset(s);
         if (k <= 0.02) return false;
+        ItemStack under = FlyAnims.under(s);
+        if (under != null) {
+            if (!under.isEmpty()) {
+                g.item(under, s.x, s.y);
+                g.itemDecorations(Minecraft.getInstance().font, under, s.x, s.y);
+            }
+            return false;
+        }
         if (k != 1 || dx != 0) {
             Matrix3x2fStack pose = g.pose();
             pose.pushMatrix();
@@ -101,6 +137,12 @@ public final class SlotAnims {
         return true;
     }
 
+    /** Whether a slot {@link #before} skipped still shows its old stack, under an item flying onto it. */
+    public static boolean showsUnderFlight(Slot s) {
+        ItemStack under = FlyAnims.under(s);
+        return under != null && !under.isEmpty();
+    }
+
     public static void after(GuiGraphicsExtractor g, Slot s) {
         if (pushed) g.pose().popMatrix();
         pushed = false;
@@ -110,9 +152,9 @@ public final class SlotAnims {
     public static void puff(GuiGraphicsExtractor g, Slot s) {
         Pop p = POPS.get(s);
         if (p == null || !p.puff || !Ease.enabled()) return;
-        double t = (Ease.now() - p.start - Ease.scaled(p.delay) + Ease.scaled(40)) / Ease.scaled(PUFF_MS);
-        if (t < 0 || t >= 1) return;
-        g.blitSprite(RenderPipelines.GUI_TEXTURED, PUFF[(int) (t * 4)], s.x, s.y, 16, 16);
+        int frame = puffFrame(effectMs(Ease.now() - p.start), p.delay);
+        if (frame < 0) return;
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, PUFF[frame], s.x, s.y, 16, 16);
     }
 
     public static void clear() {

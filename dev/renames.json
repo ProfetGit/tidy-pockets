@@ -7,82 +7,82 @@
   {
     "from": "GuiGraphicsExtractor",
     "to": "GuiGraphics",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "ContainerInput",
     "to": "ClickType",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractRenderStateWithTooltipAndSubtitles",
     "to": "renderWithTooltipAndSubtitles",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractRenderState",
     "to": "render",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractBackground",
     "to": "renderBackground",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractSlots",
     "to": "renderSlots",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractSlot",
     "to": "renderSlot",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractContents",
     "to": "renderContents",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractItemHotbar",
     "to": "renderItemHotbar",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractEntityInInventoryFollowsMouse",
     "to": "renderEntityInInventoryFollowsMouse",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractCarriedItem",
     "to": "renderCarriedItem",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "extractTooltip",
     "to": "renderTooltip",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "net\\.minecraft\\.client\\.renderer\\.state\\.gui\\.pip",
     "to": "net.minecraft.client.gui.render.state.pip",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "net\\.minecraft\\.client\\.renderer\\.state\\.gui\\.GuiRenderState",
     "to": "net.minecraft.client.gui.render.state.GuiRenderState",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "net/minecraft/client/renderer/state/gui/pip/",
     "to": "net/minecraft/client/gui/render/state/pip/",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "net/minecraft/client/renderer/state/gui/GuiRenderState",
     "to": "net/minecraft/client/gui/render/state/GuiRenderState",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "Hud",
@@ -93,31 +93,31 @@
   {
     "regex": "net\\.fabricmc\\.fabric\\.api\\.client\\.keymapping\\.v1\\.KeyMappingHelper",
     "to": "net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^FabricEntry\\.java$"
   },
   {
     "from": "KeyMappingHelper",
     "to": "KeyBindingHelper",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^FabricEntry\\.java$"
   },
   {
     "from": "registerKeyMapping",
     "to": "registerKeyBinding",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^FabricEntry\\.java$"
   },
   {
     "regex": "Lnet/minecraft/client/gui/GuiGraphics;blitSprite\"",
     "to": "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V\"",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^HudMixin\\.java$"
   },
   {
     "from": "extractOptions",
     "to": "render",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^GameRendererMixin\\.java$"
   },
   {
@@ -128,52 +128,57 @@
   {
     "regex": "\\.gui\\.screen\\(\\)",
     "to": ".screen",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "\\.gui\\.setScreen\\(",
     "to": ".setScreen(",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "\\.gui\\.hud\\b",
     "to": ".gui",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "\\bg\\.item\\(",
     "to": "g.renderItem(",
-    "when": "<26.2"
+    "when": "<26.1"
+  },
+  {
+    "regex": "\\bg\\.itemDecorations\\(",
+    "to": "g.renderItemDecorations(",
+    "when": "<26.1"
   },
   {
     "regex": "\\bg\\.outline\\(",
     "to": "g.renderOutline(",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "\\bg\\.text\\(",
     "to": "g.drawString(",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "handleContainerInput",
     "to": "handleInventoryMouseClick",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "\\{\"book\", \"entity\", \"skin\", \"bannerPattern\"\\}",
     "to": "{\"submitBookModelRenderState\", \"submitEntityRenderState\", \"submitSkinRenderState\", \"submitBannerPatternRenderState\"}",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "from": "addPicturesInPictureState",
     "to": "submitPicturesInPictureState",
-    "when": "<26.2"
+    "when": "<26.1"
   },
   {
     "regex": "Entity target, EntityHitResult hit, InteractionHand hand",
     "to": "Entity target, InteractionHand hand",
-    "when": "<26.2",
+    "when": "<26.1",
     "files": "^MultiPlayerGameModeMixin\\.java$"
   },
   {
@@ -423,5 +428,10 @@
     "regex": "\\bMath\\.clamp\\(",
     "to": "net.minecraft.util.Mth.clamp(",
     "when": "<1.20.5"
+  },
+  {
+    "from": "createTestWorldDimensions",
+    "to": "createFlatWorldDimensions",
+    "when": ">=26.1 <26.2"
   }
 ]

@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 //? if >=1.21.6 {
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if >=26.2 {
+//? if >=26.1 {
 @Mixin(net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState.class)
 public interface PictureInPictureStateInterfaceMixin {
 }

@@ -36,7 +36,7 @@ public abstract class HudMixin {
 
     @Inject(method = "extractSlot", at = @At("HEAD"))
     private void tidypockets$slotHead(GuiGraphicsExtractor g, int x, int y, DeltaTracker dt, Player p, ItemStack stack, int seed, CallbackInfo ci) {
-        HudAnims.beforeSlot(g, x, y, p, stack);
+        HudAnims.beforeSlot(g, x, y, p, stack, seed);
     }
 
     @Inject(method = "extractSlot", at = @At("RETURN"))
@@ -80,7 +80,7 @@ public abstract class HudMixin {
 
     @Inject(method = "renderSlot", at = @At("HEAD"))
     private void tidypockets$slotHead(GuiGraphics g, int x, int y, float pt, Player p, ItemStack stack, int seed, CallbackInfo ci) {
-        HudAnims.beforeSlot(g, x, y, p, stack);
+        HudAnims.beforeSlot(g, x, y, p, stack, seed);
     }
 
     @Inject(method = "renderSlot", at = @At("RETURN"))

@@ -66,8 +66,7 @@ public abstract class AbstractScrollAreaMixin implements SmoothScroller {
         }
         double now = Ease.now(), dt = now - tidypockets$time;
         tidypockets$time = now;
-        double k = 1 - Math.exp(-dt * TidyConfig.get().animSpeed / 45.0);
-        double next = cur + (tidypockets$target - cur) * k;
+        double next = Ease.approach(cur, tidypockets$target, dt, TidyConfig.get().animSpeed);
         if (Math.abs(tidypockets$target - next) < 0.3) {
             next = tidypockets$target;
             tidypockets$target = Double.NaN;

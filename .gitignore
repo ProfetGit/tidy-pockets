@@ -28,3 +28,5 @@ forge-*/build/
 forge-*/run/
 forge-*/.gradle/
 versions/*/logs/
+
+dev/preview/out/

@@ -2,7 +2,7 @@ package io.github.profetgit.tidypockets.platform.neoforge;
 
 //? neoforge {
 /*import io.github.profetgit.tidypockets.TidyPockets;
-import io.github.profetgit.tidypockets.config.TidyConfigScreen;
+import io.github.profetgit.tidypockets.config.ConfigScreens;
 import io.github.profetgit.tidypockets.input.Keys;
 import io.github.profetgit.tidypockets.platform.Platform;
 import java.nio.file.Path;
@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class NeoForgeEntry implements Platform {
     public NeoForgeEntry(IEventBus modBus, ModContainer container) {
         TidyPockets.init(this);
-        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new TidyConfigScreen(parent));
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> ConfigScreens.create(parent));
         modBus.addListener((RegisterKeyMappingsEvent e) -> {
             e.registerCategory(Keys.CATEGORY);
             Keys.ALL.forEach(e::register);

@@ -18,9 +18,9 @@ import org.joml.Matrix3x2fStack;
  * menu before and after our own clicks (and vanilla shift-clicks), which the client applies locally at once.
  */
 public final class FlyAnims {
-    private record Flight(ItemStack stack, Slot from, Slot to, double start) {}
+    private record Flight(ItemStack stack, ItemStack under, Slot from, Slot to, double start) {}
 
-    static final double FLY_MS = 65;
+    public static final double FLY_MS = 65;
     private static final List<Flight> FLIGHTS = new ArrayList<>();
     private static AbstractContainerMenu snapMenu;
     private static ItemStack[] snap;
@@ -38,9 +38,20 @@ public final class FlyAnims {
         ItemStack[] before = snap;
         snap = null;
         if (!TidyConfig.get().animFly || Conflicts.fly || !Ease.enabled()) return;
+        ItemStack[] after = new ItemStack[before.length];
+        for (int i = 0; i < after.length; i++) after[i] = menu.slots.get(i).getItem();
+        double now = Ease.now();
+        for (int[] move : moves(before, after)) {
+            int d = move[1];
+            FLIGHTS.add(new Flight(after[d].copy(), stays(before[d], after[d]), menu.slots.get(move[0]), menu.slots.get(d), now));
+        }
+    }
+
+    /** The flights between two states of the same slots, as {from, to} index pairs. */
+    public static List<int[]> moves(ItemStack[] before, ItemStack[] after) {
         List<Integer> sources = new ArrayList<>(), dests = new ArrayList<>();
         for (int i = 0; i < before.length; i++) {
-            ItemStack now = menu.slots.get(i).getItem();
+            ItemStack now = after[i];
             int was = before[i].getCount(), is = now.isEmpty() ? 0 : now.getCount();
             boolean sameItem = before[i].isEmpty() || now.isEmpty() || ItemStack.isSameItemSameComponents(before[i], now);
             if (sameItem && is < was) sources.add(i);
@@ -50,23 +61,37 @@ public final class FlyAnims {
                 dests.add(i);
             }
         }
-        double now = Ease.now();
+        List<int[]> out = new ArrayList<>();
         for (int d : dests) {
-            ItemStack arrived = menu.slots.get(d).getItem();
+            ItemStack arrived = after[d];
             if (arrived.isEmpty()) continue;
             for (int s : sources) {
                 if (s == d || before[s].isEmpty() || !ItemStack.isSameItemSameComponents(before[s], arrived)) continue;
-                Slot to = menu.slots.get(d);
-                FLIGHTS.add(new Flight(arrived.copy(), menu.slots.get(s), to, now));
+                out.add(new int[] {s, d});
                 break;
             }
         }
+        return out;
     }
 
     /** A flight that isn't a diff of two menu states: a creative grid item going into the hotbar. */
-    public static void launch(ItemStack stack, Slot from, Slot to) {
+    public static void launch(ItemStack stack, ItemStack was, Slot from, Slot to) {
         if (!TidyConfig.get().animFly || Conflicts.fly || !Ease.enabled()) return;
-        FLIGHTS.add(new Flight(stack.copy(), from, to, Ease.now()));
+        FLIGHTS.add(new Flight(stack.copy(), stays(was, stack), from, to, Ease.now()));
+    }
+
+    /** What of the target's old stack stays in it while a flight adds to it: nothing if it was empty or held something else. */
+    public static ItemStack stays(ItemStack was, ItemStack arrived) {
+        return !was.isEmpty() && ItemStack.isSameItemSameComponents(was, arrived) ? was : ItemStack.EMPTY;
+    }
+
+    /**
+     * For a slot a flight is still heading for, the stack to show there until it lands (maybe empty); null otherwise.
+     * Vanilla already put the arriving items there, so its own drawing is skipped meanwhile.
+     */
+    public static ItemStack under(Slot s) {
+        for (Flight f : FLIGHTS) if (f.to == s && Ease.progress(f.start, FLY_MS) < 1) return f.under;
+        return null;
     }
 
     /** Draws flights above the slots; called by the screen just before the carried item. */
@@ -87,17 +112,22 @@ public final class FlyAnims {
                 it.remove();
                 continue;
             }
-            double e = Ease.outCubic(t);
-            double x = left + f.from.x + (f.to.x - f.from.x) * e;
-            double y = top + f.from.y + (f.to.y - f.from.y) * e - Math.sin(Math.PI * t) * 4;
-            double sx = 0.85, sy = 0.85;
-            Matrix3x2fStack pose = g.pose();
-            pose.pushMatrix();
-            pose.translate((float) x + 8, (float) y + 8);
-            pose.scale((float) sx, (float) sy);
-            g.item(f.stack, -8, -8);
-            pose.popMatrix();
+            item(g, f.stack, left + f.from.x, top + f.from.y, left + f.to.x, top + f.to.y, t);
         }
+    }
+
+    /** A flying item {@code t} (0..1) of the way from one slot's item position to another's: a short arc, slightly small. */
+    public static void item(GuiGraphicsExtractor g, ItemStack stack, double fromX, double fromY, double toX, double toY, double t) {
+        double e = Ease.outCubic(t);
+        double x = fromX + (toX - fromX) * e;
+        double y = fromY + (toY - fromY) * e - Math.sin(Math.PI * t) * 4;
+        double sx = 0.85, sy = 0.85;
+        Matrix3x2fStack pose = g.pose();
+        pose.pushMatrix();
+        pose.translate((float) x + 8, (float) y + 8);
+        pose.scale((float) sx, (float) sy);
+        g.item(stack, -8, -8);
+        pose.popMatrix();
     }
 
     public static void clear() {

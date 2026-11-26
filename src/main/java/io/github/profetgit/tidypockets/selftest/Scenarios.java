@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -77,6 +78,8 @@ final class Scenarios {
         if (io.github.profetgit.tidypockets.TidyPockets.platform().isModLoaded("controlify")) sortChest(s, "controlify-sort-chest", 14, false, 0.8, true);
         refill(s);
         protect(s);
+        mergeFlight(s);
+        stowShake(s);
         palette(s);
         mouse(s);
         tools(s);
@@ -86,6 +89,314 @@ final class Scenarios {
         creative(s);
         return s;
     }
+
+    /** The Profet Settings screen: contact-sheet captures at GUI scale 2, 3 and 4, then every option type through real mouse events. */
+    private static String uiOpeningJson = "";
+
+    static Script buildUi() {
+        Script s = new Script();
+        //? if >=26.3 {
+        UiPreviews.atTitle(s);
+        //?}
+        createWorld(s);
+        //? if fabric && >=26.3 {
+        s.run(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)))
+            .waitTicks(15)
+            .check("ui: the Game Menu has exactly one golem button", mc -> {
+                long n = net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen()).stream()
+                    .filter(w -> w.getClass().getSimpleName().equals("GolemButton")).count();
+                return n == 1 ? null : "golem buttons: " + n;
+            })
+            .capture("ui-0-options", 1)
+            .waitTicks(3)
+            .run(mc -> optionsButton(mc).onPress(new net.minecraft.client.input.KeyEvent(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN, 0, 0)))
+            .waitTicks(10)
+            .check("ui: the golem button opens the hub", mc -> io.github.profetgit.tidypockets.config.ConfigScreens.isConfigScreen(mc.gui.screen()) ? null : "screen " + mc.gui.screen());
+        //?}
+        //? if >=26.3 {
+        for (int gs : new int[] {2, 3, 4}) {
+            s.run(mc -> {
+                    mc.options.guiScale().set(gs);
+                    mc.resizeGui();
+                    mc.gui.setScreen(io.github.profetgit.tidypockets.config.ConfigScreens.create(null));
+                })
+                .waitTicks(30)
+                .run(mc -> SelfTest.record("ui layout gs" + gs, true, uiScreen(mc).debugLayout()))
+                .capture("ui-gs" + gs + "-a-top", 1)
+                .waitTicks(60)
+                .capture("ui-gs" + gs + "-a2-sorted", 1)
+                .waitTicks(6)
+                .run(mc -> uiScreen(mc).debugScroll(200))
+                .waitTicks(30)
+                .capture("ui-gs" + gs + "-b-scrolled", 1)
+                .waitTicks(6)
+                .run(mc -> uiScreen(mc).debugScroll(100000))
+                .waitTicks(30)
+                .capture("ui-gs" + gs + "-c-end", 1)
+                .waitTicks(6);
+        }
+        s.run(mc -> {
+                mc.options.guiScale().set(Integer.getInteger("tidypockets.ui.gs", 2));
+                mc.resizeGui();
+                TidyConfig.get().sortHotbar = false;
+                TidyConfig.get().sortOrder = TidyConfig.SortOrder.CREATIVE;
+                TidyConfig.get().protect = TidyConfig.Protect.ALL;
+                TidyConfig.get().safeModeClicksPerTick = 8;
+                TidyConfig.get().animSpeed = 1.0;
+            })
+            .waitTicks(10);
+        s.run(mc -> uiScreen(mc).debugRevealRow("sortSound"))
+            .waitTicks(6)
+            .capture("ui-k-switch-rest", 1)
+            .waitTicks(3)
+            .run(mc -> {
+                int[] p = uiScreen(mc).debugPoint("sortSound", -1f);
+                uiScreen(mc).debugHover(p[0], p[1]);
+            })
+            .waitTicks(25)
+            .capture("ui-l-switch-hover", 1)
+            .waitTicks(3)
+            .run(mc -> uiScreen(mc).debugHover(-1, -1));
+        // the real input path: MouseHandler.onMove / onButton, as the OS delivers it
+        for (boolean expect : new boolean[] {false, true}) {
+            s.run(mc -> uiScreen(mc).debugRevealRow("sortSound"))
+                .waitTicks(4)
+                .run(mc -> {
+                    int[] p = uiScreen(mc).debugPoint("sortSound", -1f);
+                    realClick(mc, p[0], p[1]);
+                })
+                .waitTicks(10)
+                .capture("ui-m-after-click-" + expect, 1)
+                .waitTicks(3)
+                .check("ui: a real mouse click toggles a switch (" + expect + ")", mc -> TidyConfig.get().sortSound == expect ? null : "sortSound " + TidyConfig.get().sortSound);
+        }
+        s.run(mc -> uiScreen(mc).debugRevealRow("sortOrder"))
+            .waitTicks(4)
+            .run(mc -> {
+                int[] p = uiScreen(mc).debugPoint("sortOrder", 0.5f);
+                realClick(mc, p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: a real mouse click steps a choice with its arrow", mc -> TidyConfig.get().sortOrder == TidyConfig.SortOrder.NAME ? null : "sortOrder " + TidyConfig.get().sortOrder)
+            .waitTicks(2);
+        uiClick(s, "sortOrder", 0.1f);
+        s.check("ui: the left arrow steps back", mc -> TidyConfig.get().sortOrder == TidyConfig.SortOrder.CREATIVE ? null : "sortOrder " + TidyConfig.get().sortOrder);
+        uiClick(s, "sortHotbar", -1f);
+        s.check("ui: switch writes the config", mc -> TidyConfig.get().sortHotbar ? null : "sortHotbar still false")
+            .waitTicks(20)
+            .capture("ui-d-switch", 1)
+            .waitTicks(3);
+        uiClick(s, "sortOrder", 0.5f);
+        s.check("ui: choice arrows write the config", mc -> TidyConfig.get().sortOrder == TidyConfig.SortOrder.NAME ? null : "sortOrder " + TidyConfig.get().sortOrder);
+        uiClick(s, "protect", 0.1f);
+        s.check("ui: the left arrow wraps around to the last option", mc -> TidyConfig.get().protect == TidyConfig.Protect.OFF ? null : "protect " + TidyConfig.get().protect);
+        uiClick(s, "safeModeClicksPerTick", 0.5f);
+        s.check("ui: slider click sets the value", mc -> {
+            int v = TidyConfig.get().safeModeClicksPerTick;
+            return v >= 31 && v <= 34 ? null : "value " + v;
+        });
+        s.run(mc -> {
+                var scr = uiScreen(mc);
+                int[] a = scr.debugPoint("safeModeClicksPerTick", 0.5f), b = scr.debugPoint("safeModeClicksPerTick", 1f);
+                scr.debugPress(a[0], a[1]);
+                scr.debugDrag(b[0] + 30, b[1]);
+                scr.debugRelease(b[0] + 30, b[1]);
+            })
+            .waitTicks(20)
+            .check("ui: slider drag reaches the maximum", mc -> TidyConfig.get().safeModeClicksPerTick == 64 ? null : "value " + TidyConfig.get().safeModeClicksPerTick);
+        uiClick(s, "animSpeed", 0f);
+        s.check("ui: animation speed slider writes the double", mc -> TidyConfig.get().animSpeed == 0.0 ? null : "animSpeed " + TidyConfig.get().animSpeed)
+            .waitTicks(20)
+            .capture("ui-e-changed-rows", 1)
+            .waitTicks(3)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                scr.debugRevealRow("animSpeed");
+            })
+            .waitTicks(10)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugReset("animSpeed");
+                if (p == null) throw new IllegalStateException("no reset arrow");
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: reset arrow restores the default", mc -> TidyConfig.get().animSpeed == 1.0 ? null : "animSpeed " + TidyConfig.get().animSpeed)
+            .check("ui: the file holds the changes", mc -> {
+                try {
+                    String f = java.nio.file.Files.readString(io.github.profetgit.tidypockets.TidyPockets.platform().configDir().resolve("tidypockets.json"));
+                    return f.contains("\"sortHotbar\": true") && f.contains("\"sortOrder\": \"NAME\"") && f.contains("\"protect\": \"OFF\"")
+                        && f.contains("\"safeModeClicksPerTick\": 64") && f.contains("\"animSpeed\": 1.0") ? null : f;
+                } catch (java.io.IOException e) {
+                    return e.toString();
+                }
+            })
+            .run(mc -> uiScreen(mc).debugScroll(0))
+            .waitTicks(10)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugPreset(0);
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(8)
+            .capture("ui-f-preset-flash", 1)
+            .waitTicks(3)
+            .waitTicks(30)
+            .check("ui: Quick setup Off switches sorting and refill off", mc -> !TidyConfig.get().sortEnabled && !TidyConfig.get().refillEnabled ? null : "still on")
+            .capture("ui-g-preset-off", 1)
+            .waitTicks(3)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugPreset(2);
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(20)
+            .check("ui: Quick setup Default restores the defaults", mc -> {
+                TidyConfig d = new TidyConfig();
+                TidyConfig c = TidyConfig.get();
+                return c.sortEnabled == d.sortEnabled && c.sortHotbar == d.sortHotbar && c.sortOrder == d.sortOrder && c.protect == d.protect
+                    && c.safeModeClicksPerTick == d.safeModeClicksPerTick ? null : "differs";
+            });
+        uiClick(s, "wheelInvert", -1f);
+        s.run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugChangedButton();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(30)
+            .check("ui: Changed filter keeps only changed rows", mc -> uiScreen(mc).debugItemCount() <= 3 ? null : "items " + uiScreen(mc).debugItemCount())
+            .capture("ui-h-changed-filter", 1)
+            .waitTicks(3)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugChangedButton();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(20)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugMenu();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(30)
+            .capture("ui-j-menu", 1)
+            .waitTicks(3)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugMenuItem(0);
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: Reset this mod restores wheelInvert", mc -> !TidyConfig.get().wheelInvert ? null : "still set")
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugDone();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: Done closes the screen", mc -> mc.gui.screen() == null ? null : "screen " + mc.gui.screen());
+        s.run(mc -> {
+                uiOpeningJson = new com.google.gson.Gson().toJson(TidyConfig.get());
+                mc.gui.setScreen(io.github.profetgit.tidypockets.config.ConfigScreens.create(null));
+            })
+            .waitTicks(30);
+        uiClick(s, "sortSound", -1f);
+        uiClick(s, "wheelInvert", -1f);
+        s.check("ui: options changed before Cancel", mc -> !uiOpeningJson.equals(new com.google.gson.Gson().toJson(TidyConfig.get())) ? null : "nothing changed")
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugCancel();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: Cancel puts every option back", mc -> uiOpeningJson.equals(new com.google.gson.Gson().toJson(TidyConfig.get())) ? null : "config " + new com.google.gson.Gson().toJson(TidyConfig.get()))
+            .check("ui: Cancel closes the screen", mc -> mc.gui.screen() == null ? null : "screen " + mc.gui.screen());
+        java.util.List<java.net.URI> bugUrls = new java.util.ArrayList<>();
+        java.util.function.Consumer<java.net.URI>[] prevOpener = new java.util.function.Consumer[1];
+        s.run(mc -> {
+                mc.gui.setScreen(io.github.profetgit.tidypockets.config.ConfigScreens.create(null));
+                prevOpener[0] = io.github.profetgit.profetsettings.ProfetSettings.uriOpener;
+                io.github.profetgit.profetsettings.ProfetSettings.reportEndpoint = ""; // never file real issues from tests
+                io.github.profetgit.profetsettings.ProfetSettings.uriOpener = bugUrls::add;
+                bugUrls.clear();
+            })
+            .waitTicks(20)
+            .check("ui: Report bug button is present", mc -> uiScreen(mc).debugBugButton() != null ? null : "missing bug button")
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugBugButton();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(15)
+            .check("ui: Bug report modal opens", mc -> uiScreen(mc).debugBugModalOpen() ? null : "modal closed")
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                scr.debugSetBugDraft("Sort issue", "Items did not sort.");
+                int[] p = scr.debugBugSend();
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(10)
+            .check("ui: Bug report opens tidy-pockets GitHub issue URL", mc -> {
+                io.github.profetgit.profetsettings.ProfetSettings.uriOpener = prevOpener[0];
+                if (bugUrls.size() != 1) return "urls=" + bugUrls.size();
+                String u = bugUrls.get(0).toString();
+                if (!u.startsWith("https://github.com/ProfetGit/tidy-pockets/issues/new?")) return "url=" + u;
+                if (!u.contains("Sort%20issue")) return "missing title: " + u;
+                return null;
+            })
+            .run(mc -> uiScreen(mc).onClose())
+            .waitTicks(5);
+        UiPreviews.add(s);
+        //?}
+        return s;
+    }
+
+    //? if fabric && >=26.3 {
+    private static net.minecraft.client.gui.components.Button optionsButton(Minecraft mc) {
+        for (var w : net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen())) {
+            if (w instanceof net.minecraft.client.gui.components.Button b && b.getClass().getSimpleName().equals("GolemButton")) return b;
+        }
+        return null;
+    }
+    //?}
+
+    //? if >=26.3 {
+    private static void realClick(Minecraft mc, int guiX, int guiY) {
+        var w = mc.getWindow();
+        double px = guiX * (double) w.getScreenWidth() / w.getGuiScaledWidth(), py = guiY * (double) w.getScreenHeight() / w.getGuiScaledHeight();
+        mc.mouseHandler.onMove(w.handle(), px, py, 0, 0);
+        mc.mouseHandler.onButton(w.handle(), new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0), 1);
+        mc.mouseHandler.onButton(w.handle(), new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0), 0);
+    }
+
+    private static io.github.profetgit.profetsettings.ProfetSettingsScreen uiScreen(Minecraft mc) {
+        return (io.github.profetgit.profetsettings.ProfetSettingsScreen) mc.gui.screen();
+    }
+
+    private static void uiClick(Script s, String key, float frac) {
+        s.run(mc -> uiScreen(mc).debugRevealRow(key))
+            .waitTicks(4)
+            .run(mc -> {
+                var scr = uiScreen(mc);
+                int[] p = scr.debugPoint(key, frac);
+                if (p == null) throw new IllegalStateException("no control for " + key);
+                scr.debugPress(p[0], p[1]);
+                scr.debugRelease(p[0], p[1]);
+            })
+            .waitTicks(25);
+    }
+    //?}
 
     /** With other inventory and recipe mods installed: sorting still works, overlaps are switched off, overlays stay put. */
     static Script buildCompat() {
@@ -792,7 +1103,7 @@ final class Scenarios {
             .check("palette: Shift+R clears the palette", mc -> Palette.slots().isEmpty() ? null : "marks " + Palette.slots())
             .run(mc -> mc.player.closeContainer())
             .waitTicks(3)
-            .run(mc -> mc.gui.setScreen(new io.github.profetgit.tidypockets.config.TidyConfigScreen(null)))
+            .run(mc -> mc.gui.setScreen(new io.github.profetgit.tidypockets.config.LegacyConfigScreen(null)))
             .waitTicks(10)
             .capture("palette-config", 2)
             .waitTicks(4)
@@ -929,6 +1240,171 @@ final class Scenarios {
                 ItemStack st = mc.player.getInventory().getItem(4);
                 return st.is(Items.DIAMOND_PICKAXE) && st.getMaxDamage() - st.getDamageValue() == 1 ? null : "hand holds " + st;
             });
+    }
+
+    /** Animations slowed 20x, so a screenshot a few ticks in is still inside the effect. */
+    private static final double SLOW = 0.05;
+
+    private static final class Grab {
+        byte[] rgba;
+        int width;
+        double scale;
+
+        /** The pixels of a 16x16 GUI slot, as RGB triples. */
+        int[] slot(int guiX, int guiY) {
+            int x0 = (int) Math.round(guiX * scale), y0 = (int) Math.round(guiY * scale), n = (int) Math.round(16 * scale);
+            int[] out = new int[n * n * 3];
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    int o = ((y0 + y) * width + x0 + x) * 4;
+                    for (int c = 0; c < 3; c++) out[(y * n + x) * 3 + c] = rgba[o + c] & 255;
+                }
+            }
+            return out;
+        }
+    }
+
+    private static void grab(Script s, String name, Grab into) {
+        s.run(mc -> {
+                into.rgba = null;
+                Screenshot.takeScreenshot(io.github.profetgit.tidypockets.Compat.mainTarget(mc), (com.mojang.blaze3d.platform.NativeImage img) -> {
+                    try (img) {
+                        java.nio.ByteBuffer src = io.github.profetgit.tidypockets.Compat.pixelBytes(img);
+                        byte[] b = new byte[img.getWidth() * img.getHeight() * 4];
+                        src.get(0, b);
+                        into.width = img.getWidth();
+                        into.scale = img.getWidth() / (double) mc.getWindow().getGuiScaledWidth();
+                        into.rgba = b;
+                    }
+                });
+            })
+            .capture(name, 1)
+            .until("screenshot " + name, 100, mc -> into.rgba != null);
+    }
+
+    /** Share of pixels that differ visibly between two slot grabs. */
+    private static double differing(int[] a, int[] b) {
+        int n = 0;
+        for (int i = 0; i < a.length; i += 3) {
+            if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 24) n++;
+        }
+        return n / (a.length / 3.0);
+    }
+
+    /** Mean red-over-green of a slot grab. */
+    private static double redness(int[] a) {
+        double n = 0;
+        for (int i = 0; i < a.length; i += 3) n += a[i] - a[i + 1];
+        return n / (a.length / 3.0);
+    }
+
+    private static int[] screenPos(Minecraft mc, Slot slot) {
+        AbstractContainerScreenAccessor a = (AbstractContainerScreenAccessor) mc.gui.screen();
+        return new int[] {a.tidypockets$left() + slot.x, a.tidypockets$top() + slot.y};
+    }
+
+    /** A stack shift-clicked onto a partial stack: the target keeps its old stack on screen while the new one flies in. */
+    private static void mergeFlight(Script s) {
+        resetInventory(s, inv -> inv.setItem(8, new ItemStack(Items.APPLE, 20)));
+        s.run(mc -> TidyConfig.get().animSpeed = SLOW);
+        openChest(s, new BlockPos(-2, 0, 0), c -> c.setItem(0, new ItemStack(Items.APPLE, 10)));
+        watchMerge(s, "merge", mc -> chestSlots(mc).get(0), mc -> chestSlots(mc).get(1), mc -> {
+            AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
+            io.github.profetgit.tidypockets.input.MouseEvt e = at(mc, playerSlot(mc, 8), LEFT, io.github.profetgit.tidypockets.Compat.MOD_SHIFT);
+            io.github.profetgit.tidypockets.Compat.mouseClicked(scr, e, false);
+            io.github.profetgit.tidypockets.Compat.mouseReleased(scr, e);
+        }, 30);
+    }
+
+    /** The same through the creative item grid, which tops up a partial hotbar stack. */
+    private static void creativeMergeFlight(Script s) {
+        ItemStack[] item = new ItemStack[1];
+        resetInventory(s, inv -> {});
+        openCreative(s, CreativeModeTab.Type.CATEGORY);
+        s.run(mc -> item[0] = creativeMenu(mc).get(0).getItem().copy())
+            .run(mc -> mc.player.closeContainer())
+            .server(server -> player(server).getInventory().setItem(1, item[0].copyWithCount(10)))
+            .waitTicks(5)
+            .run(mc -> TidyConfig.get().animSpeed = SLOW);
+        openCreative(s, CreativeModeTab.Type.CATEGORY);
+        watchMerge(s, "creative-merge", mc -> playerSlot(mc, 1), mc -> playerSlot(mc, 2),
+            mc -> Creative.grab((AbstractContainerScreen<?>) mc.gui.screen(), creativeMenu(mc).get(0)), 64);
+    }
+
+    /** Screenshots the target slot before, during and after a flight onto the stack it already holds, then closes the screen. */
+    private static void watchMerge(Script s, String name, java.util.function.Function<Minecraft, Slot> target,
+            java.util.function.Function<Minecraft, Slot> empty, java.util.function.Consumer<Minecraft> move, int count) {
+        Grab before = new Grab(), flying = new Grab(), landed = new Grab();
+        int[][] at = new int[2][];
+        boolean[] inFlight = new boolean[1];
+        // the pointer stays off the slots under test, so no hover highlight; the screen's own pop plays out first
+        s.run(mc -> mc.mouseHandler.releaseMouse())
+            .waitTicks(100)
+            .run(mc -> {
+                at[0] = screenPos(mc, target.apply(mc));
+                at[1] = screenPos(mc, empty.apply(mc));
+            });
+        grab(s, name + "-0-before", before);
+        s.run(move::accept)
+            .waitTicks(5)
+            .run(mc -> inFlight[0] = io.github.profetgit.tidypockets.anim.FlyAnims.under(target.apply(mc)) != null);
+        grab(s, name + "-1-flying", flying);
+        s.check(name + " flight: the stack is still on its way when looked at", mc -> inFlight[0]
+                && target.apply(mc).getItem().getCount() == count ? null : "in flight " + inFlight[0] + ", target " + target.apply(mc).getItem())
+            .check(name + " flight: the occupied target slot is not blanked", mc -> {
+                int[] now = flying.slot(at[0][0], at[0][1]);
+                double blank = differing(now, flying.slot(at[1][0], at[1][1])), old = differing(now, before.slot(at[0][0], at[0][1]));
+                return blank > 0.1 && old < 0.02 ? null : String.format("differs from an empty slot %.3f, from the old stack %.3f", blank, old);
+            })
+            .waitTicks(50);
+        grab(s, name + "-2-landed", landed);
+        s.check(name + " flight: the new count shows after landing", mc -> {
+                int[] now = landed.slot(at[0][0], at[0][1]);
+                double blank = differing(now, landed.slot(at[1][0], at[1][1])), old = differing(now, before.slot(at[0][0], at[0][1]));
+                return blank > 0.1 && old > 0.005 ? null : String.format("differs from an empty slot %.3f, from the old stack %.3f", blank, old);
+            })
+            .run(mc -> {
+                TidyConfig.get().animSpeed = 1.0;
+                mc.player.closeContainer();
+            })
+            .waitTicks(5);
+    }
+
+    /** Tool protection empties the held slot: the red shake belongs to that slot and no other. */
+    private static void stowShake(Script s) {
+        stowShake(s, "shake-first-empty", Items.STONE_PICKAXE, new int[] {0, 1, 2});
+        stowShake(s, "shake-later-empty", Items.IRON_PICKAXE, new int[] {1, 2});
+    }
+
+    private static void stowShake(Script s, String name, net.minecraft.world.item.Item tool, int[] filled) {
+        Grab before = new Grab(), during = new Grab();
+        resetInventory(s, inv -> {
+            for (int i : filled) inv.setItem(i, new ItemStack(Items.DIRT, 5));
+            inv.setItem(3, worn(tool));
+        });
+        select(s, 3);
+        s.run(mc -> TidyConfig.get().animSpeed = SLOW).waitTicks(60);
+        grab(s, name + "-0-before", before);
+        s.run(mc -> mc.gameMode.startDestroyBlock(ground.offset(1, 0, 2), Direction.UP)).waitTicks(5);
+        grab(s, name + "-1-shaking", during);
+        s.check(name + ": only the stowed slot washes red", mc -> {
+                if (!mc.player.getInventory().getItem(3).isEmpty()) return "hand still holds " + mc.player.getInventory().getItem(3);
+                int w = mc.getWindow().getGuiScaledWidth(), y = mc.getWindow().getGuiScaledHeight() - 19;
+                List<Integer> red = new ArrayList<>();
+                StringBuilder log = new StringBuilder();
+                for (int i = 0; i < 9; i++) {
+                    if (!mc.player.getInventory().getItem(i).isEmpty()) continue;
+                    int x = w / 2 - 88 + i * 20;
+                    double d = redness(during.slot(x, y)) - redness(before.slot(x, y));
+                    // the slot the tool left looked different before, so its baseline is an empty neighbour
+                    if (i == 3) d = redness(during.slot(x, y)) - redness(before.slot(w / 2 - 88 + 4 * 20, y));
+                    log.append(String.format(" %d:%+.0f", i, d));
+                    if (d > 20) red.add(i);
+                }
+                return red.equals(List.of(3)) ? null : "red slots " + red + ", redness change" + log;
+            })
+            .run(mc -> TidyConfig.get().animSpeed = 1.0)
+            .waitTicks(10);
     }
 
     private static void openChest(Script s, BlockPos offset, java.util.function.Consumer<Container> setup) {
@@ -1146,12 +1622,12 @@ final class Scenarios {
                 net.minecraft.world.entity.EquipmentSlot.HEAD).is(Items.DIAMOND_HELMET) ? null : "helmet not equipped")
             .run(mc -> {
                 mc.player.closeContainer();
-                mc.gui.setScreen(new io.github.profetgit.tidypockets.config.TidyConfigScreen(null));
+                mc.gui.setScreen(new io.github.profetgit.tidypockets.config.LegacyConfigScreen(null));
             })
             .waitTicks(10)
             .capture("config", 2)
             .waitTicks(3)
-            .check("config screen opens", mc -> mc.gui.screen() instanceof io.github.profetgit.tidypockets.config.TidyConfigScreen ? null
+            .check("config screen opens", mc -> mc.gui.screen() instanceof io.github.profetgit.tidypockets.config.LegacyConfigScreen ? null
                 : "screen is " + mc.gui.screen())
             .capture("smooth-scroll", 14)
             .run(mc -> {
@@ -1282,6 +1758,7 @@ final class Scenarios {
             .waitTicks(5);
         creativeInventoryTab(s);
         creativeItemTabs(s);
+        creativeMergeFlight(s);
         s.server(server -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "gamemode survival @a"))
             .waitTicks(5);
     }

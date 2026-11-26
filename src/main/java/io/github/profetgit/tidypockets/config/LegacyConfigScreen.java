@@ -18,9 +18,9 @@ import net.minecraft.network.chat.CommonComponents;
 *///?}
 import net.minecraft.network.chat.Component;
 
-/** Every option on one scrolling page, grouped under headers. Built from the {@link TidyConfig} fields by name. */
-public final class TidyConfigScreen extends OptionsSubScreen {
-    public TidyConfigScreen(Screen parent) {
+/** The vanilla-style options page (kept for the 26.2 and older targets until the Profet Settings screen is ported, and for the smooth-scroll scene). */
+public final class LegacyConfigScreen extends OptionsSubScreen {
+    public LegacyConfigScreen(Screen parent) {
         super(parent, Minecraft.getInstance().options, Component.translatable("tidypockets.config.title"));
     }
 

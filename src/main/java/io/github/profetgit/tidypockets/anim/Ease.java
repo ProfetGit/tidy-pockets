@@ -39,6 +39,11 @@ public final class Ease {
         return 1 - u * u * u;
     }
 
+    /** One smooth-scroll step: where a list at {@code cur} is {@code dtMs} later on its way to {@code target}. */
+    public static double approach(double cur, double target, double dtMs, double speed) {
+        return cur + (target - cur) * (1 - Math.exp(-dtMs * speed / 45.0));
+    }
+
     public static double inCubic(double t) {
         return t * t * t;
     }
