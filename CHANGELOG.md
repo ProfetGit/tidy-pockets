@@ -3,6 +3,7 @@
 ## 1.2.16 — unreleased
 
 - **New: Report bug** button in the settings screen (Minecraft 26.3): write what happened and send it from inside the game. It attaches your Minecraft, loader, mod list, changed settings and recent errors (your name, home folder and IPs hidden) and posts it as a public GitHub issue. If sending fails, the report is copied and GitHub opens instead.
+- Bug reports have short fields for what happened, the steps and what you expected; a **View report** link shows exactly what gets sent; your draft is kept until it is sent. After a crash caused by a Profet mod, the title screen offers to report it with the crash attached. New **Ko-fi** button in the settings footer.
 - Moving items onto a stack no longer makes that slot blink empty: it keeps showing the old stack until the new items land.
 - When tool protection takes a worn tool out of your hand, the red shake now shows on that hotbar slot only. Before, it flashed on every empty hotbar slot, or on none if an earlier slot was empty.
 
