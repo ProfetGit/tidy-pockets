@@ -69,8 +69,6 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching("META-INF/mods.toml") { expand(props) }
-    // 1.21.11 reads resource pack format 75
-    filesMatching("pack.mcmeta") { filter { it.replace(Regex("\"(min|max)_format\": \\d+"), "\"$1_format\": 75") } }
 }
 
 tasks.named<Jar>("jar") {
