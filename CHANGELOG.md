@@ -1,10 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.2.27 — 2026-11-27
 
-- Fixed a crash with Axiom: selecting its builder tool slot closed the game (Tidy Pockets' hotbar selector glide undid a step that had been skipped).
+- **Fixed a crash with Axiom**: selecting its builder tool slot closed the game.
+- **The new settings screen is on every version now** (26.3, 26.2, 26.1.2, 1.21.11, 1.21.8, 1.21.4, 1.21.1, 1.20.1; Fabric, Quilt, NeoForge and Forge): the same screen, live previews, Quick setup, Report bug and Ko-fi button as on 26.3. The copper golem button in the Game Menu now shows on NeoForge and Forge too.
 - **Move everything**: hold Shift and press Deposit to put your whole main inventory into the container, or hold Shift and press Restock to take everything out. Locked slots stay, and the hotbar is never deposited.
 - On Minecraft 1.21.4 and older, opening a container no longer shrinks the darkened background with the panel, and EMI's item lists and search box stay put while the panel pops open.
+- Minecraft 1.21.11 Forge no longer logs "Couldn't load mod:tidypockets pack metadata".
 
 ## 1.2.25 — 2026-11-26
 

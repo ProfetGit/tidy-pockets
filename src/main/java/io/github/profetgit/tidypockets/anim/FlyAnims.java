@@ -117,14 +117,26 @@ public final class FlyAnims {
     }
 
     /** A flying item {@code t} (0..1) of the way from one slot's item position to another's: a short arc, slightly small. */
-    public static void item(GuiGraphicsExtractor g, ItemStack stack, double fromX, double fromY, double toX, double toY, double t) {
+    public static void item(io.github.profetgit.profetsettings.Gfx gfx, ItemStack stack, double fromX, double fromY, double toX, double toY, double t) {
+        double[] at = arc(fromX, fromY, toX, toY, t);
+        gfx.push();
+        gfx.translate((float) at[0] + 8, (float) at[1] + 8);
+        gfx.scale(0.85f, 0.85f);
+        gfx.item(stack, -8, -8);
+        gfx.pop();
+    }
+
+    private static double[] arc(double fromX, double fromY, double toX, double toY, double t) {
         double e = Ease.outCubic(t);
-        double x = fromX + (toX - fromX) * e;
-        double y = fromY + (toY - fromY) * e - Math.sin(Math.PI * t) * 4;
+        return new double[] {fromX + (toX - fromX) * e, fromY + (toY - fromY) * e - Math.sin(Math.PI * t) * 4};
+    }
+
+    public static void item(GuiGraphicsExtractor g, ItemStack stack, double fromX, double fromY, double toX, double toY, double t) {
+        double[] at = arc(fromX, fromY, toX, toY, t);
         double sx = 0.85, sy = 0.85;
         Matrix3x2fStack pose = g.pose();
         pose.pushMatrix();
-        pose.translate((float) x + 8, (float) y + 8);
+        pose.translate((float) at[0] + 8, (float) at[1] + 8);
         pose.scale((float) sx, (float) sy);
         g.item(stack, -8, -8);
         pose.popMatrix();

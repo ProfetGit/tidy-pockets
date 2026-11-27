@@ -1,12 +1,10 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.HudAnims;
 import io.github.profetgit.tidypockets.core.Dice;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -74,7 +72,7 @@ public final class RandomPreview extends ChestStage {
         for (int n = 0; n < placed; n++) {
             int slot = enabled ? rolls[n] : 0;
             Identifier tex = Identifier.withDefaultNamespace("textures/block/" + TEXTURE[slot] + ".png");
-            g.g.blit(RenderPipelines.GUI_TEXTURED, tex, wallX + n % COLS * 16, wallY + (ROWS - 1 - n / COLS) * 16, 0, 0, 16, 16, 16, 16, g.a(0xFFFFFFFF));
+            g.blit(tex, wallX + n % COLS * 16, wallY + (ROWS - 1 - n / COLS) * 16, 0, 0, 16, 16, 16, 16);
         }
 
         // replay the picks for the selector and the slot hops
@@ -107,8 +105,8 @@ public final class RandomPreview extends ChestStage {
             stack(g, s, hudX(hx, i), y + 89, hop >= 0 && hop < 1 ? HudAnims.rollScale(hop) : 1);
         }
         if (enabled) {
-            g.g.nextStratum();
-            for (int i = 0; i < PALETTE; i++) g.g.blitSprite(RenderPipelines.GUI_TEXTURED, DICE, hudX(hx, i) - 1, y + 88, 7, 7);
+            g.nextStratum();
+            for (int i = 0; i < PALETTE; i++) g.sprite(DICE, hudX(hx, i) - 1, y + 88, 7, 7);
         }
     }
 
@@ -135,4 +133,3 @@ public final class RandomPreview extends ChestStage {
         off(g, x, y, w, h, !enabled ? "randomEnabled" : !spread ? "randomSpread" : null);
     }
 }
-//?}

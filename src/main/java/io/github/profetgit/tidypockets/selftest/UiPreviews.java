@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.selftest;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.Preview;
 import io.github.profetgit.profetsettings.ProfetSettingsScreen;
 import io.github.profetgit.tidypockets.config.ConfigScreens;
@@ -60,6 +59,7 @@ final class UiPreviews {
         toolShots(s);
         animShots(s);
         screenShots(s);
+        presetShots(s);
         s.run(mc -> reset());
         dense(s, "sortEnabled", "sort", 2200);
         dense(s, "sortHotbar", "sorthotbar", 2200);
@@ -239,6 +239,69 @@ final class UiPreviews {
         shot(s, "smoothScroll", "scroll", "-off", 520, 560, 700, 900, 1100);
     }
 
+    // every Quick setup button plays its own scene list with that preset's values: kind, title, note, and a still of each scene
+    private static final String[][] PRESETS = {
+        {"0", "off", "Off", "1800 1800", "Turns off Tidy Pockets"}, {"1", "light", "Light", "3000 1000", "Quiet, simpler: no random palette or mouse shortcuts"},
+        {"2", "default", "Default", "1800 1800 3000 1000", "The recommended setup"}, {"3", "full", "Full", "1800 1800 1000 1000", "Everything on, hotbar sorted too"}};
+
+    private static void presetShots(Script s) {
+        for (String[] p : PRESETS) {
+            int i = Integer.parseInt(p[0]);
+            String[] times = p[3].split(" ");
+            s.run(mc -> {
+                    reset();
+                    mc.gui.setScreen(ConfigScreens.create(null));
+                    Preview.debugTime = Integer.parseInt(times[0]);
+                    io.github.profetgit.tidypockets.ui.settings.PresetPreview.debugStep = 0;
+                })
+                .waitTicks(20)
+                .run(mc -> hub(mc).debugScroll(0))
+                .waitTicks(6)
+                .run(mc -> {
+                    int[] pt = hub(mc).debugPresetPoint(i);
+                    hub(mc).debugHover(pt[0], pt[1]);
+                })
+                .waitTicks(12)
+                .check("ui: Quick setup " + p[2] + " shows its own preview", mc -> ("preset." + p[1]).equals(hub(mc).debugPreviewKind()) ? null : "preview " + hub(mc).debugPreviewKind())
+                .check("ui: Quick setup " + p[2] + " titles its preview", mc -> p[2].equals(hub(mc).debugPreviewTitle()) ? null : "title " + hub(mc).debugPreviewTitle())
+                .check("ui: Quick setup " + p[2] + " has its own plain-words note, no numbers", mc -> {
+                    String n = hub(mc).debugPreviewNote();
+                    return p[4].equals(n) && n.chars().noneMatch(Character::isDigit) ? null : "note '" + n + "'";
+                });
+            for (int k = 0; k < times.length; k++) {
+                int step = k, t = Integer.parseInt(times[k]);
+                s.run(mc -> {
+                    io.github.profetgit.tidypockets.ui.settings.PresetPreview.debugStep = step;
+                    Preview.debugTime = t;
+                }).waitTicks(3).capture("ui-pv-preset-" + p[1] + "-" + step, 1).waitTicks(3);
+            }
+        }
+        // a hover restarts the rotation: a new scene each time, also back onto the same preset after leaving it
+        double[] mount = {0};
+        for (int i : new int[] {1, 3, 1}) {
+            int idx = i;
+            s.run(mc -> hub(mc).debugHover(-1, -1))
+                .waitTicks(4)
+                .run(mc -> {
+                    int[] pt = hub(mc).debugPresetPoint(idx);
+                    hub(mc).debugHover(pt[0], pt[1]);
+                })
+                .waitTicks(8)
+                .check("ui: hovering " + PRESETS[i][2] + " again starts its rotation over", mc -> {
+                    double m = hub(mc).debugSceneMount();
+                    boolean fresh = m > mount[0];
+                    mount[0] = m;
+                    return fresh ? null : "scene was not recreated";
+                })
+                .waitTicks(8)
+                .check("ui: " + PRESETS[i][2] + "'s rotation keeps running while hovered", mc -> hub(mc).debugSceneMount() == mount[0] ? null : "scene recreated");
+        }
+        s.run(mc -> {
+            io.github.profetgit.tidypockets.ui.settings.PresetPreview.debugStep = -1;
+            Preview.debugTime = -1;
+        });
+    }
+
     private static void reset() {
         TidyConfig.restore(new TidyConfig());
     }
@@ -288,4 +351,3 @@ final class UiPreviews {
         }
     }
 }
-//?}

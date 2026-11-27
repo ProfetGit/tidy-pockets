@@ -1,9 +1,7 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.Ease;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 
@@ -13,10 +11,7 @@ public final class SmoothScrollPreview extends ChestStage {
     private static final float PERIOD = 3700;
     private static final float[] NOTCHES = {500, 680, 860, 1500, 2300, 2480, 2660, 2840};
     private static final int DOWN = 4, STEP = 12, ROW = 25, LIST_W = 150, LIST_H = 100;
-    private static final Identifier BUTTON = Identifier.withDefaultNamespace("widget/button"),
-        SCROLLER = Identifier.withDefaultNamespace("widget/scroller"), TRACK = Identifier.withDefaultNamespace("widget/scroller_background"),
-        BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_list_background.png"),
-        HEADER = Identifier.withDefaultNamespace("textures/gui/header_separator.png"),
+    private static final Identifier HEADER = Identifier.withDefaultNamespace("textures/gui/header_separator.png"),
         FOOTER = Identifier.withDefaultNamespace("textures/gui/footer_separator.png");
     private static final String[][] OPTIONS = {
         {"options.fov", "90"}, {"options.renderDistance", "12"}, {"options.simulationDistance", "10"}, {"options.framerateLimit", "120"},
@@ -54,23 +49,23 @@ public final class SmoothScrollPreview extends ChestStage {
         int at = (int) scroll(time, smooth ? speed : 0);
 
         shadow(g, lx + lw / 2f, ly + LIST_H + 2, lw);
-        g.g.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, lx, ly, 0, at, lw, LIST_H, 32, 32);
+        VanillaArt.listBackground(g, lx, ly, lw, LIST_H, at);
         g.clip(lx, ly, lw, LIST_H);
         for (int i = 0; i < OPTIONS.length; i++) {
             int ry = ly + 4 + i * ROW - at;
             if (ry + 20 < ly || ry > ly + LIST_H) continue;
-            g.g.blitSprite(RenderPipelines.GUI_TEXTURED, BUTTON, lx + 2, ry, LIST_W - 4, 20);
+            VanillaArt.button(g, lx + 2, ry, LIST_W - 4);
             String value = OPTIONS[i][1].startsWith("options.") ? I18n.get(OPTIONS[i][1]) : OPTIONS[i][1];
             String line = I18n.get(OPTIONS[i][0]) + ": " + value;
             g.vanilla(line, lx + LIST_W / 2 - g.vanillaWidth(line) / 2, ry + 6, 0xFFFFFFFF, true);
         }
         g.unclip();
-        g.g.nextStratum();
-        g.g.blit(RenderPipelines.GUI_TEXTURED, HEADER, lx, ly - 2, 0, 0, lw, 2, 32, 2);
-        g.g.blit(RenderPipelines.GUI_TEXTURED, FOOTER, lx, ly + LIST_H, 0, 0, lw, 2, 32, 2);
+        g.nextStratum();
+        g.blit(HEADER, lx, ly - 2, 0, 0, lw, 2, 32, 2);
+        g.blit(FOOTER, lx, ly + LIST_H, 0, 0, lw, 2, 32, 2);
         int content = OPTIONS.length * ROW + 4, thumb = Math.max(32, Math.min(LIST_H - 8, LIST_H * LIST_H / content));
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, TRACK, lx + LIST_W + 4, ly, 6, LIST_H);
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLLER, lx + LIST_W + 4, ly + at * (LIST_H - thumb) / (content - LIST_H), 6, thumb);
+        VanillaArt.scrollTrack(g, lx + LIST_W + 4, ly, LIST_H);
+        VanillaArt.scrollThumb(g, lx + LIST_W + 4, ly + at * (LIST_H - thumb) / (content - LIST_H), thumb);
 
         pointer(g, lx + LIST_W - 8, ly + 60, 0);
         boolean down = false, upwards = time >= NOTCHES[DOWN] - 350;
@@ -79,4 +74,3 @@ public final class SmoothScrollPreview extends ChestStage {
         off(g, x, y, w, h, !smooth ? "smoothScroll" : speed <= 0 ? "animSpeed" : null);
     }
 }
-//?}

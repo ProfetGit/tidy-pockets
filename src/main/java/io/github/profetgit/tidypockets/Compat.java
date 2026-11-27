@@ -299,12 +299,39 @@ public final class Compat {
 
     /** A potion stack for tests: swiftness, or healing. */
     public static net.minecraft.world.item.ItemStack potion(boolean swiftness) {
+        return potion(net.minecraft.world.item.Items.POTION, swiftness);
+    }
+
+    /** A splash potion stack: swiftness, or healing. */
+    public static net.minecraft.world.item.ItemStack splashPotion(boolean swiftness) {
+        return potion(net.minecraft.world.item.Items.SPLASH_POTION, swiftness);
+    }
+
+    private static net.minecraft.world.item.ItemStack potion(net.minecraft.world.item.Item item, boolean swiftness) {
         //? if >=1.20.5 {
-        return net.minecraft.world.item.alchemy.PotionContents.createItemStack(net.minecraft.world.item.Items.POTION,
+        return net.minecraft.world.item.alchemy.PotionContents.createItemStack(item,
             swiftness ? net.minecraft.world.item.alchemy.Potions.SWIFTNESS : net.minecraft.world.item.alchemy.Potions.HEALING);
         //?} else {
-        /*return net.minecraft.world.item.alchemy.PotionUtils.setPotion(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.POTION),
+        /*return net.minecraft.world.item.alchemy.PotionUtils.setPotion(new net.minecraft.world.item.ItemStack(item),
             swiftness ? net.minecraft.world.item.alchemy.Potions.SWIFTNESS : net.minecraft.world.item.alchemy.Potions.HEALING);
+        *///?}
+    }
+
+    /** Re-lays out the GUI after the GUI scale option changed. */
+    public static void resizeGui(Minecraft mc) {
+        //? if >=26.1 {
+        mc.resizeGui();
+        //?} else {
+        /*mc.resizeDisplay();
+        *///?}
+    }
+
+    /** Makes the stack glint as if enchanted. */
+    public static void glint(net.minecraft.world.item.ItemStack stack) {
+        //? if >=1.20.5 {
+        stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        //?} else {
+        /*stack.enchant(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING, 1);
         *///?}
     }
 

@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -71,4 +70,3 @@ public final class WheelPreview extends ChestStage {
         off(g, x, y, w, h, enabled ? null : "wheelMove");
     }
 }
-//?}

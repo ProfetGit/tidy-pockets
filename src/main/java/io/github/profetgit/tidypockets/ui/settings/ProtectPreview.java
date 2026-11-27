@@ -1,12 +1,10 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.HudAnims;
 import io.github.profetgit.tidypockets.core.Rules;
 import java.util.List;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.component.DataComponents;
+import io.github.profetgit.tidypockets.Compat;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,7 +25,7 @@ public final class ProtectPreview extends ChestStage {
 
     private static ItemStack tool(boolean glint) {
         ItemStack s = new ItemStack(Items.GOLDEN_PICKAXE);
-        if (glint) s.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        if (glint) Compat.glint(s);
         return s;
     }
 
@@ -99,7 +97,7 @@ public final class ProtectPreview extends ChestStage {
         float dx = shake < 1 ? Math.round(HudAnims.shakeOffset(shake) * 2) / 2f : 0;
         stack(g, r.s[HAND], hx + dx, hy, 1);
         if (shake < 1) {
-            g.g.nextStratum();
+            g.nextStratum();
             g.rect(hx, hy, 16, 16, (HudAnims.shakeAlpha(shake) << 24) | 0xE02020);
         }
         if (r.broke >= 0) crumbs(g, hx, hy, t - r.broke);
@@ -110,10 +108,10 @@ public final class ProtectPreview extends ChestStage {
         float s = since / 1000f;
         if (s > 0.45f) return;
         float[][] from = {{3, 3, -34, -62}, {9, 2, 30, -70}, {6, 7, -8, -86}, {2, 11, -46, -30}, {11, 9, 44, -38}, {8, 12, 12, -48}};
-        g.g.nextStratum();
+        g.nextStratum();
         for (float[] f : from) {
             g.pushTranslate(x + f[0] + f[2] * s, y + f[1] + f[3] * s + 260 * s * s);
-            g.g.blit(RenderPipelines.GUI_TEXTURED, CRUMBS, 0, 0, f[0] + 1, f[1], 4, 4, 16, 16);
+            g.blit(CRUMBS, 0, 0, f[0] + 1, f[1], 4, 4, 16, 16);
             g.pop();
         }
     }
@@ -172,4 +170,3 @@ public final class ProtectPreview extends ChestStage {
         off(g, x, y, w, h, mode == 2 ? "protect" : later ? "plain" : !warn ? "protectWarn" : null);
     }
 }
-//?}

@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.HudAnims;
 import net.minecraft.world.item.Item;
@@ -133,4 +132,3 @@ public final class AnimPreview extends ChestStage {
         off(g, x, y, w, h, speed <= 0 ? "animSpeed" : !fly ? "animFly" : !bump ? "animCountBump" : !glide ? "animHotbar" : null);
     }
 }
-//?}

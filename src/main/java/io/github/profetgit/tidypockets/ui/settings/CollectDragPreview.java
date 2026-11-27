@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,4 +127,3 @@ public final class CollectDragPreview extends ChestStage {
         off(g, x, y, w, h, enabled ? null : "collectDrag");
     }
 }
-//?}

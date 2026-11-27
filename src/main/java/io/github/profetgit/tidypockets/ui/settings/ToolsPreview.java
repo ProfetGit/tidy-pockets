@@ -1,12 +1,10 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.SlotAnims;
 import io.github.profetgit.tidypockets.anim.SortPop;
 import io.github.profetgit.tidypockets.input.Keys;
 import io.github.profetgit.tidypockets.tools.ContainerTools;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -21,7 +19,6 @@ public final class ToolsPreview extends ChestStage {
         SLIDE_AT = 5200;
     private static final String WORD = "app";
     private static final int CHEST_SLOTS = 9, MAIN = 9, BAR = 18;
-    private static final Identifier FIELD = Identifier.withDefaultNamespace("widget/text_field_highlighted");
 
     private ItemStack[] start;
     private ItemStack[] sorted;
@@ -129,9 +126,9 @@ public final class ToolsPreview extends ChestStage {
             if (sorting) popping(g, p, board, was, (time - TOPSORT) * speed, animSort && speed > 0);
             else board.draw(g, p, -1);
             if (!query.isEmpty()) {
-                g.g.nextStratum();
+                g.nextStratum();
                 for (int i = 0; i < p.size(); i++) {
-                    if (ContainerTools.matches(board.item[i], query)) g.g.outline(p.sx(i) - 1, p.sy(i) - 1, 18, 18, 0xFFFFD84A);
+                    if (ContainerTools.matches(board.item[i], query)) g.outline(p.sx(i) - 1, p.sy(i) - 1, 18, 18, 0xFFFFD84A);
                     else g.rect(p.sx(i), p.sy(i), 16, 16, 0xB0202020);
                 }
             }
@@ -180,25 +177,24 @@ public final class ToolsPreview extends ChestStage {
             boolean moved = animated && i < CHEST_SLOTS && !ItemStack.matches(before[i], board.item[i]);
             stack(g, board.item[i], p.sx(i), p.sy(i), moved ? SlotAnims.popScale(ms, SortPop.delay(i, 0)) : 1);
         }
-        g.g.nextStratum();
+        g.nextStratum();
         for (int i = 0; i < CHEST_SLOTS && animated; i++) {
             int frame = ItemStack.matches(before[i], board.item[i]) ? -1 : SlotAnims.puffFrame(ms, SortPop.delay(i, 0));
-            if (frame >= 0) g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SlotAnims.puffSprite(frame), p.sx(i), p.sy(i), 16, 16);
+            if (frame >= 0) g.sprite(SlotAnims.puffSprite(frame), p.sx(i), p.sy(i), 16, 16);
         }
     }
 
     private static void button(Gfx g, String name, int x, int y, float[] pointer) {
         boolean over = pointer != null && pointer[0] >= x && pointer[0] < x + 11 && pointer[1] >= y && pointer[1] < y + 11;
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("tidypockets", over ? name + "_highlighted" : name),
+        g.sprite(Identifier.fromNamespaceAndPath("tidypockets", over ? name + "_highlighted" : name),
             x, y, 11, 11);
     }
 
     // the vanilla text field the search box is, focused, with its caret
     private static void field(Gfx g, int x, int y, String query, boolean caret) {
-        g.g.nextStratum();
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, FIELD, x, y, 110, 12);
+        g.nextStratum();
+        VanillaArt.field(g, x, y, 110, 12);
         g.vanilla(query, x + 4, y + 2, 0xFFE0E0E0, true);
         if (caret) g.vanilla("_", x + 4 + g.vanillaWidth(query), y + 2, 0xFFE0E0E0, true);
     }
 }
-//?}

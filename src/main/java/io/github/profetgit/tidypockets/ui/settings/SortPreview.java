@@ -1,11 +1,9 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.SlotAnims;
 import io.github.profetgit.tidypockets.anim.SortPop;
 import io.github.profetgit.tidypockets.input.Keys;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -62,19 +60,18 @@ public final class SortPreview extends ChestStage {
             stack(g, (sorted ? tidy : mess)[i], slotX(wx, i), slotY(wy, i), scale);
         }
         if (!sorted || rate <= 0) return;
-        g.g.nextStratum();
+        g.nextStratum();
         for (int i = 0; i < mess.length; i++) {
             if (ItemStack.matches(mess[i], tidy[i])) continue;
             int frame = SlotAnims.puffFrame(ms, SortPop.delay(i % 9, i / 9));
-            if (frame >= 0) g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SlotAnims.puffSprite(frame), slotX(wx, i), slotY(wy, i), 16, 16);
+            if (frame >= 0) g.sprite(SlotAnims.puffSprite(frame), slotX(wx, i), slotY(wy, i), 16, 16);
         }
     }
 
     @Override
     public void render(Gfx g, Ctx c, int x, int y, int w, int h) {
-        Setting on = mod.find("sortEnabled"), hot = mod.find("sortHotbar"), ord = mod.find("sortOrder"), an = mod.find("animSort"), spd = mod.find("animSpeed");
-        boolean enabled = on == null || on.getBool(), hotbar = hot != null && hot.getBool(), anim = an == null || an.getBool();
-        int sortOrder = ord == null ? 0 : ord.getInt(), speed = spd == null ? 10 : spd.getInt();
+        boolean enabled = flag("sortEnabled", true), hotbar = flag("sortHotbar", false), anim = flag("animSort", true);
+        int sortOrder = num("sortOrder", 0), speed = num("animSpeed", 10);
         int ox = x + (w - W) / 2, wx = ox + WIN_X, wy = y + (inventory ? 20 : 28);
         backdrop(g, ox, y);
         if (!itemsReady()) {
@@ -96,7 +93,7 @@ public final class SortPreview extends ChestStage {
 
         // the pointer arrives, clicks on an empty corner and leaves
         float go = smooth((time - 180) / 500), stay = go * (1 - smooth((time - slideAt + 600) / 550));
-        float homeX = ox + 178, homeY = y + 108, atX = slotX(wx, 24) + 6, atY = slotY(wy, 24) + 6;
+        float homeX = ox + 178, homeY = y + (inventory ? 124 : 108), atX = slotX(wx, 24) + 6, atY = slotY(wy, 24) + 6;
         float lift = time < CLICK ? (float) Math.sin(Math.PI * go) * 5 : 0;
         float down = press(time, CLICK);
         pointer(g, lerp(homeX, atX, stay), lerp(homeY, atY, stay) - lift, down);
@@ -105,4 +102,3 @@ public final class SortPreview extends ChestStage {
         off(g, x, y, w, h, !enabled ? "sortEnabled" : inventory ? hotbar ? null : "sortHotbar" : !anim || speed <= 0 ? "animSort" : null);
     }
 }
-//?}

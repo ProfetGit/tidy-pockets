@@ -1,19 +1,14 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
+import io.github.profetgit.tidypockets.Compat;
 import io.github.profetgit.tidypockets.anim.HudAnims;
 import io.github.profetgit.tidypockets.core.Rules;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 
 // Refill, in three uses of the use key: the splash potion in hand is thrown and its twin swaps in; thrown again with only
 // a look-alike left (Exact match decides); then the offhand's last torches go and a new stack comes. Rules.pick chooses,
@@ -22,7 +17,6 @@ public final class RefillPreview extends ChestStage {
     private static final float FIRST = 600, SECOND = 1600, TORCH_A = 2450, TORCH_B = 2750, SLIDE_AT = 3750, TICK = 50;
     // slots of the window: two inventory rows, then the hotbar; the offhand has its own panel
     private static final int ROWS = 2, HAND = 18 + 4, OFF = 27;
-    private static final Identifier SHIELD = Identifier.withDefaultNamespace("container/slot/shield");
 
     private ItemStack[] start;
 
@@ -31,7 +25,7 @@ public final class RefillPreview extends ChestStage {
     }
 
     private static ItemStack potion(boolean healing) {
-        return PotionContents.createItemStack(Items.SPLASH_POTION, healing ? Potions.HEALING : Potions.SWIFTNESS);
+        return Compat.splashPotion(!healing);
     }
 
     private static ItemStack[] stacks() {
@@ -113,7 +107,7 @@ public final class RefillPreview extends ChestStage {
         }
         stack(g, st.s[HAND], p.sx(HAND), p.sy(HAND), popped(time, st.handPop, rate));
         selector(g, p.sx(HAND), p.sy(HAND));
-        if (st.s[OFF].isEmpty()) g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SHIELD, offX + 8, offY + 8, 16, 16);
+        if (st.s[OFF].isEmpty()) VanillaArt.shield(g, offX + 8, offY + 8);
         else stack(g, st.s[OFF], offX + 8, offY + 8, popped(time, st.offPop, rate));
     }
 
@@ -150,4 +144,3 @@ public final class RefillPreview extends ChestStage {
         off(g, x, y, w, h, !enabled ? "refillEnabled" : !offhand ? "refillOffhand" : !exact ? "refillExactMatch" : null);
     }
 }
-//?}

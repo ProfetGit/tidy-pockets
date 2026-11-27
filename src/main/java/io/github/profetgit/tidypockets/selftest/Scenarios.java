@@ -95,29 +95,26 @@ final class Scenarios {
 
     static Script buildUi() {
         Script s = new Script();
-        //? if >=26.3 {
         UiPreviews.atTitle(s);
-        //?}
         createWorld(s);
-        //? if fabric && >=26.3 {
+        //? if fabric {
         s.run(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)))
             .waitTicks(15)
             .check("ui: the Game Menu has exactly one golem button", mc -> {
-                long n = net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen()).stream()
+                long n = mc.gui.screen().children().stream()
                     .filter(w -> w.getClass().getSimpleName().equals("GolemButton")).count();
                 return n == 1 ? null : "golem buttons: " + n;
             })
             .capture("ui-0-options", 1)
             .waitTicks(3)
-            .run(mc -> optionsButton(mc).onPress(new net.minecraft.client.input.KeyEvent(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN, 0, 0)))
+            .run(mc -> pressButton(optionsButton(mc)))
             .waitTicks(10)
             .check("ui: the golem button opens the hub", mc -> io.github.profetgit.tidypockets.config.ConfigScreens.isConfigScreen(mc.gui.screen()) ? null : "screen " + mc.gui.screen());
         //?}
-        //? if >=26.3 {
         for (int gs : new int[] {2, 3, 4}) {
             s.run(mc -> {
                     mc.options.guiScale().set(gs);
-                    mc.resizeGui();
+                    io.github.profetgit.tidypockets.Compat.resizeGui(mc);
                     mc.gui.setScreen(io.github.profetgit.tidypockets.config.ConfigScreens.create(null));
                 })
                 .waitTicks(30)
@@ -137,7 +134,7 @@ final class Scenarios {
         }
         s.run(mc -> {
                 mc.options.guiScale().set(Integer.getInteger("tidypockets.ui.gs", 2));
-                mc.resizeGui();
+                io.github.profetgit.tidypockets.Compat.resizeGui(mc);
                 TidyConfig.get().sortHotbar = false;
                 TidyConfig.get().sortOrder = TidyConfig.SortOrder.CREATIVE;
                 TidyConfig.get().protect = TidyConfig.Protect.ALL;
@@ -358,26 +355,38 @@ final class Scenarios {
             .run(mc -> uiScreen(mc).onClose())
             .waitTicks(5);
         UiPreviews.add(s);
-        //?}
         return s;
     }
 
-    //? if fabric && >=26.3 {
+    private static void pressButton(net.minecraft.client.gui.components.Button b) {
+        //? if >=1.21.9 {
+        b.onPress(new net.minecraft.client.input.KeyEvent(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN, 0, 0));
+        //?} else {
+        /*b.onPress();
+        *///?}
+    }
+
+    //? if fabric {
     private static net.minecraft.client.gui.components.Button optionsButton(Minecraft mc) {
-        for (var w : net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen())) {
+        for (var w : mc.gui.screen().children()) {
             if (w instanceof net.minecraft.client.gui.components.Button b && b.getClass().getSimpleName().equals("GolemButton")) return b;
         }
         return null;
     }
     //?}
 
-    //? if >=26.3 {
+    // through MouseHandler on 26.3, where its input methods are public; before it the screen's own press and release
     private static void realClick(Minecraft mc, int guiX, int guiY) {
+        //? if >=26.3 {
         var w = mc.getWindow();
         double px = guiX * (double) w.getScreenWidth() / w.getGuiScaledWidth(), py = guiY * (double) w.getScreenHeight() / w.getGuiScaledHeight();
         mc.mouseHandler.onMove(w.handle(), px, py, 0, 0);
         mc.mouseHandler.onButton(w.handle(), new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0), 1);
         mc.mouseHandler.onButton(w.handle(), new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0), 0);
+        //?} else {
+        /*uiScreen(mc).debugPress(guiX, guiY);
+        uiScreen(mc).debugRelease(guiX, guiY);
+        *///?}
     }
 
     private static io.github.profetgit.profetsettings.ProfetSettingsScreen uiScreen(Minecraft mc) {
@@ -396,7 +405,6 @@ final class Scenarios {
             })
             .waitTicks(25);
     }
-    //?}
 
     /** With other inventory and recipe mods installed: sorting still works, overlaps are switched off, overlays stay put. */
     static Script buildCompat() {

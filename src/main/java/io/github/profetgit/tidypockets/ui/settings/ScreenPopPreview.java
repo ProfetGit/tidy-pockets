@@ -1,11 +1,8 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.ScreenPop;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 // Screen pop: a chest is opened and closed, then the game menu. Each pops from 0.92 with ScreenPop's overshoot where
@@ -13,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 // Closing is always instant.
 public final class ScreenPopPreview extends ChestStage {
     private static final float CHEST = 250, CHEST_END = 1850, MENU = 2100, MENU_END = 3700, PERIOD = 3950;
-    private static final Identifier BUTTON = Identifier.withDefaultNamespace("widget/button");
     private static final String[] MENU_ITEMS = {"menu.returnToGame", "menu.options", "menu.returnToMenu"};
 
     private ItemStack[] contents;
@@ -39,7 +35,7 @@ public final class ScreenPopPreview extends ChestStage {
         centred(g, I18n.get("menu.game"), cx, top);
         for (int i = 0; i < MENU_ITEMS.length; i++) {
             int by = top + 16 + i * 24;
-            g.g.blitSprite(RenderPipelines.GUI_TEXTURED, BUTTON, cx - 75, by, 150, 20);
+            VanillaArt.button(g, cx - 75, by, 150);
             centred(g, I18n.get(MENU_ITEMS[i]), cx, by + 6);
         }
         g.pop();
@@ -77,4 +73,3 @@ public final class ScreenPopPreview extends ChestStage {
         off(g, x, y, w, h, speed <= 0 ? "animSpeed" : second ? all ? null : "animAllScreens" : containers ? null : "animScreenPop");
     }
 }
-//?}

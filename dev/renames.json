@@ -143,22 +143,26 @@
   {
     "regex": "\\bg\\.item\\(",
     "to": "g.renderItem(",
-    "when": "<26.1"
+    "when": "<26.1",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "regex": "\\bg\\.itemDecorations\\(",
     "to": "g.renderItemDecorations(",
-    "when": "<26.1"
+    "when": "<26.1",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "regex": "\\bg\\.outline\\(",
     "to": "g.renderOutline(",
-    "when": "<26.1"
+    "when": "<26.1",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "regex": "\\bg\\.text\\(",
     "to": "g.drawString(",
-    "when": "<26.1"
+    "when": "<26.1",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "from": "handleContainerInput",
@@ -258,7 +262,8 @@
   {
     "regex": "\\s*g\\.nextStratum\\(\\);",
     "to": "",
-    "when": "<1.21.6"
+    "when": "<1.21.6",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "from": "render",
@@ -402,7 +407,8 @@
   {
     "regex": "\\bg\\.blitSprite\\(",
     "to": "io.github.profetgit.tidypockets.Compat.sprite(g, ",
-    "when": "<1.20.2"
+    "when": "<1.20.2",
+    "files": "^(?!(?:\\w+Preview|ChestStage|TidySettings|UiPreviews|VanillaArt)\\.java$).*\\.java$"
   },
   {
     "regex": "(?:net\\.minecraft\\.resources\\.)?ResourceLocation\\.fromNamespaceAndPath\\(",

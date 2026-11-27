@@ -1,11 +1,9 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.anim.SlotAnims;
 import io.github.profetgit.tidypockets.anim.SortPop;
 import io.github.profetgit.tidypockets.input.Keys;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.item.ItemStack;
 
 // Safe mode on the sort of a messy chest: the planner's left clicks go out N per client tick (ClickSender), so the items
@@ -62,11 +60,11 @@ public final class SafeSortPreview extends ChestStage {
             stack(g, now[i], slotX(wx, i), slotY(wy, i), scale);
         }
         if (sorted && anim) {
-            g.g.nextStratum();
+            g.nextStratum();
             for (int i = 0; i < 27; i++) {
                 if (ItemStack.matches(mess[i], tidy[i])) continue;
                 int frame = SlotAnims.puffFrame(ms, SortPop.delay(i % 9, i / 9));
-                if (frame >= 0) g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SlotAnims.puffSprite(frame), slotX(wx, i), slotY(wy, i), 16, 16);
+                if (frame >= 0) g.sprite(SlotAnims.puffSprite(frame), slotX(wx, i), slotY(wy, i), 16, 16);
             }
         }
         return held;
@@ -136,4 +134,3 @@ public final class SafeSortPreview extends ChestStage {
         off(g, x, y, w, h, !enabled ? "sortEnabled" : !safe ? "safeMode" : null);
     }
 }
-//?}

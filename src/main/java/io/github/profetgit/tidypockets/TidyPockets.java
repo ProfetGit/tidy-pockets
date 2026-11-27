@@ -21,9 +21,7 @@ public final class TidyPockets {
         platform = p;
         TidyConfig.load();
         Conflicts.detect();
-        //? if >=26.3 {
         io.github.profetgit.profetsettings.ProfetSettings.register(MOD_ID, io.github.profetgit.tidypockets.ui.settings.TidySettings::create);
-        //?}
         LOG.info("Tidy Pockets loading on {} (Minecraft {})", p.loader(), p.minecraftVersion());
     }
 

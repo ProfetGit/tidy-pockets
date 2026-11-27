@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.Ctx;
 import io.github.profetgit.profetsettings.Gfx;
 import io.github.profetgit.profetsettings.ModDef;
@@ -21,7 +20,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,9 +33,6 @@ abstract class ChestStage extends Preview {
     static final float SLIDE = 300;
     private static final Identifier GLOW = art("glow"), SHADOW = art("shadow_item"),
         CHEST = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png"),
-        HOTBAR = Identifier.withDefaultNamespace("hud/hotbar"), SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection"),
-        HIGHLIGHT_BACK = Identifier.withDefaultNamespace("container/slot_highlight_back"),
-        HIGHLIGHT_FRONT = Identifier.withDefaultNamespace("container/slot_highlight_front"),
         // the shared settings library's mouse
         MOUSE_LEFT = Identifier.fromNamespaceAndPath("profet_settings", "mouse_left"),
         MOUSE_RIGHT = Identifier.fromNamespaceAndPath("profet_settings", "mouse_right"),
@@ -63,17 +58,41 @@ abstract class ChestStage extends Preview {
 
     // item stacks can only be made once a world has loaded their components
     static boolean itemsReady() {
+        //? if >=26.1 {
         return Items.APPLE.builtInRegistryHolder().areComponentsBound();
+        //?} else {
+        /*return true;
+        *///?}
     }
 
     // ---- the settings the scenes follow ----
 
+    // a preset scene plays with that preset's values instead of the live ones
+    private java.util.Map<String, Object> pinned = java.util.Map.of();
+    // set by a PresetPreview: freezes the loop just before its own closing slide
+    boolean hold;
+    float lastTime, lastPeriod;
+
+    // the one note of a preset that turns everything off, in place of each feature's own
+    private String allOff;
+    private static final java.util.Set<String> FEATURES = java.util.Set.of("sortEnabled", "refillEnabled", "randomEnabled", "protect", "plain", "animScreenPop", "animSpeed");
+
+    final ChestStage pin(java.util.Map<String, Object> values, String allOff) {
+        pinned = values;
+        this.allOff = allOff;
+        return this;
+    }
+
     final boolean flag(String key, boolean def) {
+        Object v = pinned.get(key);
+        if (v instanceof Boolean b) return b;
         Setting s = mod.find(key);
         return s == null ? def : s.getBool();
     }
 
     final int num(String key, int def) {
+        Object v = pinned.get(key);
+        if (v instanceof Integer n) return n;
         Setting s = mod.find(key);
         return s == null ? def : s.getInt();
     }
@@ -87,7 +106,10 @@ abstract class ChestStage extends Preview {
 
     // restarts the loop when any of the values the scene depends on changes
     float time(Ctx c, float period, Object... settings) {
-        return clock(c, Objects.hash(settings), period);
+        float t = clock(c, Objects.hash(settings), period);
+        lastTime = t;
+        lastPeriod = period;
+        return hold ? Math.min(t, period - SLIDE) : t;
     }
 
     // 0..1 with a soft start and end
@@ -135,8 +157,8 @@ abstract class ChestStage extends Preview {
 
     static void backdrop(Gfx g, int ox, int y) {
         g.pushTranslate(ox, y);
-        g.g.pose().scale(0.5f, 0.5f);
-        g.g.blit(RenderPipelines.GUI_TEXTURED, GLOW, 0, 0, 0, 0, W * 2, H * 2, W * 2, H * 2, g.a(0xFFFFFFFF));
+        g.scale(0.5f, 0.5f);
+        g.blit(GLOW, 0, 0, 0, 0, W * 2, H * 2, W * 2, H * 2);
         g.pop();
     }
 
@@ -145,8 +167,8 @@ abstract class ChestStage extends Preview {
         float a = g.alpha;
         g.alpha *= 0.95f;
         g.pushTranslate(cx + 2, bottom + 2);
-        g.g.pose().scale(width * (250 / 176f) / 64f, 16 / 32f);
-        g.g.blit(RenderPipelines.GUI_TEXTURED, SHADOW, -32, -16, 0, 0, 64, 32, 64, 32, g.a(0xFFFFFFFF));
+        g.scale(width * (250 / 176f) / 64f, 16 / 32f);
+        g.blit(SHADOW, -32, -16, 0, 0, 64, 32, 64, 32);
         g.pop();
         g.alpha = a;
     }
@@ -170,7 +192,7 @@ abstract class ChestStage extends Preview {
     }
 
     private static void piece(Gfx g, int x, int y, int v, int h) {
-        g.g.blit(RenderPipelines.GUI_TEXTURED, CHEST, x, y, 0, v, WIN_W, h, 256, 256, g.a(0xFFFFFFFF));
+        g.blit(CHEST, x, y, 0, v, WIN_W, h, 256, 256);
     }
 
     // where slot i's item sits in the window at (x, y); slots 27 and up are the hotbar
@@ -238,8 +260,8 @@ abstract class ChestStage extends Preview {
         int[][] rows = {{0, 7}, {17, 18}, {215, 7}};
         int at = y;
         for (int[] r : rows) {
-            g.g.blit(RenderPipelines.GUI_TEXTURED, CHEST, x, at, 0, r[0], 25, r[1], 256, 256, g.a(0xFFFFFFFF));
-            g.g.blit(RenderPipelines.GUI_TEXTURED, CHEST, x + 25, at, 169, r[0], 7, r[1], 256, 256, g.a(0xFFFFFFFF));
+            g.blit(CHEST, x, at, 0, r[0], 25, r[1], 256, 256);
+            g.blit(CHEST, x + 25, at, 169, r[0], 7, r[1], 256, 256);
             at += r[1];
         }
     }
@@ -248,7 +270,7 @@ abstract class ChestStage extends Preview {
 
     static void hotbar(Gfx g, int x, int y) {
         shadow(g, x + HOTBAR_W / 2f, y + 22, HOTBAR_W);
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, x, y, HOTBAR_W, 22, g.a(0xFFFFFFFF));
+        VanillaArt.hotbar(g, x, y, HOTBAR_W);
     }
 
     // where the item of the HUD hotbar's slot i sits
@@ -259,7 +281,7 @@ abstract class ChestStage extends Preview {
     // the selector around an item position, which may be between two slots while it glides
     static void selector(Gfx g, float ix, float iy) {
         g.pushTranslate(Math.round(ix * 2) / 2f - 4, iy - 4);
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, SELECTION, 0, 0, 24, 23, g.a(0xFFFFFFFF));
+        VanillaArt.selection(g, 0, 0);
         g.pop();
     }
 
@@ -269,17 +291,17 @@ abstract class ChestStage extends Preview {
     static void stack(Gfx g, ItemStack s, float x, float y, double scale) {
         if (s.isEmpty() || scale <= 0.02) return;
         g.pushTranslate(x + 8, y + 8);
-        g.g.pose().scale((float) scale, (float) scale);
-        g.g.pose().translate(-8, -8);
-        g.g.item(s, 0, 0);
-        g.g.itemDecorations(g.font(), s, 0, 0);
+        g.scale((float) scale, (float) scale);
+        g.translate(-8, -8);
+        g.item(s, 0, 0);
+        g.itemDecorations(s, 0, 0);
         g.pop();
     }
 
     // vanilla's highlight of the slot under the pointer: one sprite behind its item, one over it
     static void highlight(Gfx g, int ix, int iy, boolean front) {
-        if (front) g.g.nextStratum();
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, front ? HIGHLIGHT_FRONT : HIGHLIGHT_BACK, ix - 4, iy - 4, 24, 24);
+        if (front) g.nextStratum();
+        VanillaArt.highlight(g, ix, iy, front);
     }
 
     static ItemStack[] empty(int size) {
@@ -410,10 +432,10 @@ abstract class ChestStage extends Preview {
                 stack(g, item[i], sx.applyAsInt(i), sy.applyAsInt(i), b >= 0 && b < 1 ? SlotAnims.bumpScale(b) : 1);
             }
             if (hover >= 0) highlight(g, sx.applyAsInt(hover), sy.applyAsInt(hover), true);
-            g.g.nextStratum();
+            g.nextStratum();
             for (Flight f : flights) {
                 if (now - f.at >= flyMs) continue;
-                FlyAnims.item(g.g, f.stack, sx.applyAsInt(f.from), sy.applyAsInt(f.from), sx.applyAsInt(f.to), sy.applyAsInt(f.to),
+                FlyAnims.item(g, f.stack, sx.applyAsInt(f.from), sy.applyAsInt(f.from), sx.applyAsInt(f.to), sy.applyAsInt(f.to),
                     (now - f.at) / flyMs);
             }
         }
@@ -423,7 +445,7 @@ abstract class ChestStage extends Preview {
 
     // a pixel arrow one pixel thick with its tip at (x, y), over its shadow; {@code down} 0..1 presses it onto it
     static void pointer(Gfx g, float x, float y, float down) {
-        g.g.nextStratum();
+        g.nextStratum();
         // whole device pixels at the hub's scale of 2
         x = Math.round(x * 2) / 2f;
         y = Math.round(y * 2) / 2f;
@@ -442,18 +464,18 @@ abstract class ChestStage extends Preview {
     // the pointer, so that the arrow never hides it.
     static void carried(Gfx g, ItemStack s, float x, float y) {
         if (s.isEmpty()) return;
-        g.g.nextStratum();
+        g.nextStratum();
         g.pushTranslate(Math.round(x * 2) / 2f - 8, Math.round(y * 2) / 2f - 8);
-        g.g.item(s, 0, 0);
+        g.item(s, 0, 0);
         g.pop();
     }
 
     // {@code text} replaces the number, as for vanilla's yellow 0
     static void carriedCount(Gfx g, ItemStack s, float x, float y, String text) {
         if (s.isEmpty()) return;
-        g.g.nextStratum();
+        g.nextStratum();
         g.pushTranslate(Math.round(x * 2) / 2f - 8, Math.round(y * 2) / 2f - 8);
-        g.g.itemDecorations(g.font(), s, 0, 0, text);
+        g.itemDecorations(s, 0, 0, text);
         g.pop();
     }
 
@@ -498,8 +520,7 @@ abstract class ChestStage extends Preview {
 
     // the mouse with its left or right button lit, for a click the screen takes from the mouse itself
     static void mouse(Gfx g, boolean right, float cx, int y, boolean pressed) {
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, right ? MOUSE_RIGHT : MOUSE_LEFT, Math.round(cx - 8), y + (pressed ? 1 : 0), 16, 16,
-            g.a(0xFFFFFFFF));
+        g.sprite(right ? MOUSE_RIGHT : MOUSE_LEFT, Math.round(cx - 8), y + (pressed ? 1 : 0), 16, 16);
     }
 
     // a held key and the left button
@@ -512,7 +533,7 @@ abstract class ChestStage extends Preview {
     // the mouse with its wheel lit and an arrow for the way it turns, which nudges along on each notch
     static void wheel(Gfx g, boolean up, float cx, int y, boolean notch) {
         int x = Math.round(cx - 12);
-        g.g.blitSprite(RenderPipelines.GUI_TEXTURED, MOUSE_WHEEL, x, y, 16, 16, g.a(0xFFFFFFFF));
+        g.sprite(MOUSE_WHEEL, x, y, 16, 16);
         int top = y + 5 + (notch ? up ? -1 : 1 : 0);
         for (int row = 0; row < 4; row++) {
             int half = up ? row : 3 - row;
@@ -531,9 +552,12 @@ abstract class ChestStage extends Preview {
         }
     }
 
-    // the note of an option that is switched off, or nothing
-    static void off(Gfx g, int x, int y, int w, int h, String option) {
-        if (option != null) note(g, x, y, w, h, t("preview.off." + option));
+    // the note of an option that is switched off, or nothing. A preset scene names only a whole feature that is off (or,
+    // when the preset turns everything off, the one general note), never a sub-option.
+    final void off(Gfx g, int x, int y, int w, int h, String option) {
+        if (option == null) return;
+        if (!pinned.isEmpty() && !FEATURES.contains(option)) return;
+        note(g, x, y, w, h, allOff != null ? allOff : t("preview.off." + option));
     }
 
     // the note of a scene that cannot show its items yet
@@ -541,4 +565,3 @@ abstract class ChestStage extends Preview {
         note(g, x, y, w, h, t("preview.noWorld"));
     }
 }
-//?}

@@ -36,6 +36,8 @@ repositories {
     mavenCentral()
 }
 
+jarJar.enable()
+
 dependencies {
     minecraft 'net.minecraftforge:forge:1.21.1-52.1.16'
 }
@@ -71,9 +73,19 @@ jar {
     manifest { attributes 'MixinConfigs': 'tidypockets.mixins.json' }
 }
 
-tasks.named('jar') { finalizedBy 'publishForTests' }
+tasks.jarJar.configure {
+    archiveClassifier = ''
+    manifest { attributes 'MixinConfigs': 'tidypockets.mixins.json' }
+    finalizedBy 'publishForTests'
+}
+tasks.named('assemble') { dependsOn 'jarJar' }
+jar { archiveClassifier = 'slim' }
 tasks.register('publishForTests', Copy) {
     from layout.buildDirectory.dir('libs')
     include 'tidypockets-*+1.21.1-forge.jar'
     into file('../versions/1.21.1-forge/build/libs')
 }
+
+// The shared Profet settings screen, nested in the jar (tools/ProfetSettings/STATUS.md)
+ext.profetMc = '1.21.1'
+apply from: '../../../tools/ProfetSettings/mod/consumer-fg6.gradle'

@@ -1,6 +1,5 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
-//? if >=26.3 {
 import io.github.profetgit.profetsettings.*;
 import io.github.profetgit.tidypockets.config.TidyConfig;
 import net.minecraft.client.resources.language.I18n;
@@ -111,7 +110,16 @@ public final class TidySettings {
             "wheelMove", false, "shiftDrag", false, "collectDrag", false);
         m.preset(t("ui.preset.default"));
         m.preset(t("ui.preset.full"), "sortHotbar", true, "refillExactMatch", false, "protectMargin", 4, "animAllScreens", true);
+        // each preset's scenes, in the one order sort, refill, random, protect, screen pop: only where it differs from
+        // Default, which shows the usual four; Off shows vanilla in the first two
+        String[][] shown = {{"off", "sort", "refill"}, {"light", "random", "protect"},
+            {"default", "sort", "refill", "random", "protect"}, {"full", "sorthotbar", "refill", "protect", "screenpop"}};
+        for (int i = 0; i < shown.length; i++) {
+            ModDef.Preset p = m.presets.get(i);
+            String[] kinds = java.util.Arrays.copyOfRange(shown[i], 1, shown[i].length);
+            m.presetPreview(p.name(), "preset." + shown[i][0], t("ui.preset." + shown[i][0] + ".note"));
+            m.scene("preset." + shown[i][0], d -> new PresetPreview(d, p, kinds));
+        }
         return m;
     }
 }
-//?}
