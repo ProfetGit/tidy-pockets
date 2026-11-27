@@ -18,17 +18,7 @@
 - **Container tools.** Sort, Deposit matching and Restock buttons on chests, and Ctrl+F to search. Hold Shift to deposit your whole main inventory or to take everything out.
 - **Cartoon animations** for opening inventories, moving items and the hotbar. Each has its own toggle.
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/sort.webp" alt="Middle-click sorting a chest and the inventory" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/locks.webp" alt="Locking slots with Alt-click; a locked item refuses to move" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/moves.webp" alt="Shift-clicks and scroll-wheel moves" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/tools.webp" alt="Deposit matching, restock, and Ctrl+F search" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/creative_grab.webp" alt="Creative: shift-drag to grab full stacks, shift-drag the hotbar to bin them" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/creative_trash.webp" alt="Creative: shift-click the bin; locked slots stay" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/refill.webp" alt="Hotbar refill while pillaring" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/protect.webp" alt="Tool-break protection swaps in a fresh pickaxe" width="49%">
-<img src="https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/palette.webp" alt="Random palette: press R on three planks, then every block placed is a random one" width="49%">
-</p>
+![Middle-click sorting, Alt-click slot locking, deposit, restock and search, shift-drag and scroll moves, hotbar refill, and a worn pickaxe being swapped out](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/clips/showcase.webp)
 
 ![How to use](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-how-to-use.webp)
 
