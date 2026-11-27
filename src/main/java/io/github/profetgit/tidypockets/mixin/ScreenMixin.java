@@ -73,4 +73,17 @@ public abstract class ScreenMixin {
         ScreenPop.pop(g);
     }
     *///?}
+
+    // before 1.21.6 container screens dim the world from inside the popped render, without going through renderBackground
+    //? if >=1.20.2 && <1.21.6 {
+    /*@Inject(method = "renderTransparentBackground", at = @At("HEAD"))
+    private void tidypockets$dimHead(GuiGraphics g, CallbackInfo ci) {
+        ScreenPop.pushIdentity((Screen) (Object) this, g);
+    }
+
+    @Inject(method = "renderTransparentBackground", at = @At("RETURN"))
+    private void tidypockets$dimReturn(GuiGraphics g, CallbackInfo ci) {
+        ScreenPop.pop(g);
+    }
+    *///?}
 }

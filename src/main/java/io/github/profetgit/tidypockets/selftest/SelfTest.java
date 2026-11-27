@@ -25,6 +25,7 @@ public final class SelfTest {
     private static final List<String> RESULTS = new ArrayList<>();
     private static final ExecutorService WRITER = Executors.newFixedThreadPool(4);
     public static int contentPackets;
+    static int frames;
 
     private static boolean finished;
     private static int titleTicks, ticks;
@@ -132,6 +133,7 @@ public final class SelfTest {
     }
 
     public static void onFrame(Minecraft mc) {
+        frames++;
         Director.frame(mc);
         captureRegion(mc);
         if (captureLeft <= 0) return;

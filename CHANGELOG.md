@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Move everything**: hold Shift and press Deposit to put your whole main inventory into the container, or hold Shift and press Restock to take everything out. Locked slots stay, and the hotbar is never deposited.
+- On Minecraft 1.21.4 and older, opening a container no longer shrinks the darkened background with the panel, and EMI's item lists and search box stay put while the panel pops open.
+
 ## 1.2.25 — 2026-11-26
 
 - **New settings screen on Minecraft 26.3**: every Tidy Pockets option in the shared Profet Mods screen with a live preview of what it does (a chest window that sorts, refills and protects in front of you), Quick setup presets, and Cancel to put everything back. Also opened by the copper golem button in the Game Menu on Fabric and Quilt, together with the other Profet mods you have installed.

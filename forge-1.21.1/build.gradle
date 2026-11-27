@@ -41,7 +41,7 @@ dependencies {
 }
 
 def generated = file('../versions/1.21.1-fabric/build/generated/legacy/main/java')
-def prep = tasks.register('prepSources', Copy) {
+def prep = tasks.register('prepSources', Sync) {
     from generated
     exclude 'io/github/profetgit/tidypockets/platform/fabric/**', 'io/github/profetgit/tidypockets/platform/neoforge/**', 'io/github/profetgit/tidypockets/platform/forge/**'
     into layout.buildDirectory.dir('src')

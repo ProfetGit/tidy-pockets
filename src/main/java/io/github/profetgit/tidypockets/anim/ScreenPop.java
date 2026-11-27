@@ -23,6 +23,9 @@ public final class ScreenPop {
     private static Screen current;
     private static double start;
     private static final Deque<Boolean> PUSHED = new ArrayDeque<>();
+    private static final Deque<Boolean> UNSCALED = new ArrayDeque<>();
+    private static GuiGraphicsExtractor popped;
+    private static float poppedScale, poppedX, poppedY;
     /** 3D pictures given the pop pose so far (read by the self-test). */
     public static int posedPictures;
 
@@ -93,6 +96,30 @@ public final class ScreenPop {
         pose.scale((float) k, (float) k);
         pose.translate(-px, -py);
         PUSHED.push(true);
+        popped = g;
+        poppedScale = (float) k;
+        poppedX = px;
+        poppedY = py;
+    }
+
+    /** Cancel a pop for another mod's overlay drawn in the middle of the scaled parts; always pair with {@link #popUnscaled}. */
+    public static void pushUnscaled() {
+        boolean active = !PUSHED.isEmpty() && PUSHED.peek();
+        if (active) {
+            Matrix3x2fStack pose = popped.pose();
+            pose.pushMatrix();
+            pose.translate(poppedX, poppedY);
+            pose.scale(1 / poppedScale, 1 / poppedScale);
+            pose.translate(-poppedX, -poppedY);
+        }
+        PUSHED.push(false);
+        UNSCALED.push(active);
+    }
+
+    public static void popUnscaled() {
+        if (UNSCALED.isEmpty()) return;
+        PUSHED.pop();
+        if (UNSCALED.pop()) popped.pose().popMatrix();
     }
 
     /** A balanced no-op for {@link #pop}. */

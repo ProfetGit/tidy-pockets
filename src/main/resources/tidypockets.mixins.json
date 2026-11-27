@@ -16,6 +16,7 @@
     "CreativeSlotWrapperAccessor",
     "DropMixin",
     "EffectScreenLegacyMixin",
+    "EmiScreenManagerMixin",
     "GameRendererMixin",
     "GuiGraphicsExtractorAccessor",
     "GuiGraphicsExtractorMixin",

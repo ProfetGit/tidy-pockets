@@ -1539,6 +1539,7 @@ final class Scenarios {
             inv.setItem(11, new ItemStack(Items.DIRT, 5));
             inv.setItem(12, new ItemStack(Items.TORCH, 10));
             inv.setItem(13, new ItemStack(Items.BREAD, 3));
+            inv.setItem(14, new ItemStack(Items.APPLE, 4));
             inv.setItem(0, new ItemStack(Items.STONE, 30));
             inv.setItem(1, new ItemStack(Items.TORCH, 10));
         });
@@ -1555,6 +1556,7 @@ final class Scenarios {
                 Inventory inv = mc.player.getInventory();
                 if (!inv.getItem(10).isEmpty() || !inv.getItem(11).isEmpty() || !inv.getItem(12).isEmpty()) return dump(mc);
                 if (inv.getItem(13).getCount() != 3) return "bread moved: " + dump(mc);
+                if (inv.getItem(14).getCount() != 4) return "apple moved: " + dump(mc);
                 return inv.getItem(0).getCount() == 30 && inv.getItem(1).getCount() == 10 ? null : "hotbar touched: " + dump(mc);
             })
             .run(mc -> pressButton(mc, "restock"))
@@ -1566,6 +1568,37 @@ final class Scenarios {
             })
             .check("tools keep items conserved", mc -> count(chestSlots(mc), Items.TORCH) + mc.player.getInventory().getItem(1).getCount() == 84
                 ? null : dump(mc))
+            .run(mc -> {
+                SlotLocks.toggle(13, mc.player.getInventory().getItem(13));
+                io.github.profetgit.tidypockets.Compat.forceShift = true;
+                pressButton(mc, "deposit");
+            })
+            .waitTicks(5)
+            .check("shift deposit moves every unlocked main stack", mc -> {
+                Inventory inv = mc.player.getInventory();
+                for (int i = 9; i < 36; i++) if (i != 13 && !inv.getItem(i).isEmpty()) return "slot " + i + ": " + dump(mc);
+                if (inv.getItem(13).getCount() != 3) return "locked bread moved: " + dump(mc);
+                if (inv.getItem(0).getCount() != 51 || inv.getItem(1).getCount() != 64) return "hotbar touched: " + dump(mc);
+                return count(chestSlots(mc), Items.APPLE) == 4 ? null : "apple missing from chest";
+            })
+            .run(mc -> pressButton(mc, "restock"))
+            .waitTicks(5)
+            .check("shift restock takes everything", mc -> {
+                for (Slot c : chestSlots(mc)) if (c.hasItem()) return "left in chest: " + c.getItem();
+                Inventory inv = mc.player.getInventory();
+                int stone = 0, torch = 0, apple = 0;
+                for (int i = 0; i < 36; i++) {
+                    ItemStack it = inv.getItem(i);
+                    if (it.is(Items.STONE)) stone += it.getCount();
+                    if (it.is(Items.TORCH)) torch += it.getCount();
+                    if (it.is(Items.APPLE)) apple += it.getCount();
+                }
+                return stone == 51 && torch == 84 && apple == 4 ? null : stone + "/" + torch + "/" + apple + " " + dump(mc);
+            })
+            .run(mc -> {
+                io.github.profetgit.tidypockets.Compat.forceShift = false;
+                SlotLocks.toggle(13, ItemStack.EMPTY);
+            })
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
                 io.github.profetgit.tidypockets.Compat.keyPressed(scr, new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_F, 0, io.github.profetgit.tidypockets.Compat.MOD_CONTROL));

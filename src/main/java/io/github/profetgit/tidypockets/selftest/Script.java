@@ -39,9 +39,21 @@ final class Script {
         return this;
     }
 
+    /**
+     * Waits for {@code n} client ticks, counting only those that follow a new frame and, unless the game is paused, a new
+     * integrated server tick. A client that stalls runs several ticks back to back, before the screen has been drawn again
+     * or the server has synced or handled anything.
+     */
     Script waitTicks(int n) {
-        int[] left = {n};
-        steps.add(mc -> --left[0] <= 0);
+        int[] left = {n}, frame = {-1}, tick = {-1};
+        steps.add(mc -> {
+            MinecraftServer s = mc.getSingleplayerServer();
+            int t = s == null || mc.isPaused() ? -1 : s.getTickCount();
+            if (SelfTest.frames == frame[0] || t >= 0 && t == tick[0]) return false;
+            frame[0] = SelfTest.frames;
+            tick[0] = t;
+            return --left[0] <= 0;
+        });
         return this;
     }
 

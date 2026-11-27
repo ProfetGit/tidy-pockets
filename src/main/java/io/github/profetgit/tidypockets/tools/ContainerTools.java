@@ -1,5 +1,6 @@
 package io.github.profetgit.tidypockets.tools;
 
+import io.github.profetgit.tidypockets.Compat;
 import io.github.profetgit.tidypockets.TidyPockets;
 import io.github.profetgit.tidypockets.anim.Anims;
 import io.github.profetgit.tidypockets.config.TidyConfig;
@@ -128,16 +129,20 @@ public final class ContainerTools {
 
     // ---- actions ----
 
-    /** Shift-clicks every unlocked main-inventory stack whose item is already somewhere in the container. */
+    /**
+     * Shift-clicks every unlocked main-inventory stack whose item is already somewhere in the container; with Shift held,
+     * every unlocked main-inventory stack.
+     */
     public static void deposit(AbstractContainerScreen<?> screen) {
         LocalPlayer p = Minecraft.getInstance().player;
         AbstractContainerMenu menu = screen.getMenu();
         if (p == null || !menu.getCarried().isEmpty() || ClickSender.busy()) return;
         List<Slot> container = Inv.containerSlots(menu, p);
+        boolean all = Compat.shiftDown();
         Anims.beginMove(menu);
         for (Slot s : Inv.playerSlots(menu, p, Inventory.SELECTION_SIZE, Inventory.INVENTORY_SIZE)) {
             if (!s.hasItem() || SlotLocks.isLocked(s.getContainerSlot())) continue;
-            boolean present = false;
+            boolean present = all;
             for (Slot c : container) if (ItemStack.isSameItemSameComponents(c.getItem(), s.getItem())) present = true;
             if (!present) continue;
             ClickSender.send(menu, s, 0, ContainerInput.QUICK_MOVE);
@@ -145,7 +150,10 @@ public final class ContainerTools {
         Anims.endMove(menu);
     }
 
-    /** Tops up partial stacks in the hotbar, then the main inventory, from matching stacks in the container. */
+    /**
+     * Tops up partial stacks in the hotbar, then the main inventory, from matching stacks in the container; with Shift
+     * held, shift-clicks everything out of the container.
+     */
     public static void restock(AbstractContainerScreen<?> screen) {
         LocalPlayer p = Minecraft.getInstance().player;
         AbstractContainerMenu menu = screen.getMenu();
@@ -153,6 +161,11 @@ public final class ContainerTools {
         List<Slot> container = Inv.containerSlots(menu, p);
         List<Slot> mine = Inv.playerSlots(menu, p, 0, Inventory.INVENTORY_SIZE);
         Anims.beginMove(menu);
+        if (Compat.shiftDown()) {
+            for (Slot c : container) if (c.hasItem()) ClickSender.send(menu, c, 0, ContainerInput.QUICK_MOVE);
+            Anims.endMove(menu);
+            return;
+        }
         for (Slot s : mine) {
             ItemStack have = s.getItem();
             if (have.isEmpty() || SlotLocks.isLocked(s.getContainerSlot())) continue;

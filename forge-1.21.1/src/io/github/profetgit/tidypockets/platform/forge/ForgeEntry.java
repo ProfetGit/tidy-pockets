@@ -1,7 +1,7 @@
 package io.github.profetgit.tidypockets.platform.forge;
 
 import io.github.profetgit.tidypockets.TidyPockets;
-import io.github.profetgit.tidypockets.config.TidyConfigScreen;
+import io.github.profetgit.tidypockets.config.ConfigScreens;
 import io.github.profetgit.tidypockets.input.Keys;
 import io.github.profetgit.tidypockets.platform.Platform;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ public final class ForgeEntry implements Platform {
     public ForgeEntry() {
         TidyPockets.init(this);
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-            () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new TidyConfigScreen(parent)));
+            () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> ConfigScreens.create(parent)));
         FMLJavaModLoadingContext.get().getModEventBus().addListener((RegisterKeyMappingsEvent e) -> Keys.ALL.forEach(e::register));
     }
 
