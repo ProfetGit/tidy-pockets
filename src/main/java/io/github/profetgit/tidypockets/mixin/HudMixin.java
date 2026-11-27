@@ -14,17 +14,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Hud.class)
 public abstract class HudMixin {
+    // Another mod may skip the selector draw this pair surrounds (Axiom does, while its tool slot is selected), and then
+    // only one of the two injections runs: pop only what was pushed.
+    @org.spongepowered.asm.mixin.Unique private boolean tidypockets$gliding;
+
     @Inject(method = "extractItemHotbar", at = @At(value = "INVOKE", ordinal = 1,
         target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite"))
     private void tidypockets$glideSelector(GuiGraphicsExtractor g, DeltaTracker dt, CallbackInfo ci) {
         g.pose().pushMatrix();
         g.pose().translate(HudAnims.selectorOffset(), 0);
+        tidypockets$gliding = true;
     }
 
     @Inject(method = "extractItemHotbar", at = @At(value = "INVOKE", ordinal = 1, shift = At.Shift.AFTER,
         target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite"))
     private void tidypockets$glideSelectorEnd(GuiGraphicsExtractor g, DeltaTracker dt, CallbackInfo ci) {
-        g.pose().popMatrix();
+        tidypockets$endGlide(g);
+    }
+
+    @Inject(method = "extractItemHotbar", at = @At("RETURN"))
+    private void tidypockets$glideSelectorReturn(GuiGraphicsExtractor g, DeltaTracker dt, CallbackInfo ci) {
+        tidypockets$endGlide(g);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private void tidypockets$endGlide(GuiGraphicsExtractor g) {
+        if (tidypockets$gliding) g.pose().popMatrix();
+        tidypockets$gliding = false;
     }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
@@ -58,17 +74,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public abstract class HudMixin {
+    @org.spongepowered.asm.mixin.Unique private boolean tidypockets$gliding;
+
     @Inject(method = "renderHotbar", at = @At(value = "INVOKE", ordinal = 1,
         target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V"))
     private void tidypockets$glideSelector(float pt, GuiGraphics g, CallbackInfo ci) {
         g.pose().pushPose();
         g.pose().translate(HudAnims.selectorOffset(), 0);
+        tidypockets$gliding = true;
     }
 
     @Inject(method = "renderHotbar", at = @At(value = "INVOKE", ordinal = 1, shift = At.Shift.AFTER,
         target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V"))
     private void tidypockets$glideSelectorEnd(float pt, GuiGraphics g, CallbackInfo ci) {
-        g.pose().popPose();
+        tidypockets$endGlide(g);
+    }
+
+    @Inject(method = "renderHotbar", at = @At("RETURN"))
+    private void tidypockets$glideSelectorReturn(float pt, GuiGraphics g, CallbackInfo ci) {
+        tidypockets$endGlide(g);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private void tidypockets$endGlide(GuiGraphics g) {
+        if (tidypockets$gliding) g.pose().popPose();
+        tidypockets$gliding = false;
     }
 
     @Inject(method = "render", at = @At("TAIL"))

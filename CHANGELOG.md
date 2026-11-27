@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a crash with Axiom: selecting its builder tool slot closed the game (Tidy Pockets' hotbar selector glide undid a step that had been skipped).
 - **Move everything**: hold Shift and press Deposit to put your whole main inventory into the container, or hold Shift and press Restock to take everything out. Locked slots stay, and the hotbar is never deposited.
 - On Minecraft 1.21.4 and older, opening a container no longer shrinks the darkened background with the panel, and EMI's item lists and search box stay put while the panel pops open.
 
