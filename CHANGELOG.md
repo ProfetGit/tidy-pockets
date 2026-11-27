@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.28 — 2026-11-27
+
+- **Fixed a startup crash on Minecraft 26.1.2** (Fabric, Quilt and NeoForge) when Controlify is installed. Tidy Pockets' controller bindings are for 26.2 and 26.3 only.
+- The Profet Mods settings screen has a more compact mod list with a scrollbar.
+
 ## 1.2.27 — 2026-11-27
 
 - **Fixed a crash with Axiom**: selecting its builder tool slot closed the game.

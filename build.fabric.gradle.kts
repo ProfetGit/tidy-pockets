@@ -61,6 +61,7 @@ tasks.test {
 
 tasks.processResources {
     exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml")
+    if (mc == "26.1.2") exclude("META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint") // ControlifyCompat is a stub below 26.2
     val props = mapOf(
         "version" to project.version.toString(),
         "mc" to mc,
