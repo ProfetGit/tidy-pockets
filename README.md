@@ -15,7 +15,7 @@
 - **Random palette.** Press R over the hotbar blocks you want to mix. With one of them selected, every block you place comes from a random palette slot, so walls and floors get texture without you switching slots. It keeps like blocks apart, so the mix never turns patchy.
 - **Tool-break protection.** A tool about to break is swapped for a spare or moved to your inventory, so it never breaks.
 - **Mouse shortcuts.** Scroll to move items one at a time, shift-drag across slots to move many.
-- **Container tools.** Sort, Deposit matching and Restock buttons on chests, and Ctrl+F to search.
+- **Container tools.** Sort, Deposit matching and Restock buttons on chests, and Ctrl+F to search. Hold Shift to deposit your whole main inventory or to take everything out.
 - **Cartoon animations** for opening inventories, moving items and the hotbar. Each has its own toggle.
 
 <p align="center">
@@ -39,6 +39,7 @@
 | Add or remove a block in the random palette | R over a hotbar block (or R with it selected) |
 | Clear the random palette | Shift + R |
 | Search | Ctrl+F in a container |
+| Deposit everything / take everything | Shift + click Deposit or Restock |
 | Move one item / a whole stack | Scroll wheel / Shift + scroll |
 | Shift-click many slots | Hold Shift and drag |
 
@@ -46,7 +47,7 @@ Random palette: press R on each hotbar block you want to mix (a small die shows 
 
 Change the keys in Controls, and the settings in Mod Menu (Fabric) or the Mods list (NeoForge, Forge).
 
-On Minecraft 26.3 the settings open in the shared **Profet Mods** screen (also from the copper golem button in the Game Menu on Fabric and Quilt) with a live preview of every option and Quick setup presets. Its **Report bug** button sends a bug report from inside the game: what happened plus your Minecraft and loader versions, mod list, changed settings and recent errors. **Privacy:** reports go through Profet's report server (Cloudflare) and are posted as public issues on GitHub. Your player name, home folder and IP addresses are removed first, and a **View report** link shows exactly what will be sent. Nothing is sent unless you press Send.
+The settings open in the shared **Profet Mods** screen (also from the copper golem button in the Game Menu) with a live preview of every option and Quick setup presets. Its **Report bug** button sends a bug report from inside the game: what happened plus your Minecraft and loader versions, mod list, changed settings and recent errors. **Privacy:** reports go through Profet's report server (Cloudflare) and are posted as public issues on GitHub. Your player name, home folder and IP addresses are removed first, and a **View report** link shows exactly what will be sent. Nothing is sent unless you press Send.
 
 ![Compatibility](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-compatibility.webp)
 
@@ -57,7 +58,7 @@ On Minecraft 26.3 the settings open in the shared **Profet Mods** screen (also f
 
 ![Installation](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-installation.webp)
 
-Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.3, 26.2, 1.21.11, 1.21.1 and 1.20.1. Minecraft 1.21.8 and 1.21.4 have Fabric and Quilt builds. On 1.20.1, NeoForge uses the Forge jar.
+Put the jar for your loader in your `mods` folder: Fabric or Quilt (needs Fabric API), NeoForge or Forge, for Minecraft 26.3, 26.2, 26.1.2, 1.21.11, 1.21.1 and 1.20.1. Minecraft 1.21.8 and 1.21.4 have Fabric and Quilt builds. On 1.20.1, NeoForge uses the Forge jar.
 
 ![More from Profet](https://raw.githubusercontent.com/ProfetGit/tidy-pockets/main/docs/desc/title-more-from-profet.webp)
 
