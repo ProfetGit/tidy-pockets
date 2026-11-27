@@ -48,6 +48,11 @@ public abstract class AbstractContainerScreenMixin {
         if (ScreenInput.mouseClicked(self, slot, ev) || MouseTweaks.pressed(self, slot, ev)) cir.setReturnValue(true);
     }
 
+    @Inject(method = "mouseClicked", at = @At("RETURN"))
+    private void tidypockets$afterClick(MouseButtonEvent e, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+        ContainerTools.clicked((AbstractContainerScreen<?>) (Object) this);
+    }
+
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void tidypockets$mouseDragged(MouseButtonEvent e, double dx, double dy, CallbackInfoReturnable<Boolean> cir) {
         if (MouseTweaks.dragged((AbstractContainerScreen<?>) (Object) this, getHoveredSlot(e.x(), e.y()))) cir.setReturnValue(true);
@@ -64,6 +69,11 @@ public abstract class AbstractContainerScreenMixin {
         Slot slot = getHoveredSlot(x, y);
         MouseEvt ev = new MouseEvt(x, y, button, io.github.profetgit.tidypockets.Compat.modifiers());
         if (ScreenInput.mouseClicked(self, slot, ev) || MouseTweaks.pressed(self, slot, ev)) cir.setReturnValue(true);
+    }
+
+    @Inject(method = "mouseClicked", at = @At("RETURN"))
+    private void tidypockets$afterClick(double x, double y, int button, CallbackInfoReturnable<Boolean> cir) {
+        ContainerTools.clicked((AbstractContainerScreen<?>) (Object) this);
     }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)

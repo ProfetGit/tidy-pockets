@@ -9,8 +9,12 @@ import net.minecraft.client.Minecraft;
 public final class Compat {
     private Compat() {}
 
-    /** GLFW modifier bits (InputConstants only has them since 1.21.9). */
-    public static final int MOD_SHIFT = 1, MOD_CONTROL = 2;
+    /** Modifier bits as key and mouse events carry them: 26.3 reads SDL's, a bit for each side; older versions GLFW's. */
+    //? if >=26.3 {
+    public static final int MOD_SHIFT = 3, MOD_CONTROL = 192;
+    //?} else {
+    /*public static final int MOD_SHIFT = 1, MOD_CONTROL = 2;
+    *///?}
 
     /** Whether the GUI draws 3D pictures through render states that can take a pose (before 1.21.6 they draw in place). */
     //? if >=1.21.6 {

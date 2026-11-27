@@ -1609,7 +1609,9 @@ final class Scenarios {
             })
             .run(mc -> {
                 AbstractContainerScreen<?> scr = (AbstractContainerScreen<?>) mc.gui.screen();
-                io.github.profetgit.tidypockets.Compat.keyPressed(scr, new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_F, 0, io.github.profetgit.tidypockets.Compat.MOD_CONTROL));
+                io.github.profetgit.tidypockets.Compat.keyPressed(scr, new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_F, 0,
+                    // the left Ctrl bit alone, as a keyboard sends it
+                    io.github.profetgit.tidypockets.Compat.MOD_CONTROL & -io.github.profetgit.tidypockets.Compat.MOD_CONTROL));
                 if (scr.getFocused() instanceof net.minecraft.client.gui.components.EditBox box) box.setValue("torch");
             })
             .waitTicks(3)
@@ -1621,6 +1623,25 @@ final class Scenarios {
                 new io.github.profetgit.tidypockets.input.KeyEvt(InputConstants.KEY_E, 0, 0)))
             .waitTicks(2)
             .check("typing in search does not close the screen", mc -> mc.gui.screen() instanceof ContainerScreen ? null : "screen closed")
+            .run(mc -> {
+                pressButton(mc, "search");
+                pressButton(mc, "search");
+            })
+            .waitTicks(2)
+            .check("search button leaves the box focused", mc -> mc.gui.screen().getFocused() instanceof net.minecraft.client.gui.components.EditBox
+                ? null : "focus on " + mc.gui.screen().getFocused())
+            //? if >=1.21.9 {
+            .check("shift and ctrl bits read as vanilla reads them", mc -> {
+                for (int bit = 1; bit < 1 << 16; bit <<= 1) {
+                    var ours = new io.github.profetgit.tidypockets.input.KeyEvt(0, 0, bit);
+                    var mouse = new io.github.profetgit.tidypockets.input.MouseEvt(0, 0, 0, bit);
+                    var theirs = new net.minecraft.client.input.KeyEvent(0, 0, bit);
+                    if (ours.hasShiftDown() != theirs.hasShiftDown() || mouse.hasShiftDown() != theirs.hasShiftDown()) return "shift, bit " + bit;
+                    if (ours.hasControlDown() != theirs.hasControlDown() || mouse.hasControlDown() != theirs.hasControlDown()) return "ctrl, bit " + bit;
+                }
+                return null;
+            })
+            //?}
             .run(mc -> mc.player.closeContainer())
             .waitTicks(5);
     }

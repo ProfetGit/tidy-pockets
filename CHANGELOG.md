@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.29 — 2026-11-27
+
+- **Ctrl+F opens the search again on Minecraft 26.3.** It did nothing there.
+- The right Shift key now works for shift-dragging and Shift + R on Minecraft 26.3.
+- Clicking the search button lets you type straight away; before, you had to click the box first.
+
 ## 1.2.28 — 2026-11-27
 
 - **Fixed a startup crash on Minecraft 26.1.2** (Fabric, Quilt and NeoForge) when Controlify is installed. Tidy Pockets' controller bindings are for 26.2 and 26.3 only.

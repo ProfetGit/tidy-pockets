@@ -32,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 public final class ContainerTools {
     private static EditBox search;
     private static AbstractContainerScreen<?> searchScreen;
+    private static boolean refocus;
 
     private ContainerTools() {}
 
@@ -45,6 +46,7 @@ public final class ContainerTools {
     public static void init(AbstractContainerScreen<?> screen) {
         search = null;
         searchScreen = null;
+        refocus = false;
         LocalPlayer p = Minecraft.getInstance().player;
         TidyConfig cfg = TidyConfig.get();
         if (p == null || !Inv.isStorage(screen.getMenu())) return;
@@ -58,7 +60,10 @@ public final class ContainerTools {
             x -= 36;
         }
         if (cfg.search) {
-            button(inv, x, y, "search", () -> toggleSearch(screen));
+            button(inv, x, y, "search", () -> {
+                toggleSearch(screen);
+                refocus = searchOpen(screen);
+            });
             EditBox box = new EditBox(Minecraft.getInstance().font, a.tidypockets$left() + 2, a.tidypockets$top() - 14, 110, 12,
                 Component.translatable("tidypockets.search"));
             box.setHint(Component.translatable("tidypockets.search.hint"));
@@ -113,6 +118,12 @@ public final class ContainerTools {
             search.setValue("");
             screen.setFocused(null);
         }
+    }
+
+    /** Vanilla focuses a clicked button after its action, which takes the focus from the box the search button opened. */
+    public static void clicked(AbstractContainerScreen<?> screen) {
+        if (refocus && searchOpen(screen)) screen.setFocused(search);
+        refocus = false;
     }
 
     /** Null when no search is active, else the lower-case query. */
