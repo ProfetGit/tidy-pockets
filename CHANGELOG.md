@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.30 — 2026-11-28
+
+- **New Blur strength slider** (1 to 10) for the blur behind inventories and menus. On 1.20.5 and newer its default, Auto, keeps following the game's Menu Background Blur.
+- **The blur now works on Minecraft 1.20.1** too, behind inventories and the game's menus; before, the setting did nothing there. "Inventory blur" is now called "Background blur".
+- **Fixed: no blur behind inventories on Minecraft 1.21.1, 1.21.4 and 1.21.8.**
+- **Fixed chest and container screens twitching with Immersive Interfaces** and other resource packs that replace the GUI shaders. On 1.20.1, 1.21.1 and 1.21.4 the screen pop now works with them; on newer versions it switches itself off while such a pack is active.
+- Fixed the settings previews being drawn garbled with those packs: they show the game's own chest and hotbar then.
+
 ## 1.2.29 — 2026-11-27
 
 - **Ctrl+F opens the search again on Minecraft 26.3.** It did nothing there.

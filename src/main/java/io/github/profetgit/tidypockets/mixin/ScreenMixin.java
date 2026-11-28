@@ -53,7 +53,7 @@ public abstract class ScreenMixin {
     private void tidypockets$backgroundHead(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
         ScreenPop.pushIdentity(self, g);
-        Blur.containerBackground(self, g, dt);
+        Blur.background(self, g, dt);
     }
 
     @Inject(method = "extractBackground", at = @At("RETURN"))
@@ -65,7 +65,7 @@ public abstract class ScreenMixin {
     private void tidypockets$backgroundHead(GuiGraphics g, CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
         ScreenPop.pushIdentity(self, g);
-        Blur.containerBackground(self, g, 0f);
+        Blur.background(self, g, 0f);
     }
 
     @Inject(method = "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V", at = @At("RETURN"))

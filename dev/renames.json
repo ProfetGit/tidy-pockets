@@ -220,12 +220,14 @@
   {
     "from": "pushMatrix",
     "to": "pushPose",
-    "when": "<1.21.6"
+    "when": "<1.21.6",
+    "files": "^(?!ViewScale\\.java$).*\\.java$"
   },
   {
     "from": "popMatrix",
     "to": "popPose",
-    "when": "<1.21.6"
+    "when": "<1.21.6",
+    "files": "^(?!ViewScale\\.java$).*\\.java$"
   },
   {
     "regex": "g\\.pose\\(\\)\\.pushPose\\(\\)\\.identity\\(\\);",

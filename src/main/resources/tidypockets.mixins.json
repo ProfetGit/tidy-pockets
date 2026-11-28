@@ -35,6 +35,7 @@
     "PictureInPictureStateInterfaceMixin",
     "PictureInPictureStateMixin",
     "PlayerSwapMixin",
+    "PostChainAccessor",
     "ScreenInvoker",
     "ScreenMixin",
     "ScreenShiftMixin"

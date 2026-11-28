@@ -26,7 +26,7 @@ import net.minecraft.world.item.Items;
 
 // The stage of the settings previews: the game's own chest window or hotbar floating in a soft pool of light on the box's
 // dark, over a contact shadow, and the pointer or key that works it. Windows, slots and items come from the player's
-// resources; the slot motion is the mod's own (SlotAnims, FlyAnims).
+// resources (VanillaArt swaps in the game's own where a pack's art only works in its own screens); the slot motion is the mod's own (SlotAnims, FlyAnims).
 abstract class ChestStage extends Preview {
     // the art is made for a W x H GUI pixel box; the window is 176 wide at WIN_X
     static final int W = 198, H = 150, WIN_X = 11, WIN_W = 176, HOTBAR_W = 182, KEY_Y = 119;
@@ -192,7 +192,7 @@ abstract class ChestStage extends Preview {
     }
 
     private static void piece(Gfx g, int x, int y, int v, int h) {
-        g.blit(CHEST, x, y, 0, v, WIN_W, h, 256, 256);
+        g.blit(VanillaArt.texture(CHEST), x, y, 0, v, WIN_W, h, 256, 256);
     }
 
     // where slot i's item sits in the window at (x, y); slots 27 and up are the hotbar
@@ -260,8 +260,8 @@ abstract class ChestStage extends Preview {
         int[][] rows = {{0, 7}, {17, 18}, {215, 7}};
         int at = y;
         for (int[] r : rows) {
-            g.blit(CHEST, x, at, 0, r[0], 25, r[1], 256, 256);
-            g.blit(CHEST, x + 25, at, 169, r[0], 7, r[1], 256, 256);
+            g.blit(VanillaArt.texture(CHEST), x, at, 0, r[0], 25, r[1], 256, 256);
+            g.blit(VanillaArt.texture(CHEST), x + 25, at, 169, r[0], 7, r[1], 256, 256);
             at += r[1];
         }
     }

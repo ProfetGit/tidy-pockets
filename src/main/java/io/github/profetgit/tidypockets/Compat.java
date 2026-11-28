@@ -23,6 +23,13 @@ public final class Compat {
     /*public static final boolean HAS_PIP = false;
     *///?}
 
+    /** Whether the game blurs menu backgrounds itself, with a Menu Background Blur setting (from 1.20.5). */
+    //? if >=1.20.5 {
+    public static final boolean HAS_MENU_BLUR = true;
+    //?} else {
+    /*public static final boolean HAS_MENU_BLUR = false;
+    *///?}
+
     public static boolean isKeyDown(int key) {
         //? if >=26.3 {
         return InputConstants.isKeyDown(key);

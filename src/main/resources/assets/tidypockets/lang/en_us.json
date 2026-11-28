@@ -79,8 +79,8 @@
   "tidypockets.option.animPlayerHop.tooltip": "Your character hops when you equip armour.",
   "tidypockets.option.smoothScroll": "Smooth scrolling",
   "tidypockets.option.smoothScroll.tooltip": "Lists, the creative inventory and chat scroll smoothly.",
-  "tidypockets.option.blur": "Inventory blur",
-  "tidypockets.option.blur.tooltip": "Blur the world behind inventories. Strength follows the Menu Background Blur setting.",
+  "tidypockets.option.blur": "Background blur",
+  "tidypockets.option.blur.tooltip": "Blur the world behind inventories and menus.",
   "tidypockets.option.sortOrder.creative": "Creative",
   "tidypockets.option.sortOrder.name": "Name",
   "tidypockets.option.sortOrder.id": "ID",
@@ -181,5 +181,8 @@
   "tidypockets.setting.animCountBump.desc": "Stack counts bump when they change.",
   "tidypockets.setting.animPlayerHop.desc": "Your character hops when you equip armour.",
   "tidypockets.setting.smoothScroll.desc": "Lists, creative inventory and chat scroll smoothly.",
-  "tidypockets.setting.blur.desc": "Blur the world behind inventories."
+  "tidypockets.setting.blur.desc": "Blur the world behind inventories and menus.",
+  "tidypockets.option.blurStrength": "Blur strength",
+  "tidypockets.setting.blurStrength.desc": "How strong the background blur is.",
+  "tidypockets.ui.blurAuto": "Auto"
 }

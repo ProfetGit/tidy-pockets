@@ -46,6 +46,7 @@ public final class TidySettings {
                 if (io.github.profetgit.tidypockets.config.Conflicts.fly) c.add("fly");
                 if (io.github.profetgit.tidypockets.config.Conflicts.scroll) c.add("scroll");
                 if (io.github.profetgit.tidypockets.config.Conflicts.screenPop) c.add("screenPop");
+                if (io.github.profetgit.tidypockets.config.Conflicts.guiShaders) c.add("GUI shader resource pack");
                 if (io.github.profetgit.tidypockets.config.Conflicts.sorting) c.add("sorting");
                 return c.isEmpty() ? "" : "Yielded features: " + String.join(", ", c);
             });
@@ -102,7 +103,12 @@ public final class TidySettings {
             bool("animCountBump", c -> c.animCountBump, (c, v) -> c.animCountBump = v).preview("anim"),
             bool("animPlayerHop", c -> c.animPlayerHop, (c, v) -> c.animPlayerHop = v),
             bool("smoothScroll", c -> c.smoothScroll, (c, v) -> c.smoothScroll = v).preview("scroll"),
-            bool("blur", c -> c.blur, (c, v) -> c.blur = v));
+            bool("blur", c -> c.blur, (c, v) -> c.blur = v),
+            // "Auto" (the game's own blur setting) only where the game has one; before that 0 plays as 5
+            range("blurStrength", io.github.profetgit.tidypockets.Compat.HAS_MENU_BLUR ? 0 : 1, 10,
+                c -> c.blurStrength == 0 && !io.github.profetgit.tidypockets.Compat.HAS_MENU_BLUR ? 5 : c.blurStrength,
+                (c, v) -> c.blurStrength = v)
+                .format(v -> v == 0 ? t("ui.blurAuto") : String.valueOf(v)));
 
         m.preset(t("ui.preset.off"), "sortEnabled", false, "refillEnabled", false, "randomEnabled", false, "protect", 2,
             "wheelMove", false, "shiftDrag", false, "collectDrag", false, "containerButtons", false, "search", false);

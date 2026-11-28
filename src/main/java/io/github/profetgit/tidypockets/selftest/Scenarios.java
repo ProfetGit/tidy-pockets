@@ -423,6 +423,107 @@ final class Scenarios {
         return s;
     }
 
+    /** Run with a resource pack that replaces the GUI shaders (--addon): look at the frames, mid-pop art stays whole. */
+    static Script buildPackPop() {
+        Script s = new Script();
+        createWorld(s);
+        boolean[] popped = {false};
+        s.run(mc -> {
+                TidyConfig.get().animSpeed = 0.1;
+                TidyConfig.get().animAllScreens = true;
+            })
+            .capture("pack-pop", 45)
+            .server(server -> {
+                ServerPlayer p = player(server);
+                ServerLevel level = server.overworld();
+                BlockPos at = p.blockPosition().offset(2, 0, 2);
+                level.setBlock(at, Blocks.CHEST.defaultBlockState(), 3);
+                p.openMenu(level.getBlockState(at).getMenuProvider(level, at));
+            })
+            .until("chest screen", 200, mc -> mc.gui.screen() instanceof ContainerScreen)
+            .run(mc -> popped[0] = io.github.profetgit.tidypockets.anim.ScreenPop.popping())
+            // before 1.21.6 the pop goes around the pack's shaders; later versions can't yet and leave it off
+            .check("pack: the pack is seen", mc -> io.github.profetgit.tidypockets.config.Conflicts.guiShaders ? null : "flag off")
+            .check("pack: the chest pops where it can", mc -> popped[0] != io.github.profetgit.tidypockets.Compat.HAS_PIP ? null
+                : "popping " + popped[0])
+            .waitTicks(60)
+            .capture("pack-settled", 1)
+            .waitTicks(5)
+            .run(mc -> mc.player.closeContainer())
+            .waitTicks(5)
+            .run(mc -> mc.gui.setScreen(io.github.profetgit.tidypockets.config.ConfigScreens.create(null)))
+            .waitTicks(30);
+        for (String key : new String[] {"sortHotbar", "refillEnabled", "containerButtons", "smoothScroll", "blurStrength"}) {
+            s.run(mc -> uiScreen(mc).debugRevealRow(key))
+                .waitTicks(8)
+                .run(mc -> {
+                    int[] p = uiScreen(mc).debugPoint(key, -1f);
+                    uiScreen(mc).debugHover(p[0], p[1]);
+                })
+                .waitTicks(50)
+                .capture("pack-preview-" + key, 1)
+                .waitTicks(5);
+        }
+        // the same chest at the weakest and the strongest blur, with the pop long over
+        for (int strength : new int[] {1, 10}) {
+            s.run(mc -> {
+                    mc.gui.setScreen(null);
+                    TidyConfig.get().animSpeed = 1.0;
+                    TidyConfig.get().blurStrength = strength;
+                })
+                .waitTicks(5)
+                .server(server -> {
+                    ServerPlayer p = player(server);
+                    ServerLevel level = server.overworld();
+                    BlockPos at = p.blockPosition().offset(2, 0, 2);
+                    p.openMenu(level.getBlockState(at).getMenuProvider(level, at));
+                })
+                .until("chest screen", 200, mc -> mc.gui.screen() instanceof ContainerScreen)
+                .waitTicks(20)
+                .capture("blur-" + strength, 1)
+                .waitTicks(5)
+                .run(mc -> mc.player.closeContainer())
+                .waitTicks(5);
+        }
+        // uncapped frames come faster than the old timer counts: every one of them must still be blurred
+        if (!io.github.profetgit.tidypockets.Compat.HAS_MENU_BLUR) {
+            everyFrameBlurred(s, "inventory", mc -> new InventoryScreen(mc.player));
+            everyFrameBlurred(s, "game menu", mc -> new net.minecraft.client.gui.screens.PauseScreen(true));
+        } else {
+            s.run(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)))
+                .waitTicks(20);
+        }
+        s.run(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)))
+            .waitTicks(10)
+            .capture("blur-gamemenu", 1)
+            .waitTicks(5)
+            .run(mc -> mc.gui.setScreen(null));
+        return s;
+    }
+
+    private static void everyFrameBlurred(Script s, String what,
+            java.util.function.Function<Minecraft, net.minecraft.client.gui.screens.Screen> screen) {
+        long[] at = new long[2];
+        s.run(mc -> {
+                mc.options.framerateLimit().set(260);
+                mc.gui.setScreen(screen.apply(mc));
+            })
+            .waitTicks(10)
+            .run(mc -> {
+                at[0] = io.github.profetgit.tidypockets.anim.Ease.frames();
+                at[1] = io.github.profetgit.tidypockets.anim.Blur.drawn;
+            })
+            .waitTicks(40)
+            .check("blur: every frame of the " + what + " is blurred", mc -> {
+                long frames = io.github.profetgit.tidypockets.anim.Ease.frames() - at[0];
+                long blurs = io.github.profetgit.tidypockets.anim.Blur.drawn - at[1];
+                SelfTest.record("blur: " + what + " frames", true, blurs + " blurs in " + frames + " frames");
+                return Math.abs(frames - blurs) <= 1 ? null : blurs + " blurs in " + frames + " frames";
+            })
+            .run(mc -> mc.gui.setScreen(null))
+            .waitTicks(5);
+    }
+
     /** Against a real dedicated server over a socket: no integrated-server shortcuts, only commands and clicks. */
     static Script buildRemote() {
         Script s = new Script();
@@ -1660,12 +1761,18 @@ final class Scenarios {
             for (int i = 0; i < 9; i++) inv.setItem(i, new ItemStack(Items.STONE, i + 1));
             inv.setItem(20, new ItemStack(Items.DIAMOND_HELMET));
         });
-        s.capture("pop-chest", 16);
+        int[] blurs = new int[1];
+        s.run(mc -> blurs[0] = io.github.profetgit.tidypockets.anim.Blur.drawn)
+            .capture("pop-chest", 16);
         openChest(s, new BlockPos(2, 0, 2), c -> {
             c.setItem(3, new ItemStack(Items.TORCH, 12));
             c.setItem(13, new ItemStack(Items.BREAD, 5));
         });
-        s.run(mc -> mc.player.closeContainer()).waitTicks(5);
+        s.check("blur: the world behind a chest is blurred",
+                mc -> io.github.profetgit.tidypockets.anim.Blur.drawn > blurs[0] ? null : "no blur was drawn")
+            .check("pop: the game's and mods' own shaders don't switch the pop off",
+                mc -> io.github.profetgit.tidypockets.config.Conflicts.guiShaders ? "read as a resource pack's" : null)
+            .run(mc -> mc.player.closeContainer()).waitTicks(5);
         select(s, 0);
         s.capture("hotbar-glide", 10)
             .run(mc -> mc.player.getInventory().setSelectedSlot(6))

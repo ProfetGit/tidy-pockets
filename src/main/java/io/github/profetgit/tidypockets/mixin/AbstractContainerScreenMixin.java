@@ -101,6 +101,17 @@ public abstract class AbstractContainerScreenMixin {
         if (io.github.profetgit.tidypockets.selftest.SelfTest.active() && io.github.profetgit.tidypockets.selftest.Director.active()) ci.cancel();
     }
 
+    // from 1.20.5 to 1.21.10 a container's background doesn't go through Screen's (ScreenMixin), so it is blurred here
+    //? if >=1.20.5 && <1.21.11 {
+    /*@Inject(method = "extractBackground", at = @At("HEAD"))
+    private void tidypockets$blur(GuiGraphicsExtractor g, int mx, int my, float dt, CallbackInfo ci) {
+        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        ScreenPop.pushIdentity(self, g);
+        io.github.profetgit.tidypockets.anim.Blur.background(self, g, dt);
+        ScreenPop.pop(g);
+    }
+    *///?}
+
     @Inject(method = "init", at = @At("TAIL"))
     private void tidypockets$init(CallbackInfo ci) {
         ContainerTools.init((AbstractContainerScreen<?>) (Object) this);

@@ -76,6 +76,7 @@ public final class SelfTest {
                 case "pad" -> Scenarios.buildPad().steps;
                 case "showcase" -> Showcase.build().steps;
                 case "ui" -> Scenarios.buildUi().steps;
+                case "packpop" -> Scenarios.buildPackPop().steps;
                 default -> Scenarios.build().steps;
             };
         }

@@ -56,6 +56,8 @@ public final class TidyConfig {
     public boolean animPlayerHop = true;
     public boolean smoothScroll = true;
     public boolean blur = true;
+    /** Background blur strength 1..10; 0 follows the game's Menu Background Blur (5 where the game has none). */
+    public int blurStrength = 0;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static TidyConfig instance = new TidyConfig();
@@ -108,6 +110,7 @@ public final class TidyConfig {
         animSpeed = Math.clamp(animSpeed, 0.0, 3.0);
         safeModeClicksPerTick = Math.clamp(safeModeClicksPerTick, 1, 64);
         protectMargin = Math.clamp(protectMargin, 0, 20);
+        blurStrength = Math.clamp(blurStrength, 0, 10);
         return this;
     }
 }

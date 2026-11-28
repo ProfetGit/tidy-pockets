@@ -1,12 +1,64 @@
 package io.github.profetgit.tidypockets.ui.settings;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import io.github.profetgit.profetsettings.Gfx;
+import io.github.profetgit.tidypockets.TidyPockets;
+import io.github.profetgit.tidypockets.config.Conflicts;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 // Vanilla's own widgets as the previews draw them. Their art moved between versions: GUI sprites came with 1.20.2 (before it
 // widgets.png and plain fills), the slot highlight and the shield slot sprites with 1.21.2.
 final class VanillaArt {
     private VanillaArt() {}
+
+    private static final Map<Identifier, Identifier> OWN = new HashMap<>();
+
+    // A texture to draw outside its own screen. A pack that replaces the GUI shaders (Immersive Interfaces) hides marks in
+    // its textures that reshape whatever draws them, so then the game's own file is loaded under a name no pack touches.
+    static Identifier texture(Identifier id) {
+        return Conflicts.guiShaders ? OWN.computeIfAbsent(id, VanillaArt::load) : id;
+    }
+
+    private static Identifier load(Identifier id) {
+        Minecraft mc = Minecraft.getInstance();
+        //? if >=26.3 {
+        var file = mc.getVanillaPackResources().fullResources().getResource(PackType.CLIENT_RESOURCES, id);
+        //?} else {
+        /*var file = mc.getVanillaPackResources().getResource(PackType.CLIENT_RESOURCES, id);
+        *///?}
+        if (file == null) return id;
+        try (InputStream in = file.get()) {
+            NativeImage image = NativeImage.read(in);
+            Identifier own = Identifier.fromNamespaceAndPath(TidyPockets.MOD_ID, "vanilla/" + id.getPath());
+            //? if >=1.21.5 {
+            mc.getTextureManager().register(own, new DynamicTexture(own::toString, image));
+            //?} else {
+            /*mc.getTextureManager().register(own, new DynamicTexture(image));
+            *///?}
+            return own;
+        } catch (java.io.IOException e) {
+            TidyPockets.LOG.warn("Couldn't read the game's {}: {}", id, e.toString());
+            return id;
+        }
+    }
+
+    //? if >=1.20.2 {
+    // a plain (not nine-slice) GUI sprite, from the game's own file while a pack's would be reshaped
+    private static void plain(Gfx g, Identifier sprite, int x, int y, int w, int h, int fullW, int fullH) {
+        if (!Conflicts.guiShaders) {
+            g.sprite(sprite, x, y, w, h);
+            return;
+        }
+        Identifier file = Identifier.withDefaultNamespace("textures/gui/sprites/" + sprite.getPath() + ".png");
+        g.blit(texture(file), x, y, 0, 0, w, h, fullW, fullH);
+    }
+    //?}
 
     //? if >=1.20.2 {
     private static final Identifier BUTTON = Identifier.withDefaultNamespace("widget/button"),
@@ -32,31 +84,31 @@ final class VanillaArt {
         //? if >=1.20.2 {
         g.sprite(BUTTON, x, y, w, 20);
         //?} else {
-        /*g.blit(WIDGETS, x, y, 0, 66, w / 2, 20, 256, 256);
-        g.blit(WIDGETS, x + w / 2, y, 200 - (w - w / 2), 66, w - w / 2, 20, 256, 256);
+        /*g.blit(texture(WIDGETS), x, y, 0, 66, w / 2, 20, 256, 256);
+        g.blit(texture(WIDGETS), x + w / 2, y, 200 - (w - w / 2), 66, w - w / 2, 20, 256, 256);
         *///?}
     }
 
     static void hotbar(Gfx g, int x, int y, int w) {
         //? if >=1.20.2 {
-        g.sprite(HOTBAR, x, y, w, 22);
+        plain(g, HOTBAR, x, y, w, 22, 182, 22);
         //?} else {
-        /*g.blit(WIDGETS, x, y, 0, 0, w, 22, 256, 256);
+        /*g.blit(texture(WIDGETS), x, y, 0, 0, w, 22, 256, 256);
         *///?}
     }
 
     static void selection(Gfx g, int x, int y) {
         //? if >=1.20.2 {
-        g.sprite(SELECTION, x, y, 24, 23);
+        plain(g, SELECTION, x, y, 24, 23, 24, 23);
         //?} else {
-        /*g.blit(WIDGETS, x, y, 0, 22, 24, 23, 256, 256);
+        /*g.blit(texture(WIDGETS), x, y, 0, 22, 24, 23, 256, 256);
         *///?}
     }
 
     // the highlight of the slot whose item is at (x, y): one sprite behind the item, one over it (before 1.21.2 one fill over it)
     static void highlight(Gfx g, int x, int y, boolean front) {
         //? if >=1.21.2 {
-        g.sprite(front ? HIGHLIGHT_FRONT : HIGHLIGHT_BACK, x - 4, y - 4, 24, 24);
+        plain(g, front ? HIGHLIGHT_FRONT : HIGHLIGHT_BACK, x - 4, y - 4, 24, 24, 24, 24);
         //?} else {
         /*if (front) g.fill(x, y, x + 16, y + 16, 0x80FFFFFF);
         *///?}
@@ -98,10 +150,12 @@ final class VanillaArt {
 
     static void field(Gfx g, int x, int y, int w, int h) {
         //? if >=1.20.2 {
-        g.sprite(FIELD, x, y, w, h);
-        //?} else {
-        /*g.fill(x, y, x + w, y + h, 0xFFFFFFFF);
+        if (!Conflicts.guiShaders) {
+            g.sprite(FIELD, x, y, w, h);
+            return;
+        }
+        //?}
+        g.fill(x, y, x + w, y + h, 0xFFFFFFFF);
         g.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF000000);
-        *///?}
     }
 }

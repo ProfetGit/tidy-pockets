@@ -14,8 +14,16 @@ public final class Ease {
         return clock;
     }
 
+    private static long frames;
+
     public static void frame(float realtimeDeltaTicks) {
         clock += realtimeDeltaTicks * 50.0;
+        frames++;
+    }
+
+    /** Frames drawn so far. Two frames can share one {@link #now}: before 1.21 the game's timer counts whole ms. */
+    public static long frames() {
+        return frames;
     }
 
     public static boolean enabled() {
